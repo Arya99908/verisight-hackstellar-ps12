@@ -1,3 +1,29 @@
+# VeriSight - HackStellar PS-12
+
+The repository now contains two additive local interfaces: the original lightweight, offline-first workbench at `http://localhost:8100`, and the expanded React/TypeScript four-layer forensics workbench at `http://localhost:5174` backed by FastAPI at port `8101`. The original uploader, simulator, API, samples, and report controls remain in place; the expanded application adds the integrated forensic pipeline, five labeled synthetic examples, mobile QR intake, spectral viewer, and richer report.
+
+## Expanded application quickstart (macOS/Linux)
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r backend/requirements.txt
+cd frontend && npm ci && cd ..
+./start-verisight.sh
+```
+
+Open `http://localhost:5174`. API docs are at `http://localhost:8101/docs`. The original simple prototype can still be run with `.venv/bin/python server.py --port 8100`.
+
+## Expanded feature set
+
+- Layer 1: multi-scale ELA, db4 wavelet noise residuals, ORB copy-move vectors, and JPEG ghost analysis.
+- Layer 2: offline OCR/MSER fallback, baseline laser geometry, CIELAB patch checks, and sharpness cues.
+- Layer 3: EXIF/PNG metadata inspection, device viewport references, UPI format and temporal consistency rules, and WhatsApp forwarding fingerprints.
+- Layer 4: weighted risk aggregation and cross-layer spatial corroboration; status and evidence are returned in structured reports.
+- React forensic viewer with spectral modes, synchronized loupe, laser overlay, findings sidebar, sample selection, WhatsApp before/after simulator, mobile upload QR, and printable report.
+- Five explicitly watermarked synthetic samples for genuine, spliced, generator, laundered, and clone-move cases.
+
+The advanced implementation is integrated additively from the supplied `verisight-main` project. Existing lightweight files at repository root remain available as a second interface. The full design and component documentation is in `docs/`; an abbreviated quick reference is below.
+
 # VeriSight — HackStellar PS-12 Prototype
 
 Offline-first screenshot forensics workbench with a Python image-analysis API. Serve this folder locally and open `http://localhost:8000`.
@@ -88,3 +114,11 @@ docs/
 ## Run locally
 
 Requires Python 3. Install the small QR generation dependency with `python3 -m pip install -r requirements.txt`, then run `python3 server.py`. The analysis UI remains offline-first; phone upload requires the phone and laptop to share a trusted local network.
+
+## Lightweight analysis API
+
+`POST /api/analyze` on the port-8100 server returns deterministic ELA, high-pass, JPEG metadata and optional Tesseract observations. This endpoint deliberately reports no calibrated score. The expanded FastAPI service on port 8101 provides the full report contract and is the API used by the React workbench.
+
+## Accuracy and evidence boundary
+
+Synthetic cases and reported benchmark metrics describe a controlled demonstration set. They do not establish real-world fraud detection accuracy. UTR pattern checks do not verify settlement. C2PA trust depends on configured trust material. Treat model scores as investigative triage; confirm payments with the provider.
