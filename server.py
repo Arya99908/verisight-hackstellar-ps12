@@ -19,7 +19,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.path = "/mobile.html"
             return super().do_GET()
         if path == "/api/latest":
-            files = sorted((p for p in UPLOADS.iterdir() if p.is_file() and p.name != ".gitkeep"), key=lambda p: p.stat().st_mtime, reverse=True)
+            files = sorted((p for p in UPLOADS.iterdir() if p.is_file() and p.name != ".gitkeep" and not p.name.endswith(".json")), key=lambda p: p.stat().st_mtime, reverse=True)
             payload = None
             if files:
                 meta = UPLOADS / (files[0].name + ".json")
