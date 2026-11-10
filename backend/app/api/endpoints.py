@@ -55,7 +55,14 @@ async def create_upload_session(payload: UploadSessionRequest):
             f"{supabase_url}/storage/v1/object/upload/sign/mobile-evidence/"
             f"{quote(upload['path'], safe='/')}?token={quote(upload['token'])}"
         )
-        return {"session_id": str(session_id), "upload_url": upload_url}
+        public_storage_key = os.getenv("SUPABASE_ANON_KEY", "")
+        if not public_storage_key:
+            raise RuntimeError("Supabase public storage key is not configured")
+        return {
+            "session_id": str(session_id),
+            "upload_url": upload_url,
+            "storage_key": public_storage_key,
+        }
     except Exception as exc:
         raise HTTPException(
             status_code=503,

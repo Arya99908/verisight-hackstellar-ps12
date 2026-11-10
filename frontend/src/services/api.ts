@@ -84,10 +84,14 @@ async function uploadFileToPrivateStorage(file: File, sessionId?: string) {
     throw await responseError(sessionRes, "Could not prepare secure screenshot upload.");
   }
 
-  const { session_id, upload_url } = await sessionRes.json();
+  const { session_id, upload_url, storage_key } = await sessionRes.json();
   const uploadRes = await fetch(upload_url, {
     method: "POST",
-    headers: { "Content-Type": contentType },
+    headers: {
+      "Content-Type": contentType,
+      apikey: storage_key,
+      Authorization: `Bearer ${storage_key}`,
+    },
     body: file,
   });
   if (!uploadRes.ok) {
