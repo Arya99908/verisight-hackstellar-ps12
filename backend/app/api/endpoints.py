@@ -10,6 +10,7 @@ from app.core.schemas import (
     WhatsAppSimulationResponse,
 )
 from app.services.forensic.pipeline import analyze_screenshot
+from app.services.supabase_store import save_case
 from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
 
 router = APIRouter()
@@ -126,6 +127,7 @@ async def analyze_upload(file: UploadFile = File(...)):
     
     try:
         report = analyze_screenshot(content, filename=file.filename or "upload.png")
+        await save_case(report, "upload")
         return report
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Forensic investigation failed: {e!s}")
@@ -160,7 +162,9 @@ async def execute_sample_analysis(sample_id: str) -> ForensicAnalysisReport:
     with open(sample_path, "rb") as f:
         content = f.read()
 
-    return analyze_screenshot(content, filename=filename)
+    report = analyze_screenshot(content, filename=filename)
+    await save_case(report, "synthetic_sample")
+    return report
 
 @router.post("/simulate-whatsapp", response_model=WhatsAppSimulationResponse)
 async def simulate_whatsapp(file: UploadFile = File(...)):
@@ -187,8 +191,9 @@ async def mobile_upload(file: UploadFile = File(...)):
         "timestamp": report.timestamp,
         "report": report.model_dump()
     }
+    await save_case(report, "mobile_upload")
 
-    return {"status": "SUCCESS", "message": "Screenshot uploaded and analyzed.", "verdict": report.verdict}
+    return {"status": "SUCCESS", "message": "Screenshot uploaded and analyzed.", "verdict": report.verdict, "report": report.model_dump()}
 
 @router.get("/latest-mobile-upload")
 async def get_latest_mobile_upload(clear: bool = False):

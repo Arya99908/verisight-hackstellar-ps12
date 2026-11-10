@@ -13,6 +13,7 @@ if str(ROOT_DIR) not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from samples.generator import generate_all_samples
 
 from app.api.endpoints import router as api_router
@@ -64,3 +65,8 @@ def root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+
+# Serve the built Vite SPA from the same FastAPI origin in production.
+frontend_dist = ROOT_DIR / "frontend" / "dist"
+if frontend_dist.exists():
+    app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
