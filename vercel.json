@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm ci --prefix frontend && npm run build --prefix frontend",
+  "buildCommand": "npm run build --prefix frontend",
+  "installCommand": "python3 -m pip install --no-cache-dir -r requirements.vercel.txt && npm ci --prefix frontend",
   "functions": {
     "backend/app/main.py": {
       "includeFiles": "backend/**,samples/**,frontend/dist/**",

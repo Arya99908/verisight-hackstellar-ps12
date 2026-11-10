@@ -165,6 +165,8 @@ cp .env.example .env
 
 **Deployment:** Vercel serverless FastAPI with the Vite-built frontend served on the same origin.
 
+Vercel installs the slim production set from `requirements.vercel.txt` plus the frontend packages. The complete local/test dependencies remain in `requirements.txt`; Pillow is needed for generating missing synthetic fixtures locally, while the checked-in sample fixtures are deployed with the app.
+
 ---
 
 ## API Reference
