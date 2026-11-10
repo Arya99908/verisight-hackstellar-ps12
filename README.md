@@ -1,141 +1,412 @@
-# VeriSight - HackStellar PS-12
+# VeriSight — Screenshot Forensic Triage Prototype
 
-## Hosted prototype
+> A prototype that computes visual review cues for screenshots. It is not a trained or calibrated authenticity classifier.
 
-- **Prototype:** [https://verisight-ps12.vercel.app](https://verisight-ps12.vercel.app)
-- **Health:** `https://verisight-ps12.vercel.app/api/health`
-- **Demo samples:** `https://verisight-ps12.vercel.app/api/demo-samples`
-- **Database:** Supabase project `ytxfhmdzlelcpjsnlndh` (ap-south-1), table `public.forensic_cases`.
+## 🔴 Live Demo
 
-The Vercel FastAPI service serves the React dashboard and its API from one public origin. Screenshot analysis results are persisted to Supabase as metadata, verdicts, findings, and layer summaries; uploaded image bytes and heatmap payloads are not stored in the database. The table has RLS enabled with no public read/write policies. The server uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; keep the server key only in Vercel's encrypted environment settings or a local ignored env file. The schema is versioned under `supabase/migrations/`.
+**[https://verisight-ps12.vercel.app](https://verisight-ps12.vercel.app)**
 
-The judge mobile handoff uses a one-use session UUID. Its screenshot is kept in the private `mobile-evidence` Storage bucket only until the paired desktop workbench retrieves and analyzes it, then the object is deleted. Abandoned uploads are removed when the next mobile upload arrives after the 24-hour retention window. The `mobile_uploads` table has RLS enabled with no public policies.
+| Endpoint | URL |
+|---|---|
+| Forensic Workbench | https://verisight-ps12.vercel.app |
+| Health Check | https://verisight-ps12.vercel.app/api/health |
+| API Docs (Swagger) | https://verisight-ps12.vercel.app/docs |
+| Demo Samples | https://verisight-ps12.vercel.app/api/demo-samples |
 
-Vercel production variables are configured for Production. To recreate a local Supabase integration, apply the migration with the Supabase CLI and set the two variables in an ignored `.env` file before starting the API. Never use the server-side database key in browser code.
+---
 
-The project is deployed from GitHub `Arya99908/verisight-hackstellar-ps12`, branch `main`.
+## What It Does
 
-The repository now contains two additive local interfaces: the original lightweight, offline-first workbench at `http://localhost:8100`, and the expanded React/TypeScript four-layer forensics workbench at `http://localhost:5174` backed by FastAPI at port `8101`. The original uploader, simulator, API, samples, and report controls remain in place; the expanded application adds the integrated forensic pipeline, five labeled synthetic examples, mobile QR intake, spectral viewer, and richer report.
+VeriSight accepts common image formats and computes pixel, layout, metadata, and QR review cues. The current build cannot determine that every screenshot is authentic or edited: it has no trained image classifier, and it does not verify payments. Analysis runs server-side. Case summaries are persisted; original image bytes are not stored in the case table. A short-lived private storage object is used by the signed-upload flow and deleted after analysis.
 
-## Expanded application quickstart (macOS/Linux)
+**Layer 1 — Pixel & Frequency Signal Forensics**
+- **Error Level Analysis (ELA):** Re-encodes the decoded pixels as JPEG and compares residuals. The residual heatmap is exploratory; score-based localization is disabled for non-JPEG sources. ELA residuals alone do not show splicing.
+- **Wavelet Noise Analysis:** Computes high-frequency residual variation and flags large low-variation areas. Flat UI regions, resizing, and recompression can produce similar cues.
+- **Copy-Move Cue:** Matches ORB descriptors and displacement clusters. Repeated icons and text can match; this is a candidate region, not a confirmed clone.
+- **JPEG Quality Sweep:** Reports global reconstruction error across selected JPEG qualities. It does not localize a JPEG ghost or determine whether editing occurred.
+
+**Layer 2 — Typographic Geometry Forensics**
+- **Text-like geometry:** OpenCV connected components provide boxes; they do not recognize text. Rows are grouped and compared against a median baseline, so ordinary UI alignments may trigger cues. QR-detected regions are excluded.
+- **CIELAB and sharpness cues:** Compare local colors beside components and Laplacian variation among components. Thresholds are exploratory and can flag normal rendering differences.
+
+**Layer 3 — Metadata & Protocol Rules**
+- **Metadata:** Reads selected available image metadata. A software tag or absent EXIF is not proof of editing or forwarding.
+- **C2PA:** Searches raw bytes for possible marker strings only. It does not parse or cryptographically validate a Content Credential.
+- **QR decoding:** Uses OpenCV to decode readable QR payloads and identify broad types such as UPI URIs or web links. It does not test QR pixel integrity, validate a recipient, open a destination, or verify a payment.
+- **Text rules:** The default pipeline does not perform OCR text recognition, so receipt-time and UTR rules are generally unavailable for pixel-only text. If such data is present in supported metadata chunks, rule results remain format/context cues, not issuer validation.
+- **Channel and viewport cues:** Metadata, encoding and dimensions are compared with simple heuristics. They cannot reliably identify an app or prove cropping.
+
+**Layer 4 — Ensemble & Cross-Layer Corroboration**
+- **Weighted risk aggregation:** Strong indicators (`text_geometry` = 35 pts, `copy_move` = 28–42 pts, `time_consistency` = 35 pts, `reference_format` = 20 pts) are combined with weak review cues (ELA macroblock count, wavelet noise, rendering variation, software metadata) capped at 12 pts. Total score is capped at 92.0.
+- **Cross-Layer Spatial IoU:** For each clone-detected bounding box and each anomalous baseline box, pairwise IoU is computed. A primary forgery locus is declared when IoU ≥ 0.20, upgrading the verdict and adding a `CROSS_LAYER_SYNERGY_LOCUS` bounding box to the report.
+- **Assessment:** The API returns `INCONCLUSIVE`, `REVIEW_REQUIRED`, or `CORROBORATED_ANOMALIES` as heuristic evidence states. Error probability and calibrated confidence are unavailable.
+
+---
+
+## Supported File Types
+
+| Format | Notes |
+|---|---|
+| **PNG** | ELA heatmap may be viewed, but contributes no anomaly score |
+| **JPEG / JPG** | JPEG-specific recompression cues are available; they are not proof of editing |
+| **WebP** | Supported via OpenCV decode |
+| **BMP** | Supported; no JPEG-specific metadata checks apply |
+
+Maximum upload size: **20 MB**
+
+---
+
+## Intended Screenshot Inputs
+
+The upload accepts these images, but the pipeline has not been validated across these app templates or message types:
+
+- UPI receipts and QR screens
+- WhatsApp or other message screenshots
+- Bank transfer confirmations and wallet receipts
+
+---
+
+## Verdicts
+
+| Verdict | Score Range | Meaning |
+|---|---|---|
+| `INCONCLUSIVE` | score < 12 without corroboration | No configured strong cue crossed threshold. This does not imply authenticity. |
+| `REVIEW_REQUIRED` | score ≥ 12 without corroboration | At least one configured cue crossed threshold; inspect the parameter and region. |
+| `CORROBORATED_ANOMALIES` | candidate ORB region overlaps a baseline-geometry cue | This is a region-overlap rule, not a probability or a verified tampering determination. |
+
+---
+
+## Demo Samples
+
+Five synthetic, watermarked samples are bundled for instant demonstration:
+
+| ID | Sample | Expected Verdict | Key Signals |
+|---|---|---|---|
+| `sample_1` | Clean Synthetic Payment UI (₹1,250) | `INCONCLUSIVE` | Baseline case — not a verified authentic transaction |
+| `sample_2` | Synthetic Edited Amount (₹95,250) | `REVIEW_REQUIRED` | Known altered fixture; current signals are heuristic and do not establish that an arbitrary edit will be found |
+| `sample_3` | Synthetic Metadata Conflict Fixture | `REVIEW_REQUIRED` | Embedded metadata clock and reference-format cues; score can be high without a localized overlap |
+| `sample_4` | Synthetic JPEG Re-encode | `REVIEW_REQUIRED` | Re-encoded fixture; app/source cannot be identified from the image profile |
+| `sample_5` | Synthetic Repeated-Region Fixture | `REVIEW_REQUIRED` | ORB feature matches and dimensions; repeated interface elements can match |
+
+> **Important:** These are synthetic test fixtures, not real payment screenshots. They do not validate actual payments or demonstrate real-world forensic accuracy.
+
+---
+
+## Running Locally
+
+### Prerequisites
+
+- Python 3.12+
+- Node.js 18+
+
+### Quick Start
 
 ```bash
+git clone https://github.com/Arya99908/verisight-hackstellar-ps12.git
+cd verisight-hackstellar-ps12
+
+# Backend
 python3 -m venv .venv
 .venv/bin/pip install -r backend/requirements.txt
-cd frontend && npm ci && cd ..
+
+# Frontend
+cd frontend && npm ci && npm run build && cd ..
+
+# Start both servers
 ./start-verisight.sh
 ```
 
-Open `http://localhost:5174`. API docs are at `http://localhost:8101/docs`. The original simple prototype can still be run with `.venv/bin/python server.py --port 8100`.
+Open **http://localhost:5174** for the React forensic workbench.
+API interactive docs at **http://localhost:8101/docs**.
 
-## Expanded feature set
+### Environment Variables
 
-- Layer 1: multi-scale ELA, db4 wavelet noise residuals, ORB copy-move vectors, and JPEG ghost analysis.
-- Layer 2: offline OCR/MSER fallback, baseline laser geometry, CIELAB patch checks, and sharpness cues.
-- Layer 3: EXIF/PNG metadata inspection, device viewport references, UPI format and temporal consistency rules, and WhatsApp forwarding fingerprints.
-- Layer 4: weighted risk aggregation and cross-layer spatial corroboration; status and evidence are returned in structured reports.
-- React forensic viewer with spectral modes, synchronized loupe, laser overlay, findings sidebar, sample selection, WhatsApp before/after simulator, mobile upload QR, and printable report.
-- Five explicitly watermarked synthetic samples for genuine, spliced, generator, laundered, and clone-move cases.
-
-The advanced implementation is integrated additively from the supplied `verisight-main` project. Existing lightweight files at repository root remain available as a second interface. The full design and component documentation is in `docs/`; an abbreviated quick reference is below.
-
-# VeriSight — HackStellar PS-12 Prototype
-
-Offline-first screenshot forensics workbench with a Python image-analysis API. Serve this folder locally and open `http://localhost:8000`.
+Copy `.env.example` to `.env` and fill in your Supabase credentials:
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 server.py
+cp .env.example .env
 ```
 
-## Current prototype
+| Variable | Description |
+|---|---|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-side service role key (never expose in browser) |
+| `SUPABASE_ANON_KEY` | Public anon key for Storage signed upload URLs |
 
-- Image file selection and drag/drop; local-only processing.
-- Demo edited payment receipt fixture, analysis findings, visible heuristic score, metadata/limitations, and local SHA-256 when Web Crypto is available.
-- Four synchronized evidence panels and finding navigation. The local API computes ELA sweeps at Q75/85/95, Haar-style high-pass residual metrics, 8-pixel block boundary statistics, JPEG DQT/subsampling observations, metadata presence, and SHA-256.
-- Optional OCR via locally installed Tesseract; otherwise the OCR layer is explicitly returned as unavailable. UTR/VPA regex checks run only on recognized text.
-- Laser overlay toggle, image reset, simulated WhatsApp resize/JPEG re-encode at approximately Q76, and print-to-PDF certificate.
-- Responsive layout, case session, protocol and build framework navigation.
-- Phone QR intake over the same local Wi-Fi using `server.py`; uploaded screenshots are ignored by Git.
+> Never commit `.env`, `.env.local`, or `.env.production.local` to version control.
 
-## Accuracy boundary
+---
 
-This is a prototype, not a validated forensic product. The React workbench does not contain a trained image-forgery classifier; its five bundled examples are synthetic fixtures. It reports `INCONCLUSIVE`, `REVIEW_REQUIRED`, or `CORROBORATED_ANOMALIES`, never a verified-real or verified-fake result. Its point score is an uncalibrated triage heuristic and classifier confidence is unavailable. QR payloads can be decoded locally for inspection, but the payee, URL destination, and payment state are not verified. C2PA marker detection does not cryptographically validate a manifest. Do not use this demo to decide whether a payment occurred; confirm through the payment provider or bank.
+## Architecture
 
-See [MODEL_TRAINING_READINESS.md](docs/MODEL_TRAINING_READINESS.md) for why no model was trained on the current five fixtures and the data, split, calibration, and evaluation needed before an accuracy claim is appropriate.
-
-## Implemented API
-
-`POST /api/analyze` accepts multipart `image` (also `file` or `evidence`) and returns per-layer status, ELA measurements, residual and block-grid statistics, basic JPEG metadata observations, optional OCR word boxes, format-rule cues, SHA-256, findings, and limitations. `score` is deliberately null because no calibrated ensemble is configured.
-
-## Target architecture from the execution brief
-
-Keep the JSON API boundary stable so frontend and forensic modules can progress separately.
-
-```text
-POST /api/analyze
-multipart image
-→ {schema_version, sha256, channel, image, layers, score: null, verdict: REVIEW, findings, limitations}
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    VeriSight System                              │
+│                                                                  │
+│  Browser (React/TypeScript + Vite)                               │
+│  ├── Forensic Workbench (multi-view image viewer)                 │
+│  ├── ELA / Wavelet / ORB candidate overlays                      │
+│  ├── Baseline laser & findings sidebar                           │
+│  ├── Messaging-style JPEG transform simulator                    │
+│  └── Mobile QR intake (stage judge handoff)                      │
+│                        │  same-origin API requests               │
+│  FastAPI (Python 3.12)                                           │
+│  ├── Layer 1: pixel_analysis/ (ELA, wavelet, ORB candidates)    │
+│  ├── Layer 2: typography/ (baseline_laser, cielab_patch, OCR)    │
+│  ├── Layer 3: metadata/ (exif, viewport_db, domain_rules, QR)    │
+│  ├── Layer 4: ensemble/calibrator.py (rule aggregation)          │
+│  └── supabase_store.py → Supabase PostgreSQL (metadata only)     │
+│                                                                  │
+│  Supabase                                                        │
+│  ├── forensic_cases table (verdict, score, findings metadata)    │
+│  └── mobile-evidence Storage bucket (private, short-lived)       │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-| Layer | Production module | Planned work |
+**Deployment:** Vercel serverless FastAPI with the Vite-built frontend served on the same origin.
+
+---
+
+## API Reference
+
+All endpoints are served under `/api`.
+
+### `GET /api/health`
+
+Returns service readiness and database connectivity.
+
+**Response:**
+```json
+{
+  "status": "HEALTHY",
+  "database": "HEALTHY",
+  "service": "VeriSight Forensics Engine",
+  "version": "1.0.0",
+  "active_layers": ["L1_Signal_Heuristics", "L2_Geometry_Heuristics", "L3_Metadata_QR", "L4_Evidence_Review"]
+}
+```
+
+---
+
+### `POST /api/analyze`
+
+Upload an image file for full 4-layer forensic analysis.
+
+**Request:** `multipart/form-data`
+
+| Field | Type | Description |
 |---|---|---|
-| 1. Pixel and frequency forensics | `backend/core/layer1_signal.py` | Multi-scale ELA at Q75/85/95; WhatsApp-adaptive Q70/75/82; db4 wavelet residuals; DCT 8×8 grid; copy-move/ORB evidence |
-| 2. OCR geometry | `backend/core/layer2_geometry_ocr.py` | PaddleOCR/EasyOCR boxes; per-character baseline regression; stroke and kerning variance; CIELAB ΔE patching |
-| 3. Metadata and protocol | `backend/core/layer3_metadata_rules.py` | EXIF/ICC/PNG chunks; JPEG DQT/subsampling and channel fingerprint; viewport plausibility; UPI UTR/VPA validation; status/receipt time consistency |
-| 4. Ensemble and dossier | `backend/core/pipeline.py` | Pydantic result schema; calibrated, benchmarked aggregation; cross-layer evidence links; optional semantic model with explicit provenance |
-| Workbench | `frontend/` | Quad-view loupe, laser overlays, findings-to-region navigation, before/after laundering view, mobile QR intake, report export |
-| Dataset and QA | `backend/sample_generator.py`, `datasets/` | Consent-safe synthetic genuine/edited pairs; labeled cases, transforms, and expected cues; false-positive measurement by image/channel |
+| `file` | File | PNG, JPEG, WebP, or BMP image (max 20 MB) |
 
-### Recommended repo layout
+**Response:** `ForensicAnalysisReport` JSON (see schema below)
 
-```text
-backend/
-  app.py
-  api/schemas.py
-  core/pipeline.py
-  core/layer1_signal.py
-  core/layer2_geometry_ocr.py
-  core/layer3_metadata_rules.py
-  core/layer4_ensemble.py
-  core/whatsapp_simulator.py
-  reports/certificate.py
-frontend/                 # current offline prototype; migrate to React/Vite if needed
-  index.html
-  src/
-datasets/                 # synthetic fixtures and labels only
-  golden_cases.json
-  README.md
-docs/
-  API_CONTRACT.md
-  DEMO_SCRIPT.md
+**Example:**
+```bash
+curl -X POST https://verisight-ps12.vercel.app/api/analyze \
+  -F "file=@receipt.png" | jq .verdict
 ```
 
-## Build sequence and team handoff
+> On Vercel, large files should use the signed upload flow (`POST /api/upload-session` → PUT to Storage URL → `POST /api/analyze-upload-session/{session_id}`) to avoid function body size limits.
 
-1. **Lock the interface**: define API request limits, versioned JSON response, normalized image coordinates, severity vocabulary, per-layer status (`complete`, `partial`, `unavailable`), and provenance for every finding.
-2. **Signal and OCR track**: implement layers 1–2 behind pure functions. Return heatmap assets and normalized text/evidence boxes; never imply a detection when a layer is unavailable.
-3. **Rules and dataset track**: implement metadata/protocol rules and the WhatsApp transform; create labeled synthetic controls and edits. Do not treat a regex match as proof of settlement.
-4. **Workbench track**: connect panels to backend heatmaps and normalized boxes; ensure clicking a finding selects the same coordinates in all views. Use unknown/partial labels honestly.
-5. **Integration and calibration**: benchmark by attack type and channel; report false positives and false negatives with counts. Calibrate thresholds on held-out cases; do not promise 0% false positives.
-6. **Freeze and demo**: pin local dependencies/model weights, test airplane-mode startup, create a QR route only on a trusted local network/tunnel, and rehearse the 4-minute demo with a prerecorded fallback.
+---
 
-### Hackathon checkpoints in the supplied brief
+### `POST /api/upload-session`
 
-- **Nov 9**: bootstrap, API schema, first ELA/wavelet and shell.
-- **Nov 10**: geometry/overlay, simulator and synthetic data.
-- **Nov 11**: integration, findings navigation, certificate, benchmark.
-- **Nov 12, 9 PM**: feature freeze, offline packaging, mobile intake and dress rehearsals.
-- **Nov 13**: run the tested build, keep a local backup video, label all model and data limitations.
+Create a one-use signed Supabase Storage upload URL for large files.
 
-## Run locally
+**Request:** JSON body
+```json
+{
+  "filename": "receipt.jpg",
+  "content_type": "image/jpeg",
+  "size": 2048000,
+  "session_id": "optional-uuid"
+}
+```
 
-Requires Python 3. Install the small QR generation dependency with `python3 -m pip install -r requirements.txt`, then run `python3 server.py`. The analysis UI remains offline-first; phone upload requires the phone and laptop to share a trusted local network.
+**Response:**
+```json
+{
+  "session_id": "uuid",
+  "upload_url": "https://...supabase.co/storage/v1/object/upload/sign/...",
+  "storage_key": "anon-key"
+}
+```
 
-## Lightweight analysis API
+---
 
-`POST /api/analyze` on the port-8100 server returns deterministic ELA, high-pass, JPEG metadata and optional Tesseract observations. This endpoint deliberately reports no calibrated score. The expanded FastAPI service on port 8101 provides the full report contract and is the API used by the React workbench.
+### `POST /api/analyze-upload-session/{session_id}`
 
-## Accuracy and evidence boundary
+Analyze a screenshot already placed in private Storage via signed upload. Consumes and deletes the stored object after analysis.
 
-Synthetic cases and reported benchmark metrics describe a controlled demonstration set. They do not establish real-world fraud detection accuracy. UTR pattern checks do not verify settlement. C2PA trust depends on configured trust material. Treat model scores as investigative triage; confirm payments with the provider.
+**Response:** `ForensicAnalysisReport` JSON
+
+---
+
+### `POST /api/analyze-sample/{sample_id}`
+
+Instantly run the 4-layer pipeline against one of the five bundled synthetic demo samples. Results are LRU-cached per sample file mtime.
+
+**Path param:** `sample_id` ∈ `{sample_1, sample_2, sample_3, sample_4, sample_5}`
+
+**Response:** `ForensicAnalysisReport` JSON
+
+---
+
+### `GET /api/demo-samples`
+
+Returns metadata for all five demo samples.
+
+**Response:** Array of `DemoSampleMeta` with `id`, `filename`, `title`, `scenario`, `expected_verdict`, `target_score_range`, `description`, `tags`, `url`.
+
+---
+
+### `POST /api/simulate-whatsapp`
+
+Simulate WhatsApp laundering on an uploaded image. Re-encodes it at Q77 JPEG with 4:2:0 chroma subsampling, then re-runs the full forensic pipeline and returns a side-by-side comparison.
+
+**Request:** `multipart/form-data` with `file` field
+
+**Response:** `WhatsAppSimulationResponse`
+```json
+{
+  "original_size_bytes": 245000,
+  "simulated_size_bytes": 103000,
+  "compression_ratio": 2.38,
+  "original_dimensions": [1080, 1920],
+  "simulated_dimensions": [1080, 1920],
+  "simulated_image_b64": "data:image/jpeg;base64,...",
+  "diff_heatmap_b64": "data:image/webp;base64,...",
+  "reanalysis": { ... }
+}
+```
+
+---
+
+### `POST /api/mobile-upload`
+
+Receive a screenshot from a mobile device (stage judge QR scan flow). On Vercel, stores to private `mobile-evidence` bucket. Locally, analyzes in-process.
+
+**Query param:** `session_id` (UUID, required on Vercel)
+
+**Request:** `multipart/form-data` with `file` field
+
+---
+
+### `GET /api/latest-mobile-upload`
+
+Desktop workbench polling endpoint. Returns the analyzed report for the given session once the mobile upload has been retrieved and processed.
+
+**Query params:** `session_id` (UUID), `clear` (bool)
+
+---
+
+### `GET /api/network-info`
+
+Returns the host's LAN IP address for generating the mobile QR code URL.
+
+---
+
+## ForensicAnalysisReport Schema
+
+```typescript
+interface ForensicAnalysisReport {
+  file_sha256: string;          // SHA-256 of original uploaded bytes
+  filename: string | null;
+  timestamp: string;            // ISO 8601
+  image_width: number;
+  image_height: number;
+  overall_tamper_score: number; // 0–92 heuristic score (not a probability)
+  confidence_score: null;       // No calibrated probability model is available
+  verdict: "INCONCLUSIVE" | "REVIEW_REQUIRED" | "CORROBORATED_ANOMALIES";
+  channel_detected: string;     // Weak image-profile cue; source may remain unknown
+  layer1: Layer1SignalResult;
+  layer2: Layer2GeometryResult;
+  layer3: Layer3MetadataResult;
+  layer4: Layer4SemanticResult;
+  synergy: CrossLayerSynergy;
+  findings: ForensicFinding[];
+  all_bounding_boxes: BoundingBox[];
+  original_image_b64: string;   // lossless WebP for the viewer overlay
+}
+```
+
+Each `ForensicFinding` has: `id`, `layer` (1–4), `severity` (`CRITICAL` / `HIGH` / `MEDIUM` / `LOW` / `INFO`), `title`, `description`, `metric_name`, `metric_value`, and optionally a `bounding_box` with pixel coordinates.
+
+---
+
+## Database
+
+PostgreSQL via **Supabase** (project reference `ytxfhmdzlelcpjsnlndh`).
+
+**Persisted case metadata:**
+- `forensic_cases` table: case UUID, timestamp, filename, SHA-256 hash, image dimensions, heuristic points, null confidence field, evidence-state verdict, channel cue, findings, layer summaries, and submission source.
+
+- Original image bytes are not stored in `forensic_cases`. The mobile handoff temporarily places an image in private Storage and deletes it after analysis. A best-effort cleanup runs when a later upload session is created; this is not a scheduled deletion guarantee.
+- ELA / wavelet / ORB heatmap payloads are returned in-band as base64 and are not persisted in the case row.
+
+**Security:**
+- Row-level security (RLS) is enabled on `forensic_cases` with no public read/write policies — writes go via service role key on the server only.
+- The `mobile-evidence` Storage bucket is private. Handoff records can only be consumed once, and the analyzed object is deleted after processing. Expired unconsumed objects are removed best-effort when a later upload is created.
+- Schema versioned under `supabase/migrations/`.
+
+---
+
+## Accuracy & Limitations
+
+VeriSight is a **heuristic triage tool**, not a validated forensic classifier.
+
+| Limitation | Detail |
+|---|---|
+| **No trained model** | All decisions use deterministic signal thresholds and weighted rules — no ML model was trained on a labeled payment screenshot dataset. |
+| **Synthetic test set** | The five bundled samples are synthetic regression fixtures, not real payments. Demo scores describe configured rules only and are not accuracy measurements. |
+| **False positives** | Standard JPEG re-compression, screenshot capture pipelines, display scaling, and app UI rendering can all trigger ELA, wavelet, and sharpness cues on authentic images. |
+| **Text extraction** | The default pipeline groups connected components but does not recognize their text. Pixel-only receipt times and UTRs are not reliably read. |
+| **QR payment not verified** | QR payloads are decoded locally for content inspection. The payee identity, URL destination, and actual payment state are not verified against any payment rail. |
+| **C2PA not validated** | Possible marker strings are searched in bytes; manifest presence, signature, and trust anchor are not verified. |
+| **Not a legal instrument** | Outputs are investigative cues for a human reviewer. Do not use VeriSight results as sole evidence to determine whether a payment occurred. Always confirm with the payment provider or bank. |
+
+---
+
+## Project Structure
+
+```
+verisight-hackstellar-ps12/
+├── backend/
+│   └── app/
+│       ├── api/endpoints.py          # FastAPI routes
+│       ├── core/
+│       │   ├── config.py             # Settings (thresholds, paths)
+│       │   └── schemas.py            # Pydantic models
+│       ├── services/forensic/
+│       │   ├── pipeline.py           # 4-layer orchestrator
+│       │   ├── pixel_analysis/       # ELA, wavelet, copy-move, JPEG ghosts
+│       │   ├── typography/           # Baseline laser, CIELAB, OCR engine
+│       │   ├── metadata/             # EXIF, domain rules, viewport DB
+│       │   ├── qr_inspector.py       # QR payload decoding only
+│       │   ├── provenance/           # C2PA inspector
+│       │   └── ensemble/calibrator.py # Cross-layer IoU + verdict
+│       ├── services/supabase_store.py
+│       └── simulation/whatsapp_pipeline.py
+├── frontend/src/
+│   ├── components/                   # React forensic workbench UI
+│   ├── services/api.ts               # Typed API client
+│   └── types/forensic.ts             # TypeScript type definitions
+├── samples/                          # 5 synthetic demo fixtures + generator
+├── supabase/migrations/              # PostgreSQL schema migrations
+├── api/index.py                      # Vercel ASGI entry point
+├── vercel.json                       # Vercel deployment config
+├── start-verisight.sh                # Local dev launcher (macOS/Linux)
+├── start-verisight.bat               # Local dev launcher (Windows)
+└── docs/                             # Design docs, API contract, demo script
+```
+
+---
+
+## License
+
+[MIT](LICENSE)
+
+---
+
+> **HackStellar PS-12** · Built for rapid forensic triage of digital payment screenshots in a hackathon context. Not a production-certified fraud detection product.

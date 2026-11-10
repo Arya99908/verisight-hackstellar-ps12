@@ -29,8 +29,8 @@ def test_api_demo_samples_list():
     assert "sample_2" in sample_ids
 
 
-def test_sample_1_authentic():
-    sample_path = SAMPLES_DIR / "sample_1_authentic_gpay.png"
+def test_sample_1_clean_synthetic_fixture():
+    sample_path = SAMPLES_DIR / "sample_1_clean_synthetic_ui.png"
     assert sample_path.exists()
     with open(sample_path, "rb") as f:
         file_bytes = f.read()
@@ -39,11 +39,12 @@ def test_sample_1_authentic():
     assert report.overall_tamper_score < 35.0
     assert report.verdict == "INCONCLUSIVE"
     assert report.confidence_score is None
+    assert all(box.confidence is None for box in report.all_bounding_boxes)
     assert not any(f.id == "f-l2-laser" for f in report.findings)
 
 
 def test_authentic_screenshot_transforms_do_not_escalate_to_manipulated():
-    source = Image.open(SAMPLES_DIR / "sample_1_authentic_gpay.png").convert("RGB")
+    source = Image.open(SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").convert("RGB")
     variants = []
     for quality in (95, 80):
         output = BytesIO()
@@ -64,7 +65,7 @@ def test_authentic_screenshot_transforms_do_not_escalate_to_manipulated():
 
 
 def test_png_ela_is_not_scored_as_manipulation_evidence():
-    report = analyze_screenshot((SAMPLES_DIR / "sample_1_authentic_gpay.png").read_bytes(), "clean.png")
+    report = analyze_screenshot((SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes(), "clean.png")
     assert report.layer1.ela_score == 0
     assert report.layer1.details["ela"]["scoring_eligible"] is False
 
@@ -77,7 +78,7 @@ def test_sample_2_spliced_amount():
 
     report = analyze_screenshot(file_bytes, sample_path.name)
     # This labeled synthetic fixture combines a baseline anomaly with independent cues.
-    assert report.verdict == "CORROBORATED_ANOMALIES"
+    assert report.verdict == "REVIEW_REQUIRED"
 
 
 def test_sample_3_temporal_paradox():
@@ -87,17 +88,19 @@ def test_sample_3_temporal_paradox():
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
-    assert report.layer3.clock_paradox_detected or report.layer3.upi_utr_valid is False or report.overall_tamper_score >= 40.0
+    assert report.verdict == "REVIEW_REQUIRED"
+    assert report.layer3.clock_paradox_detected or report.layer3.upi_utr_valid is False
 
 
-def test_sample_4_whatsapp_laundered():
-    sample_path = SAMPLES_DIR / "sample_4_whatsapp_laundered.jpg"
+def test_sample_4_synthetic_jpeg_reencode():
+    sample_path = SAMPLES_DIR / "sample_4_synthetic_jpeg_reencode.jpg"
     assert sample_path.exists()
     with open(sample_path, "rb") as f:
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
-    assert report.layer3.is_whatsapp_laundered or "WhatsApp" in report.layer3.channel_detected or "Social Media" in report.layer3.channel_detected
+    assert not report.layer3.is_whatsapp_laundered
+    assert "source unknown" in report.layer3.channel_detected
 
 
 def test_sample_5_cloned_receipt():

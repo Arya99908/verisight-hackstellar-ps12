@@ -22,7 +22,7 @@ from app.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: ensure golden demo samples are generated
+    # Startup: ensure synthetic demo fixtures are available
     try:
         if os.getenv("VERCEL"):
             yield
@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
-    description="Multi-Layer Digital Screenshot Verification & Tamper Forensics Platform",
+    description="Multi-layer screenshot forensic review using heuristic image cues",
     lifespan=lifespan
 )
 

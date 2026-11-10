@@ -24,7 +24,7 @@ def test_unknown_demo_sample_is_a_404():
 
 
 def test_upload_analysis_endpoint_accepts_an_image():
-    image = (SAMPLES_DIR / "sample_1_authentic_gpay.png").read_bytes()
+    image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     response = client.post(
         "/api/analyze",
         files={"file": ("capture.png", image, "image/png")},
@@ -34,7 +34,7 @@ def test_upload_analysis_endpoint_accepts_an_image():
 
 
 def test_whatsapp_simulation_endpoint_returns_comparison():
-    image = (SAMPLES_DIR / "sample_1_authentic_gpay.png").read_bytes()
+    image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     response = client.post(
         "/api/simulate-whatsapp",
         files={"file": ("capture.png", image, "image/png")},
@@ -46,7 +46,7 @@ def test_whatsapp_simulation_endpoint_returns_comparison():
 
 def test_production_mobile_upload_requires_paired_session(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
-    image = (SAMPLES_DIR / "sample_1_authentic_gpay.png").read_bytes()
+    image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     response = client.post(
         "/api/mobile-upload",
         files={"file": ("capture.png", image, "image/png")},
@@ -56,7 +56,7 @@ def test_production_mobile_upload_requires_paired_session(monkeypatch):
 
 def test_mobile_upload_is_delivered_only_to_its_session():
     session_id = str(uuid4())
-    image = (SAMPLES_DIR / "sample_1_authentic_gpay.png").read_bytes()
+    image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     uploaded = client.post(
         f"/api/mobile-upload?session_id={session_id}",
         files={"file": ("phone.png", image, "image/png")},

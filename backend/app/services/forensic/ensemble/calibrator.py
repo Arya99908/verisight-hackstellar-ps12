@@ -47,7 +47,7 @@ def calibrate_ensemble(
                 primary_locus = BoundingBox(
                     x=x, y=y, width=right - x, height=bottom - y,
                     points=[[x, y], [right, y], [right, bottom], [x, bottom]],
-                    label="Overlapping clone and text-baseline indicators", confidence=0.75,
+                    label="Overlapping clone and text-baseline indicators",
                     layer=4, anomaly_type="CROSS_LAYER_SYNERGY_LOCUS",
                     details={"iou": round(iou, 3)},
                 )
@@ -56,7 +56,7 @@ def calibrate_ensemble(
             break
 
     strong: dict[str, int] = {}
-    if any(row.is_tampered for row in layer2.lasers):
+    if any(row.is_alignment_outlier for row in layer2.lasers):
         strong["text_geometry"] = 35
         findings.append(ForensicFinding(
             id="f-l2-laser", layer=2, severity="MEDIUM",
@@ -78,17 +78,17 @@ def calibrate_ensemble(
         strong["time_consistency"] = 35
         findings.append(ForensicFinding(
             id="f-l3-clock", layer=3, severity="MEDIUM",
-            title="Displayed receipt and status-bar times conflict",
-            description=f"The displayed receipt time ({layer3.transaction_time}) is later than the displayed status-bar time ({layer3.status_bar_clock}). Check timezone, delayed capture, and OCR accuracy before drawing a conclusion.",
-            metric_name="Displayed time consistency", metric_value="Conflict detected",
+            title="Supplied time fields conflict",
+            description=f"Available time values ({layer3.transaction_time} and {layer3.status_bar_clock}) conflict. They may come from user-controlled metadata and are not verified against visible text or a trusted clock.",
+            metric_name="Metadata time-rule check", metric_value="Conflict in supplied values",
             bounding_box=next((b for b in layer3.bounding_boxes if b.anomaly_type == "TEMPORAL_PARADOX_CLOCK_DRIFT"), None),
         ))
     if layer3.upi_utr_valid is False:
         strong["reference_format"] = 20
         findings.append(ForensicFinding(
             id="f-l3-utr", layer=3, severity="LOW",
-            title="Transaction reference format needs review",
-            description="The extracted reference did not match the configured format check. This format check is not an issuer or bank validation.",
+            title="Supplied reference format needs review",
+            description="The available reference value did not match a simple configured format check. Its origin is unverified; this is not issuer or bank validation.",
             metric_name="Reference format", metric_value="Does not match configured pattern",
             bounding_box=next((b for b in layer3.bounding_boxes if b.anomaly_type == "INVALID_UPI_UTR_FORMAT"), None),
         ))
@@ -153,19 +153,9 @@ def calibrate_ensemble(
             metric_name="Cross-layer overlap", metric_value="Overlapping regions", bounding_box=primary_locus,
         ))
 
-    # Strong indicators only combine across distinct evidence families. Metadata time and
-    # reference rules are separate, but on their own they support review, not certainty.
-    supporting_signal_families = sum((
-        bool(layer1.anomalous_blocks_count),
-        layer1.wavelet_noise_score > 70,
-        layer2.cielab_patch_anomaly or layer2.sharpness_z_anomaly,
-    ))
-    corroborated = (
-        ("copy_move" in strong and "text_geometry" in strong)
-        or ("time_consistency" in strong and "reference_format" in strong)
-        or ("text_geometry" in strong and supporting_signal_families >= 2)
-        or primary_locus is not None
-    )
+    # A corroborated region requires the selected image and geometry cues to overlap.
+    # Unrelated cues elsewhere in the image, especially metadata, cannot corroborate a locus.
+    corroborated = primary_locus is not None
     score = min(92.0, sum(strong.values()) + min(weak_score, 12.0))
     if corroborated:
         score = max(score, 72.0)
@@ -176,19 +166,18 @@ def calibrate_ensemble(
         verdict = "INCONCLUSIVE"
         findings.append(ForensicFinding(
             id="f-inconclusive", layer=4, severity="INFO",
-            title="Image authenticity is inconclusive",
+            title="No strong editing signals detected",
             description="No strong image-editing indicators were found. That does not establish that the image is authentic or that a payment occurred.",
-            metric_name="Assessment", metric_value="Inconclusive",
+            metric_name="Assessment", metric_value="No strong signal detected",
         ))
 
     synergy = CrossLayerSynergy(
-        synergy_multiplier_applied=primary_locus is not None,
-        multiplier_factor=1.0,
-        primary_forgery_locus=primary_locus,
+        region_overlap_found=primary_locus is not None,
+        primary_review_locus=primary_locus,
         synergy_explanation=(
             "Copy-move and text-baseline indicators overlap; inspect this region."
             if primary_locus else "No overlapping high-specificity indicators detected."
         ),
     )
-    # No calibration dataset exists, so do not return a made-up confidence value.
+    # No representative validation corpus exists, so a probability would be fabricated.
     return round(score, 1), None, verdict, synergy, findings, all_boxes

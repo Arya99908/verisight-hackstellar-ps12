@@ -5,7 +5,7 @@ export interface BoundingBox {
   height: number;
   points?: number[][];
   label: string;
-  confidence: number;
+  confidence: number | null;
   layer: number;
   anomaly_type: string;
   details?: Record<string, any>;
@@ -17,8 +17,8 @@ export interface BaselineLaser {
   slope: number;
   tokens_count: number;
   delta_y_max: number;
-  is_tampered: boolean;
-  status: "ALIGNED_CYAN" | "CRITICAL_RED";
+  is_alignment_outlier: boolean;
+  status: "BASELINE_REFERENCE" | "REVIEW_CUE";
   callout_text?: string;
   token_indices: number[];
   x_start?: number;
@@ -80,9 +80,8 @@ export interface Layer4SemanticResult {
 }
 
 export interface CrossLayerSynergy {
-  synergy_multiplier_applied: boolean;
-  multiplier_factor: number;
-  primary_forgery_locus?: BoundingBox;
+  region_overlap_found: boolean;
+  primary_review_locus?: BoundingBox;
   synergy_explanation: string;
 }
 
@@ -104,7 +103,7 @@ export interface ForensicAnalysisReport {
   image_width: number;
   image_height: number;
   overall_tamper_score: number;
-  confidence_score: number | null;
+  confidence_score: null;
   verdict:
     | "INCONCLUSIVE"
     | "REVIEW_REQUIRED"

@@ -24,7 +24,6 @@ To maintain complete architectural integrity, distribution safety, and license c
 | **FastAPI** | `tiangolo/fastapi` | MIT | Asynchronous REST backend framework |
 | **OpenCV Headless** | `opencv/opencv-python` | Apache-2.0 | Spatial filtering, color conversions, edge detection |
 | **NumPy & SciPy** | `numpy/numpy`, `scipy/scipy` | BSD-3-Clause | Vectorized linear algebra, statistical distributions, filtering |
-| **PyWavelets** | `PyWavelets/pywt` | MIT | Discrete Wavelet Transform (Daubechies db4 decomposition) |
 | **scikit-image** | `scikit-image/scikit-image` | BSD-3-Clause | Morphological analysis, block slicing, structural metrics |
 | **Pillow (PIL)** | `python-pillow/Pillow` | HPND | Image encoding, EXIF parsing, synthetic rendering |
 | **ExifRead** | `ianare/exif-py` | BSD-3-Clause | Detailed TIFF/EXIF tag extraction |
@@ -50,13 +49,13 @@ To maintain complete architectural integrity, distribution safety, and license c
 
 | Algorithm | Published Research / Prior Art | Implementation Details in VeriSight |
 | :--- | :--- | :--- |
-| **Multi-Scale Error Level Analysis (ELA)** | Krawetz (2007); Sherloq `ela.py` | Independently implemented in `pixel_analysis/ela.py`. Adds adaptive WhatsApp quality detection, dynamic gain scaling ($\times 18$), and $16 \times 16$ macroblock Z-score outlier clustering. |
-| **2D Wavelet Noise Residual Variance** | Mahdian & Saic (2009); Sherloq `noise_separation.py` | Independently implemented in `pixel_analysis/wavelet_noise.py` using `pywt.dwt2(Y, 'db4')` with $9 \times 9$ box filter variance maps to detect zero-noise painted voids and spliced boundaries. |
-| **Copy-Move Translation Clustering** | Amerini et al. (2011); Sherloq `copy_move.py` | Independently implemented in `pixel_analysis/copy_move.py` using ORB keypoints, Hamming distance matching, neighbor suppression ($d \ge 24\text{ px}$), and $\pm 3\text{ px}$ translation vector clustering. |
-| **Typographic Horizontal Baseline Laser** | Digital typography rasterization standards | Novel deterministic pipeline in `typography/baseline_laser.py`. Fits linear regressions across token bottom anchors, flagging $\ge 1.8\text{ px}$ deviations as critical red lasers. |
+| **Error Level Analysis (ELA)** | Krawetz (2007); Sherloq `ela.py` | Re-encodes decoded pixels at a selected JPEG quality and visualizes residuals. For JPEG sources, 16×16 block outliers use a configured statistical threshold. The score is disabled for non-JPEG sources; no probability is produced. |
+| **High-Frequency Residual Cue** | Mahdian & Saic (2009); Sherloq `noise_separation.py` | Uses custom separable filters, a diagonal high-frequency response and a 9×9 local variation map. It is exploratory and does not establish a splice. |
+| **Copy-Move Candidate Matching** | Amerini et al. (2011); Sherloq `copy_move.py` | Uses ORB and Hamming descriptor matching with displacement clustering. Similar interface elements can match; output is a candidate cue, not a validated detector result. |
+| **Text-Like Baseline Geometry** | Digital typography rasterization standards | Connected-component boxes are grouped into rows and compared to median baseline positions. The offline path does not recognize text; thresholds have not been validated across devices or interfaces. |
 | **CIELAB Perceptual Card Background Patch Detector** | CIE 1976 $\Delta E_{ab}$ standard | Independently implemented in `typography/cielab_patch.py`. Compares inner background margin against outer card reference, flagging $\Delta E_{ab} > 2.4$ discontinuities. |
 | **Status-Bar Clock & UPI Format Heuristics** | Displayed image/metadata strings | Prototype-only format and time consistency cues. Current offline mode does not OCR screenshot text; format matches are not bank validation or transaction confirmation. |
-| **Cross-Layer Spatial IoU Synergy** | Evidentiary ensemble theory | Novel multi-modal correlation in `ensemble/calibrator.py`. Correlates Layer 1 physical signal anomalies with Layer 2 typographic anomalies using spatial IoU intersection. |
+| **Cross-Layer Spatial IoU Rule** | Prototype heuristic | Reports a candidate location only when an ORB repeated-feature box overlaps a baseline-geometry cue. The overlap is not a validated authenticity determination. |
 
 ---
 
@@ -70,4 +69,4 @@ To maintain complete architectural integrity, distribution safety, and license c
 
 ---
 
-*This document confirms that VeriSight contains no unlicensed or proprietary code.*
+*This inventory describes dependencies and references visible in the repository; it is not an independent legal review.*

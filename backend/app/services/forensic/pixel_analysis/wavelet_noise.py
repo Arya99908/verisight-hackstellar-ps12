@@ -13,7 +13,7 @@ def run_wavelet_noise_analysis(
     """
     2D Daubechies Wavelet (db4) High-Pass Noise Residual & Local Variance Mapping.
     Decomposes luminance Y into sub-bands, extracts diagonal high-pass details (cD / HH),
-    computes local 9x9 sliding variance, identifies Zero-Noise Voids and High-Variance Halos,
+    computes local 9x9 sliding variance and highlights unusually low-variation areas,
     and outputs a high-contrast Cyan/Magenta forensic map.
     """
     h_orig, w_orig = img_bgr.shape[:2]
@@ -55,10 +55,8 @@ def run_wavelet_noise_analysis(
     mean_noise = float(np.mean(std_map_full))
     std_noise = float(np.std(std_map_full))
 
-    # 5. Detect Zero-Noise Voids (spliced/brush patches where noise drops to ~0)
-    # and High-Frequency Splicing Boundaries
-    # In natural captures, noise variance is relatively homogeneous.
-    # A flat patched area has local std < 0.15 * mean_noise.
+    # 5. Highlight low-variation areas. Flat UI backgrounds and resampling can
+    # produce the same pattern, so this is not a splice detector.
     void_threshold = max(0.05, mean_noise * 0.18)
     void_mask = (std_map_full < void_threshold).astype(np.uint8)
 
@@ -78,16 +76,13 @@ def run_wavelet_noise_analysis(
             if bw < w_orig * 0.90 and bh < h_orig * 0.50:
                 # Calculate noise deficit
                 patch_std = float(np.mean(std_map_full[by:by+bh, bx:bx+bw]))
-                confidence = min(1.0, max(0.6, 1.0 - (patch_std / (mean_noise + 1e-6))))
-                
                 bounding_boxes.append(BoundingBox(
                     x=int(bx),
                     y=int(by),
                     width=int(bw),
                     height=int(bh),
                     points=[[bx, by], [bx + bw, by], [bx + bw, by + bh], [bx, by + bh]],
-                    label=f"Zero-Noise Splicing Void (σ={patch_std:.2f})",
-                    confidence=round(confidence, 2),
+                    label=f"Low local residual variation (review cue; σ={patch_std:.2f})",
                     layer=1,
                     anomaly_type="WAVELET_NOISE_VOID",
                     details={
@@ -109,8 +104,7 @@ def run_wavelet_noise_analysis(
     _, noise_webp = cv2.imencode('.webp', heatmap_colored, [cv2.IMWRITE_WEBP_QUALITY, 101])
     wavelet_noise_b64 = f"data:image/webp;base64,{base64.b64encode(noise_webp.tobytes()).decode('utf-8')}"
 
-    # 7. Compute noise inconsistency score (0-100)
-    # Calibrated primarily by localized zero-noise voids and splicing boundaries
+    # 7. Compute a heuristic noise-variation point score (0-100).
     coef_var = (std_noise / (mean_noise + 1e-6)) * 100.0
     void_penalty = min(75.0, len(bounding_boxes) * 35.0)
     base_variation = min(12.0, max(0.0, (coef_var - 70.0) * 0.2))

@@ -33,7 +33,7 @@ def test_clean_ensemble_calibration():
         bounding_boxes=[]
     )
     l3 = Layer3MetadataResult(
-        channel_detected="Lossless PNG (Native Capture)",
+        channel_detected="PNG container (capture source unknown)",
         is_whatsapp_laundered=False,
         exif_stripped=False,
         software_signature=None,
@@ -55,7 +55,7 @@ def test_clean_ensemble_calibration():
 
     assert final_score < 25.0
     assert verdict == "INCONCLUSIVE"
-    assert not synergy.synergy_multiplier_applied
+    assert not synergy.region_overlap_found
 
 
 def test_cross_layer_spatial_iou_synergy():
@@ -97,8 +97,8 @@ def test_cross_layer_spatial_iou_synergy():
             y_baseline=440.0,
             tokens_count=3,
             delta_y_max=3.4,
-            is_tampered=True,
-            status="CRITICAL_RED"
+            is_alignment_outlier=True,
+            status="REVIEW_CUE"
         )],
         bounding_boxes=[box2]
     )
@@ -120,9 +120,8 @@ def test_cross_layer_spatial_iou_synergy():
     final_score, confidence, verdict, synergy, findings, all_boxes = calibrate_ensemble(l1, l2, l3, l4)
 
     # Strong, overlapping indicators should localize a corroborated anomaly.
-    assert synergy.synergy_multiplier_applied is True
-    assert synergy.multiplier_factor == 1.0
-    assert synergy.primary_forgery_locus is not None
+    assert synergy.region_overlap_found is True
+    assert synergy.primary_review_locus is not None
     assert final_score >= 72.0
     assert verdict == "CORROBORATED_ANOMALIES"
     assert len(findings) > 0

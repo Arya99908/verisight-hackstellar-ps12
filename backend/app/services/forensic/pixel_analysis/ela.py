@@ -14,11 +14,10 @@ def run_ela_analysis(
     override_quality: int = None,
     source_format: str | None = None,
 ) -> tuple[float, str, int, list[BoundingBox], dict[str, Any]]:
-    """
-    Multi-Scale Error Level Analysis (ELA) with Macroblock Z-Score Splicing Localization.
-    Re-compresses in memory as JPEG at Q_ref (75 if WhatsApp/Telegram, otherwise 90).
-    Amplifies absolute pixel difference by dynamic gain (x18), renders Inferno colormap,
-    and isolates contiguous 16x16 macroblock clusters exceeding mu + 2.6*sigma.
+    """Build an ELA residual heatmap and optional JPEG block-outlier cues.
+
+    The explicit simulator may request Q75; other analysis uses Q90. Residual
+    outliers are exploratory and do not localize or prove a splice.
     """
     h, w = img_bgr.shape[:2]
     
@@ -47,7 +46,7 @@ def run_ela_analysis(
     _, ela_webp = cv2.imencode('.webp', colormap_img, [cv2.IMWRITE_WEBP_QUALITY, 101])
     ela_b64 = f"data:image/webp;base64,{base64.b64encode(ela_webp.tobytes()).decode('utf-8')}"
 
-    # 5. Macroblock Z-Score Splicing Localization (16x16 blocks)
+    # 5. Identify 16x16 blocks with unusually large recompression residuals.
     block_size = 16
     n_blocks_y = h // block_size
     n_blocks_x = w // block_size
@@ -83,11 +82,9 @@ def run_ela_analysis(
             pw = int(min(bw * block_size, w - px))
             ph = int(min(bh * block_size, h - py))
             
-            # Confidence based on max block z-score in this region
             region_means = block_means[by:by+bh, bx:bx+bw]
             max_val = np.max(region_means) if region_means.size > 0 else threshold
             z_score = float((max_val - mu_ela) / (sigma_ela + 1e-6))
-            conf = min(1.0, max(0.5, 0.5 + (z_score - settings.ELA_Z_SCORE_THRESHOLD) * 0.15))
 
             bounding_boxes.append(BoundingBox(
                 x=px,
@@ -95,8 +92,7 @@ def run_ela_analysis(
                 width=pw,
                 height=ph,
                 points=[[px, py], [px + pw, py], [px + pw, py + ph], [px, py + ph]],
-                label=f"ELA Compression Anomaly (Z={z_score:.2f})",
-                confidence=round(conf, 2),
+                label=f"ELA residual outlier (Z={z_score:.2f})",
                 layer=1,
                 anomaly_type="ELA_MACROBLOCK_OUTLIER",
                 details={
@@ -122,8 +118,7 @@ def run_ela_analysis(
         }
         return 0.0, ela_b64, 0, [], details
 
-    # 6. Normalized ELA score (0-100), only for JPEG sources.
-    # Calibrated based on anomalous block density and max z-score
+    # 6. Heuristic ELA point score (0-100), only for JPEG sources.
     max_z = 0.0
     if mu_ela < 3.0 and sigma_ela < 2.0 and anomalous_blocks_count == 0:
         ela_score = round(min(8.0, mu_ela * 1.5), 1)

@@ -21,6 +21,7 @@ def test_qr_inspector_decodes_upi_fields_without_claiming_authenticity():
     assert decoded["payee_vpa"] == "merchant@bank"
     assert decoded["amount"] == "125.00"
     assert decoded["authenticity_verified"] is False
+    assert "pixel_integrity" not in decoded
     assert report["authenticity_verified"] is False
     assert len(report["regions"]) == 1
 
@@ -41,5 +42,5 @@ def test_qr_pattern_is_not_mistaken_for_tampered_text_geometry():
     report = analyze_screenshot(stream.getvalue(), "qr-only.png")
     assert report.layer3.details["qr_inspection"]["decoded_count"] == 1
     assert report.layer2.details["tokens_in_qr_regions_excluded"] > 0
-    assert not any(row.is_tampered for row in report.layer2.lasers)
+    assert not any(row.is_alignment_outlier for row in report.layer2.lasers)
     assert report.verdict == "INCONCLUSIVE"

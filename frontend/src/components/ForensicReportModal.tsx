@@ -56,7 +56,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
           <div className="flex items-center space-x-2">
             <FileCheck className="w-5 h-5 text-sky-400" />
             <span className="font-semibold text-sm text-[#f1f5f9]">
-              Printable Forensic Audit Dossier
+              Printable Forensic Review Dossier
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -83,15 +83,14 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-xl tracking-wider text-[#f1f5f9] print:text-black">
-                  VERISIGHT FORENSIC AUDIT DOSSIER
+                  VERISIGHT FORENSIC REVIEW DOSSIER
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800 print:border-black print:bg-gray-100 print:text-black">
-                  OFFICIAL AUDIT REPORT
+                  HEURISTIC REVIEW · NOT PAYMENT VERIFIED
                 </span>
               </div>
               <p className="text-xs text-[#94a3b8] print:text-gray-600 mt-1">
-                Multi-Layer Digital Screenshot Verification & Splicing
-                Investigation Platform
+                Multi-Layer Screenshot Signal Review
               </p>
             </div>
             <div className="text-right font-mono text-[11px] text-[#94a3b8] print:text-gray-700 space-y-0.5">
@@ -134,7 +133,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                 </span>
               </div>
               <div className="text-xs text-[#94a3b8] print:text-gray-700">
-                Heuristic Score: <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Classifier confidence: <strong>Unavailable</strong>
+                Heuristic points: <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Error probability: <strong>Not calibrated</strong>
               </div>
             </div>
 
@@ -159,7 +158,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                 ({layer3.viewport_aspect_ratio})
               </div>
               <div className="text-[#94a3b8] print:text-gray-700">
-                Inferred Carrier: <strong>{channel_detected}</strong>
+                Image Profile Cue: <strong>{channel_detected}</strong>
               </div>
             </div>
           </div>
@@ -185,11 +184,11 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                       L1
                     </td>
                     <td className="p-2.5 text-[#f1f5f9] print:text-black font-semibold">
-                      Physical Signal & Wavelet Noise
+                      Image Residual & Wavelet Cues
                     </td>
                     <td className="p-2.5">
                       ELA cue: {layer1.ela_score.toFixed(1)} | Wavelet db4
-                      noise cue: {layer1.wavelet_noise_score.toFixed(1)} | Clones:{" "}
+                      noise cue: {layer1.wavelet_noise_score.toFixed(1)} | ORB candidate pairs:{" "}
                       {layer1.clone_count}
                     </td>
                     <td className="p-2.5 text-right font-bold text-sky-400 print:text-black">
@@ -221,10 +220,10 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                       Metadata & Protocol Rules
                     </td>
                     <td className="p-2.5">
-                      Viewport Match:{" "}
-                      {layer3.is_non_native_viewport ? "Non-Native" : "Native"}{" "}
+                      Aspect profile:{" "}
+                      {layer3.is_non_native_viewport ? "Outside reference list" : "Closest reference match"}{" "}
                       | Time check:{" "}
-                      {layer3.clock_paradox_detected ? "CONFLICT" : layer2.details.ocr_mode === "OFFLINE_COMPONENTS_ONLY" ? "NOT CHECKED" : "NO CONFLICT FOUND"}{" "}
+                      {layer3.clock_paradox_detected ? "METADATA VALUES CONFLICT (UNVERIFIED)" : layer2.details.ocr_mode === "OFFLINE_COMPONENTS_ONLY" ? "IMAGE TEXT NOT CHECKED" : "NO RULE MISMATCH FOUND"}{" "}
                       | Reference format:{" "}
                       {layer3.upi_utr_valid == null ? "NOT CHECKED" : layer3.upi_utr_valid ? "FORMAT MATCH" : "REVIEW"}{" "}
                       | QR codes: {layer3.details.qr_inspection?.decoded_count ?? 0} decoded
@@ -242,7 +241,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                     </td>
                     <td className="p-2.5">
                       Overlapping indicators:{" "}
-                      {synergy.synergy_multiplier_applied
+                      {synergy.region_overlap_found
                         ? "Found in highlighted region"
                         : "None found"}
                     </td>

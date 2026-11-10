@@ -140,61 +140,61 @@ async def get_network_info(request: Request):
 
 @router.get("/demo-samples", response_model=list[DemoSampleMeta])
 async def get_demo_samples():
-    """Returns the 5 golden demonstration screenshots and metadata."""
+    """Returns the 5 synthetic regression fixtures and metadata."""
     samples = [
         DemoSampleMeta(
             id="sample_1",
-            filename="sample_1_authentic_gpay.png",
+            filename="sample_1_clean_synthetic_ui.png",
             title="Sample 1 — Clean Synthetic Payment UI (₹1,250.00)",
             scenario="Synthetic clean baseline used to demonstrate low anomaly indicators; it is not a genuine bank or payment receipt.",
             expected_verdict="INCONCLUSIVE",
-            target_score_range="0–15 heuristic points",
+            target_score_range="Variable heuristic points",
             description="Clean synthetic fixture with no corroborated manipulation indicators. The result does not verify a real payment or origin.",
             tags=["Clean Baseline", "Synthetic", "UPI-style", "Aligned"],
-            url="/samples/sample_1_authentic_gpay.png"
+            url="/samples/sample_1_clean_synthetic_ui.png"
         ),
         DemoSampleMeta(
             id="sample_2",
             filename="sample_2_spliced_amount.jpg",
-            title="Sample 2 — Pixel-Spliced Amount (₹95,250.00)",
-            scenario="Amount altered with an off-color patch (ΔE=5.2), +3.5px baseline laser drop, and zero-noise wavelet void.",
-            expected_verdict="CORROBORATED_ANOMALIES",
-            target_score_range="70–92 heuristic points",
-            description="Synthetic fixture with an edited amount and corroborating geometry and pixel-level review cues.",
-            tags=["Spliced", "Forgery", "High-Risk", "Baseline Drift"],
+            title="Sample 2 — Synthetic Edited Amount (₹95,250.00)",
+            scenario="A known amount alteration in a synthetic fixture. The geometry and residual cues are heuristic; no localized overlap is produced.",
+            expected_verdict="REVIEW_REQUIRED",
+            target_score_range="Variable heuristic points",
+            description="Synthetic fixture with an edited amount. The review score is a heuristic and does not prove the alteration was detected.",
+            tags=["Synthetic edit", "Review cue", "Baseline geometry"],
             url="/samples/sample_2_spliced_amount.jpg"
         ),
         DemoSampleMeta(
             id="sample_3",
             filename="sample_3_fake_generator_paradox.png",
-            title="Sample 3 — Fake Generator / DOM Edit",
-            scenario="Uniform PNG with status-bar clock paradox (11:12 vs 11:45 AM) and invalid 10-digit UTR.",
-            expected_verdict="CORROBORATED_ANOMALIES",
-            target_score_range="72–92 heuristic points",
-            description="Synthetic fixture with conflicting displayed times and a reference-format mismatch; checks are heuristics, not bank verification.",
-            tags=["DOM Edit", "Generator", "Clock Paradox", "Fake UTR"],
+            title="Sample 3 — Synthetic Metadata Conflict Fixture",
+            scenario="Generated PNG metadata contains a clock mismatch (11:12 vs 11:45 AM) and a short reference example.",
+            expected_verdict="REVIEW_REQUIRED",
+            target_score_range="Variable heuristic points",
+            description="Synthetic fixture with embedded metadata rule cues. These values are not OCR-verified or checked against a bank.",
+            tags=["Synthetic", "Metadata Rule Cues", "Not OCR-Verified"],
             url="/samples/sample_3_fake_generator_paradox.png"
         ),
         DemoSampleMeta(
             id="sample_4",
-            filename="sample_4_whatsapp_laundered.jpg",
-            title="Sample 4 — WhatsApp-Forwarded Forgery",
-            scenario="Sample 2 passed through WhatsApp delivery (EXIF stripped, 4:2:0 subsampling, JPEG Q=77).",
-            expected_verdict="CORROBORATED_ANOMALIES",
-            target_score_range="70–92 heuristic points",
-            description="Recompressed synthetic edited fixture; compression alone is not considered proof, so the result relies on combined review cues.",
-            tags=["WhatsApp", "Laundered", "Re-compressed", "Surviving Geometry"],
-            url="/samples/sample_4_whatsapp_laundered.jpg"
+            filename="sample_4_synthetic_jpeg_reencode.jpg",
+            title="Sample 4 — Synthetic JPEG Re-encode",
+            scenario="Synthetic edited fixture re-encoded as JPEG (Q=77); its file profile does not identify an app or source.",
+            expected_verdict="REVIEW_REQUIRED",
+            target_score_range="Variable heuristic points",
+            description="Synthetic edited fixture re-encoded as JPEG. The source app cannot be identified from its file profile.",
+            tags=["Synthetic", "JPEG re-encode", "Source unknown"],
+            url="/samples/sample_4_synthetic_jpeg_reencode.jpg"
         ),
         DemoSampleMeta(
             id="sample_5",
             filename="sample_5_cloned_chat_receipt.jpg",
-            title="Sample 5 — Copy-Move Cloned Digits",
+            title="Sample 5 — Synthetic Repeated-Region Fixture",
             scenario="Digit sequence cloned to inflate balance; non-native cropped viewport (680x1120).",
             expected_verdict="REVIEW_REQUIRED",
-            target_score_range="25–70 heuristic points",
+            target_score_range="Variable heuristic points",
             description="Synthetic cloned-region fixture. Copy-move matching is a review cue and can match repeated interface elements.",
-            tags=["Copy-Move", "Cloned Digits", "ORB", "Cropped Viewport"],
+            tags=["Repeated regions", "ORB candidate matches", "Unlisted aspect ratio"],
             url="/samples/sample_5_cloned_chat_receipt.jpg"
         )
     ]
@@ -217,12 +217,12 @@ async def analyze_upload(file: UploadFile = File(...)):
 
 @router.post("/analyze-sample", response_model=ForensicAnalysisReport)
 async def analyze_sample(background_tasks: BackgroundTasks, sample_id: str = Form(...)):
-    """Instantly executes the 4-layer pipeline against a golden demo sample via form body."""
+    """Run the heuristic pipeline against a synthetic fixture via form body."""
     return await execute_sample_analysis(sample_id, background_tasks)
 
 @router.post("/analyze-sample/{sample_id}", response_model=ForensicAnalysisReport)
 async def analyze_sample_path(sample_id: str, background_tasks: BackgroundTasks):
-    """Instantly executes the 4-layer pipeline against a golden demo sample via path parameter."""
+    """Run the heuristic pipeline against a synthetic fixture via path parameter."""
     return await execute_sample_analysis(sample_id, background_tasks)
 
 async def execute_sample_analysis(
@@ -230,10 +230,10 @@ async def execute_sample_analysis(
     background_tasks: BackgroundTasks | None = None,
 ) -> ForensicAnalysisReport:
     sample_files = {
-        "sample_1": "sample_1_authentic_gpay.png",
+        "sample_1": "sample_1_clean_synthetic_ui.png",
         "sample_2": "sample_2_spliced_amount.jpg",
         "sample_3": "sample_3_fake_generator_paradox.png",
-        "sample_4": "sample_4_whatsapp_laundered.jpg",
+        "sample_4": "sample_4_synthetic_jpeg_reencode.jpg",
         "sample_5": "sample_5_cloned_chat_receipt.jpg"
     }
     filename = sample_files.get(sample_id)

@@ -41,8 +41,8 @@ def analyze_screenshot(
 ) -> ForensicAnalysisReport:
     """
     Master 4-Layer Forensic Investigation Pipeline Orchestrator.
-    Executes physical signal forensics, geometric typographic audit, metadata & protocol rules,
-    and cross-layer spatial IoU synergy correlation.
+    Runs image residual cues, text-like component geometry, metadata rules,
+    QR decoding, and rule-based review scoring.
     """
     # 1. Cryptographic SHA-256 Hash & Timestamp
     sha256_hash = hashlib.sha256(image_bytes).hexdigest()
@@ -56,7 +56,7 @@ def analyze_screenshot(
 
     h, w = img_bgr.shape[:2]
 
-    # 3. Layer 3 Initial: Metadata, Container Chunks & WhatsApp Re-compression Fingerprinting
+    # 3. Layer 3 Initial: Metadata, container chunks, and weak image-profile cues
     metadata_info = inspect_image_metadata(image_bytes, filename)
     is_whatsapp, channel_name = check_whatsapp_recompression(
         image_format=metadata_info["format"],
@@ -158,8 +158,6 @@ def analyze_screenshot(
         l3_score += 65.0
     if utr_valid is False:
         l3_score += 35.0
-    if is_cropped:
-        l3_score += 25.0
     software_sig = metadata_info.get("software")
     if software_sig:
         l3_score += 45.0

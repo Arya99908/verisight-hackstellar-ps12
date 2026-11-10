@@ -207,8 +207,8 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div className="space-y-1 text-[#94a3b8]">
                   <span className="font-semibold text-emerald-300">
-                    Why does VeriSight still catch forgeries after WhatsApp
-                    laundering?
+                    Which review cues remain after this simulated JPEG
+                    re-encode?
                   </span>
                   <p className="leading-relaxed">
                     Social media platforms strip EXIF metadata and quantize DCT

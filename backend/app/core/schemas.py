@@ -12,7 +12,8 @@ class BoundingBox(BaseModel):
     height: int
     points: list[list[int]] | None = None
     label: str
-    confidence: float = 1.0
+    # None until region-level confidence is calibrated against representative data.
+    confidence: float | None = None
     layer: int
     anomaly_type: str
     details: dict[str, Any] | None = None
@@ -23,8 +24,8 @@ class BaselineLaser(BaseModel):
     slope: float = 0.0
     tokens_count: int
     delta_y_max: float
-    is_tampered: bool
-    status: str  # "ALIGNED_CYAN" or "CRITICAL_RED"
+    is_alignment_outlier: bool
+    status: str  # "BASELINE_REFERENCE" or "REVIEW_CUE"
     callout_text: str | None = None
     token_indices: list[int] = Field(default_factory=list)
     x_start: int | None = None
@@ -81,9 +82,8 @@ class Layer4SemanticResult(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 class CrossLayerSynergy(BaseModel):
-    synergy_multiplier_applied: bool = False
-    multiplier_factor: float = 1.0
-    primary_forgery_locus: BoundingBox | None = None
+    region_overlap_found: bool = False
+    primary_review_locus: BoundingBox | None = None
     synergy_explanation: str = "No cross-layer anomaly alignment detected."
 
 class ForensicFinding(BaseModel):

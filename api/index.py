@@ -8,4 +8,6 @@ for path in (ROOT, BACKEND):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from app.main import app
+from backend.app.main import app  # noqa: E402
+
+handler = app

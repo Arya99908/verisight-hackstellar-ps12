@@ -11,11 +11,10 @@ from app.core.schemas import BoundingBox
 def run_copy_move_analysis(
     img_bgr: np.ndarray
 ) -> tuple[bool, int, str, list[BoundingBox], dict[str, Any]]:
-    """
-    Copy-Move Forgery Detection via ORB Keypoint Matching & Displacement Vector Clustering.
-    Extracts up to 1500 ORB descriptors, performs Brute-Force Hamming distance matching,
-    suppresses spatial neighbors (d < 24px), clusters translation vectors (dx, dy) within +-3px,
-    and flags cloned pixel regions with neon-magenta vector lines if >= 4 parallel vectors exist.
+    """Find candidate repeated-feature matches using ORB descriptors.
+
+    Similar text, icons, and UI components can match; candidate regions do not
+    establish copy-move editing.
     """
     h, w = img_bgr.shape[:2]
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
@@ -80,7 +79,7 @@ def run_copy_move_analysis(
         vector_clusters[(bin_x, bin_y)].append((pt1, pt2, (dx, dy)))
 
     # 5. Evaluate Clusters:
-    # A true copy-move object has:
+    # A candidate repeated region may have:
     # - >= 10 parallel vectors in the same bin
     # - Localized spatial bounding box (span < 350px) at both source and destination
     significant_clusters = []
@@ -133,16 +132,13 @@ def run_copy_move_analysis(
         b2_w = min(w - b2_x, max(all_x2) - b2_x + pad * 2)
         b2_h = min(h - b2_y, max(all_y2) - b2_y + pad * 2)
 
-        conf = min(0.99, 0.65 + len(cluster) * 0.05)
-
         bounding_boxes.append(BoundingBox(
             x=int(b2_x),
             y=int(b2_y),
             width=int(b2_w),
             height=int(b2_h),
             points=[[b2_x, b2_y], [b2_x + b2_w, b2_y], [b2_x + b2_w, b2_y + b2_h], [b2_x, b2_y + b2_h]],
-            label=f"Cloned Pixel Region ({len(cluster)} vectors)",
-            confidence=round(conf, 2),
+            label=f"Possible repeated feature match ({len(cluster)} pairs)",
             layer=1,
             anomaly_type="CLONED_PIXEL_REGION_DETECTED",
             details={

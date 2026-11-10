@@ -15,8 +15,8 @@ def check_viewport_geometry(
     height: int
 ) -> tuple[str, bool, dict[str, Any]]:
     """
-    Evaluates image dimensions (W, H) against the native mobile & desktop viewport database.
-    Flags non-standard cropped viewports as NON_NATIVE_VIEWPORT_CROP.
+    Compares image dimensions (W, H) with a small reference list of common aspect ratios.
+    An unlisted ratio does not identify a device or prove cropping.
     """
     if width <= 0 or height <= 0:
         return "Invalid Dimensions", True, {"ratio": 0.0}
@@ -42,7 +42,7 @@ def check_viewport_geometry(
         "aspect_ratio": round(current_ratio, 4),
         "closest_standard": best_match_name,
         "deviation_pct": round(min_deviation * 100, 2),
-        "is_cropped": is_non_native
+        "outside_reference_list": is_non_native
     }
 
-    return best_match_name if not is_non_native else f"Non-Native Crop ({width}x{height})", is_non_native, details
+    return best_match_name if not is_non_native else f"Unlisted Aspect Ratio ({width}x{height})", is_non_native, details

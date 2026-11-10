@@ -78,7 +78,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
           AWAITING SCREENSHOT EVIDENCE INPUT
         </p>
         <p className="text-xs text-[#475569] mt-1">
-          Select a golden sample above or upload custom screenshot
+          Select a synthetic sample above or upload a screenshot
         </p>
       </div>
     );
@@ -360,7 +360,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
               <div className="flex-1 flex items-center justify-center p-2">
                 <img
                   src={layer1.clone_b64}
-                  alt="Clone"
+                  alt="ORB repeated-feature candidates"
                   className="max-h-full object-contain rounded"
                 />
               </div>
@@ -402,7 +402,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
               {/* Layer 2: Sub-pixel Horizontal Baseline Lasers */}
               {showLasers &&
                 layer2.lasers.map((laser, idx) => {
-                  const hasAlignmentCue = laser.is_tampered;
+                  const hasAlignmentCue = laser.is_alignment_outlier;
                   const x1 = laser.x_start ?? 40;
                   const x2 = laser.x_end ?? image_width - 40;
                   const y = laser.y_baseline;

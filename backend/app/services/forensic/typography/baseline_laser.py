@@ -13,9 +13,8 @@ def run_baseline_laser_audit(
     img_height: int
 ) -> tuple[float, float, list[BaselineLaser], list[BoundingBox], dict[str, Any]]:
     """
-    Sub-Pixel Horizontal Baseline Laser Audit (sigma_baseline).
-    Clusters tokens into horizontal text rows, fits reference baseline linear regression,
-    and flags any token with vertical baseline deviation >= 1.8 px as CRITICAL_RED.
+    Groups text-like components into rows and flags rows crossing fixed baseline
+    deviation thresholds. This geometry cue does not identify a text splice.
     """
     if len(tokens) < 2:
         return 0.0, 0.0, [], [], {"rows_audited": 0, "max_drift_px": 0.0}
@@ -81,31 +80,28 @@ def run_baseline_laser_audit(
         # Check how many tokens deviate significantly from the consensus baseline
         deviating_tokens = [i for i, r in enumerate(residuals) if r >= settings.BASELINE_DRIFT_THRESHOLD_PX]
 
-        # Natural typography: a single token with a descender (',', 'g', 'p', 'y') dips naturally.
-        # A true typographic splice/tamper occurs when:
-        # 1. Multiple tokens deviate (>= 2) in a phrase (e.g. pasted multi-digit amount).
-        # 2. Or a severe vertical drop (>= 10px).
-        # 3. Or a step >= 4.5px in a 2-token row.
-        is_tampered_row = False
+        # Mark only a geometry threshold crossing; fonts and component grouping
+        # can also create this pattern.
+        is_outlier_row = False
         if len(row) >= 3:
             if len(deviating_tokens) >= 2 or (len(deviating_tokens) == 1 and residuals[deviating_tokens[0]] >= 10.0):
-                is_tampered_row = True
+                is_outlier_row = True
         elif len(row) == 2:
             if max_row_drift >= 4.5:
-                is_tampered_row = True
+                is_outlier_row = True
 
-        status = "CRITICAL_RED" if is_tampered_row else "ALIGNED_CYAN"
+        status = "REVIEW_CUE" if is_outlier_row else "BASELINE_REFERENCE"
         callout = None
 
         x_start = int(max(0, np.min(x_coords) - 20))
         x_end = int(min(img_width, np.max(x_coords) + 20))
 
-        if is_tampered_row:
+        if is_outlier_row:
             drift_token_idx = int(np.argmax(residuals))
             drifted_token = row[drift_token_idx]
             callout = f"+{max_row_drift:.1f}px DRIFT"
 
-            # Generate high-confidence anomaly bounding box around the drifted token
+            # Generate an anomaly cue box around the row that crossed fixed geometry thresholds.
             pad = 4
             bx = max(0, drifted_token.x - pad)
             by = max(0, drifted_token.y - pad)
@@ -118,8 +114,7 @@ def run_baseline_laser_audit(
                 width=int(bw),
                 height=int(bh),
                 points=[[bx, by], [bx + bw, by], [bx + bw, by + bh], [bx, by + bh]],
-                label=f"Baseline Drift Anomaly (+{max_row_drift:.1f}px)",
-                confidence=min(0.98, max(0.70, 0.70 + (max_row_drift - 1.8) * 0.1)),
+                label=f"Baseline alignment variation (+{max_row_drift:.1f}px)",
                 layer=2,
                 anomaly_type="SUBPIXEL_BASELINE_DRIFT",
                 details={
@@ -135,7 +130,7 @@ def run_baseline_laser_audit(
             slope=round(float(slope), 4),
             tokens_count=len(row),
             delta_y_max=round(max_row_drift, 2),
-            is_tampered=is_tampered_row,
+            is_alignment_outlier=is_outlier_row,
             status=status,
             callout_text=callout,
             token_indices=list(range(len(row))),
@@ -144,10 +139,9 @@ def run_baseline_laser_audit(
         ))
 
     # Compute baseline drift score (0-100)
-    # Only penalized if verified tampered rows exist
-    tampered_drifts = [l.delta_y_max for l in lasers if l.is_tampered]
-    if tampered_drifts:
-        max_drift_overall = float(np.max(tampered_drifts))
+    outlier_drifts = [l.delta_y_max for l in lasers if l.is_alignment_outlier]
+    if outlier_drifts:
+        max_drift_overall = float(np.max(outlier_drifts))
         drift_score = round(min(100.0, 65.0 + (max_drift_overall - settings.BASELINE_DRIFT_THRESHOLD_PX) * 15.0), 1)
     else:
         max_drift_overall = float(np.max([l.delta_y_max for l in lasers])) if lasers else 0.0
@@ -157,7 +151,7 @@ def run_baseline_laser_audit(
 
     details = {
         "total_rows_audited": len(lasers),
-        "tampered_rows_count": sum(1 for l in lasers if l.is_tampered),
+        "rows_over_geometry_threshold": sum(1 for l in lasers if l.is_alignment_outlier),
         "max_drift_px": round(max_drift_overall, 2),
         "threshold_px": settings.BASELINE_DRIFT_THRESHOLD_PX
     }
