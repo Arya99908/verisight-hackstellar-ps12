@@ -1,6 +1,6 @@
 # VeriSight — HackStellar PS-12 Prototype
 
-Offline-first browser workbench for a screenshot-forensics demo. Serve this folder locally and open `http://localhost:8000`.
+Offline-first screenshot forensics workbench with a Python image-analysis API. Serve this folder locally and open `http://localhost:8000`.
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -11,14 +11,19 @@ python3 server.py
 
 - Image file selection and drag/drop; local-only processing.
 - Demo edited payment receipt fixture, analysis findings, visible heuristic score, metadata/limitations, and local SHA-256 when Web Crypto is available.
-- Four synchronized evidence panels: original, JPEG recompression difference map, high-pass residual, and text-like geometry overlay; hover synchronizes the inspection coordinate and findings focus the view.
+- Four synchronized evidence panels and finding navigation. The local API computes ELA sweeps at Q75/85/95, Haar-style high-pass residual metrics, 8-pixel block boundary statistics, JPEG DQT/subsampling observations, metadata presence, and SHA-256.
+- Optional OCR via locally installed Tesseract; otherwise the OCR layer is explicitly returned as unavailable. UTR/VPA regex checks run only on recognized text.
 - Laser overlay toggle, image reset, simulated WhatsApp resize/JPEG re-encode at approximately Q76, and print-to-PDF certificate.
 - Responsive layout, case session, protocol and build framework navigation.
 - Phone QR intake over the same local Wi-Fi using `server.py`; uploaded screenshots are ignored by Git.
 
 ## Accuracy boundary
 
-This is a functional front-end prototype, not a validated forensic product. Its recompression and residual views are browser-side diagnostic visualizations. Text boxes are a lightweight image-content heuristic, not OCR. The displayed risk is not a calibrated Bayesian probability. Browser canvas cannot expose full original JPEG quantization tables or all EXIF fields; the C2PA result is **unknown / not verified**, not an authenticity verdict. Do not use this demo to decide whether a payment occurred. Verify through the payment provider.
+This is a prototype, not a validated forensic product. Server ELA/residual measures are diagnostic cues, not proof of tampering. OCR is optional and uses Tesseract if installed; otherwise OCR-dependent checks are unavailable. The front-end score remains an uncalibrated triage heuristic. C2PA cryptographic trust-chain verification and calibrated Bayesian fusion are not implemented; status remains unknown/unverified. Do not use this demo to decide whether a payment occurred. Verify through the payment provider.
+
+## Implemented API
+
+`POST /api/analyze` accepts multipart `image` (also `file` or `evidence`) and returns per-layer status, ELA measurements, residual and block-grid statistics, basic JPEG metadata observations, optional OCR word boxes, format-rule cues, SHA-256, findings, and limitations. `score` is deliberately null because no calibrated ensemble is configured.
 
 ## Target architecture from the execution brief
 
@@ -27,7 +32,7 @@ Keep the JSON API boundary stable so frontend and forensic modules can progress 
 ```text
 POST /api/analyze
 multipart image
-→ {case_id, sha256, channel, dimensions, layers, score, findings, evidence, limitations}
+→ {schema_version, sha256, channel, image, layers, score: null, verdict: REVIEW, findings, limitations}
 ```
 
 | Layer | Production module | Planned work |

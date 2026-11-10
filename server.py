@@ -45,7 +45,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.reply(503, b"Install requirements.txt to enable QR generation", "text/plain")
         return super().do_GET()
     def do_POST(self):
-        if urlparse(self.path).path != "/api/upload": return self.reply(404, b"Not found", "text/plain")
+        route = urlparse(self.path).path
+        if route not in ("/api/upload", "/api/analyze"): return self.reply(404, b"Not found", "text/plain")
         size = int(self.headers.get("Content-Length", "0"))
         if size < 1 or size > MAX_BYTES + 1024 * 1024: return self.reply(413, b'{"error":"Upload too large (12 MB maximum)."}', "application/json")
         body = self.rfile.read(size)
@@ -55,7 +56,7 @@ class Handler(SimpleHTTPRequestHandler):
         parts = body.split(b"--" + boundary.encode())
         data = None; filename = "evidence.png"
         for part in parts:
-            if b"name=\"evidence\"" not in part: continue
+            if b"name=\"evidence\"" not in part and b"name=\"image\"" not in part and b"name=\"file\"" not in part: continue
             head, sep, payload = part.partition(b"\r\n\r\n")
             if not sep: continue
             if b"filename=\"" in head:
@@ -65,6 +66,12 @@ class Handler(SimpleHTTPRequestHandler):
         if not data: return self.reply(400, b'{"error":"No image was received."}', "application/json")
         if not data.startswith((b"\x89PNG\r\n\x1a\n", b"\xff\xd8\xff", b"GIF87a", b"GIF89a", b"RIFF")):
             return self.reply(415, b'{"error":"Unsupported or invalid image file."}', "application/json")
+        if route == "/api/analyze":
+            try:
+                from forensics import analyze_image
+                return self.reply(200, json.dumps(analyze_image(data)).encode(), "application/json")
+            except Exception as exc:
+                return self.reply(422, json.dumps({"error":f"Image analysis failed: {exc}"}).encode(), "application/json")
         ext = Path(filename).suffix.lower()
         if ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}: ext = ".img"
         ident = f"{int(time.time())}-{uuid.uuid4().hex[:8]}{ext}"
