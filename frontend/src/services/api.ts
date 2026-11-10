@@ -86,11 +86,13 @@ async function uploadFileToPrivateStorage(file: File, sessionId?: string) {
 
   const { session_id, upload_url, storage_key } = await sessionRes.json();
   const uploadRes = await fetch(upload_url, {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": contentType,
       apikey: storage_key,
       Authorization: `Bearer ${storage_key}`,
+      "x-upsert": "false",
+      "cache-control": "max-age=3600",
     },
     body: file,
   });
