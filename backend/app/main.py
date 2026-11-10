@@ -14,6 +14,7 @@ if str(ROOT_DIR) not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pathlib import Path
 
 from app.api.endpoints import router as api_router
@@ -60,6 +61,8 @@ app.include_router(api_router, prefix="/api")
 
 @app.get("/")
 def root():
+    if frontend_dist.exists():
+        return FileResponse(frontend_dist / "index.html")
     return {
         "platform": settings.APP_NAME,
         "version": settings.VERSION,
