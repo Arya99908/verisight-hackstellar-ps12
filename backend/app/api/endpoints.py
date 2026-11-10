@@ -13,7 +13,6 @@ from app.core.schemas import (
     ForensicAnalysisReport,
     WhatsAppSimulationResponse,
 )
-from app.services.forensic.pipeline import analyze_screenshot
 from app.services.supabase_store import database_status, save_case
 from app.services.mobile_upload_store import (
     ALLOWED_UPLOAD_TYPES,
@@ -21,7 +20,6 @@ from app.services.mobile_upload_store import (
     create_signed_upload,
     save_mobile_image,
 )
-from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
 
 router = APIRouter()
 
@@ -207,6 +205,7 @@ async def analyze_upload(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File size exceeds 20MB limit.")
     
     try:
+        from app.services.forensic.pipeline import analyze_screenshot
         report = analyze_screenshot(content, filename=file.filename or "upload.png")
         await save_case(report, "upload")
         return report
@@ -243,6 +242,7 @@ async def execute_sample_analysis(sample_id: str) -> ForensicAnalysisReport:
     with open(sample_path, "rb") as f:
         content = f.read()
 
+    from app.services.forensic.pipeline import analyze_screenshot
     report = analyze_screenshot(content, filename=filename)
     await save_case(report, "synthetic_sample")
     return report
@@ -252,6 +252,7 @@ async def simulate_whatsapp(file: UploadFile = File(...)):
     """Simulates WhatsApp laundering on an uploaded image and returns before vs after comparison."""
     content = await file.read()
     try:
+        from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
         sim_response = run_whatsapp_simulation(content, filename=file.filename or "image.png")
         return sim_response
     except Exception as e:
@@ -286,6 +287,7 @@ async def mobile_upload(request: Request, file: UploadFile = File(...)):
             raise HTTPException(status_code=503, detail="Could not queue the upload for the desktop session.")
         return {"status": "SUCCESS", "message": "Screenshot queued for the paired desktop workbench."}
 
+    from app.services.forensic.pipeline import analyze_screenshot
     report = analyze_screenshot(content, filename=file.filename or "mobile_upload.jpg")
 
     _LATEST_MOBILE_UPLOAD = {

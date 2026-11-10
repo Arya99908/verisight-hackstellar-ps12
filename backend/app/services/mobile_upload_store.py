@@ -9,7 +9,6 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from uuid import UUID
 
-from app.services.forensic.pipeline import analyze_screenshot
 from app.services.supabase_store import save_case
 
 log = logging.getLogger(__name__)
@@ -143,6 +142,7 @@ async def consume_mobile_upload(session_id: UUID) -> dict | None:
         if not row or content is None:
             return None
 
+        from app.services.forensic.pipeline import analyze_screenshot
         report = analyze_screenshot(content, filename=row["filename"])
         await save_case(report, "mobile_upload")
 

@@ -29,14 +29,14 @@ export const App: React.FC = () => {
 const DesktopWorkbench: React.FC = () => {
   // Desktop Workbench State
   const [demoSamples, setDemoSamples] = useState<DemoSampleMeta[]>([]);
-  const [selectedSampleId, setSelectedSampleId] = useState<string | null>(
-    "sample_1",
-  );
+  const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
   const [report, setReport] = useState<ForensicAnalysisReport | null>(null);
   const [appError, setAppError] = useState<string | null>(null);
   const [selectedLocus, setSelectedLocus] = useState<BoundingBox | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [databaseStatus, setDatabaseStatus] = useState<"CHECKING" | "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED">("CHECKING");
+  const [demoLoadFailed, setDemoLoadFailed] = useState(false);
+  const [demoRetry, setDemoRetry] = useState(0);
 
   // Modals state
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] =
@@ -48,23 +48,28 @@ const DesktopWorkbench: React.FC = () => {
   const [isMobileModalOpen, setIsMobileModalOpen] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
 
-  // Load demo samples list and analyze sample_1 on startup
+  // Load only the lightweight sample catalog during startup. Image analysis is
+  // deliberately deferred until the user selects a sample or uploads an image.
   useEffect(() => {
+    let active = true;
     fetchHealth()
-      .then((health) => setDatabaseStatus(health.database))
-      .catch(() => setDatabaseStatus("UNAVAILABLE"));
+      .then((health) => { if (active) setDatabaseStatus(health.database); })
+      .catch(() => { if (active) setDatabaseStatus("UNAVAILABLE"); });
 
     fetchDemoSamples()
       .then((samples) => {
+        if (!active) return;
         setDemoSamples(samples);
-        if (samples.length > 0) {
-          handleSelectSample("sample_1");
-        } else {
-          setAppError("The demo sample list is empty.");
-        }
+        setDemoLoadFailed(false);
+        if (samples.length === 0) setAppError("The demo sample list is empty.");
       })
-      .catch((err) => setAppError(`Could not load demo samples: ${err.message}`));
-  }, []);
+      .catch((err) => {
+        if (!active) return;
+        setDemoLoadFailed(true);
+        setAppError(`Could not load demo samples: ${err.message}`);
+      });
+    return () => { active = false; };
+  }, [demoRetry]);
 
   // Handle selecting a golden demo sample
   const handleSelectSample = async (sampleId: string) => {
@@ -154,7 +159,10 @@ const DesktopWorkbench: React.FC = () => {
       {appError && (
         <div role="alert" className="px-4 py-2 bg-rose-950/80 border-b border-rose-800 text-rose-200 text-xs flex items-center justify-between">
           <span>{appError}</span>
-          <button onClick={() => setAppError(null)} className="ml-4 text-rose-100 hover:text-white">Dismiss</button>
+          <div className="ml-4 flex shrink-0 items-center gap-3">
+            {demoLoadFailed && <button onClick={() => setDemoRetry((n) => n + 1)} className="text-rose-100 underline hover:text-white">Retry</button>}
+            <button onClick={() => setAppError(null)} className="text-rose-100 hover:text-white">Dismiss</button>
+          </div>
         </div>
       )}
 

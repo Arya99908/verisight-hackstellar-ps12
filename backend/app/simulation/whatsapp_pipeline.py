@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 
 from app.core.schemas import WhatsAppSimulationResponse
-from app.services.forensic.pipeline import analyze_screenshot
 
 
 def run_whatsapp_simulation(
@@ -62,6 +61,7 @@ def run_whatsapp_simulation(
     sim_b64 = f"data:image/jpeg;base64,{base64.b64encode(simulated_bytes).decode('utf-8')}"
 
     # Re-analyze laundered image
+    from app.services.forensic.pipeline import analyze_screenshot
     reanalysis_report = analyze_screenshot(
         image_bytes=simulated_bytes,
         filename=f"whatsapp_{filename}.jpg",

@@ -7,6 +7,16 @@ import {
 
 const API_BASE = "/api";
 
+async function fetchStartupData(path: string): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8000);
+  try {
+    return await fetch(`${API_BASE}${path}`, { signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
 async function responseError(res: Response, fallback: string): Promise<Error> {
   if (res.status === 413) {
     return new Error("This screenshot is too large to upload. Choose an image under 20 MB.");
@@ -21,13 +31,13 @@ export async function fetchHealth(): Promise<{
   service: string;
   database: "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED";
 }> {
-  const res = await fetch(`${API_BASE}/health`);
+  const res = await fetchStartupData("/health");
   if (!res.ok) throw new Error("Health check failed");
   return res.json();
 }
 
 export async function fetchDemoSamples(): Promise<DemoSampleMeta[]> {
-  const res = await fetch(`${API_BASE}/demo-samples`);
+  const res = await fetchStartupData("/demo-samples");
   if (!res.ok) throw new Error("Failed to fetch demo samples");
   return res.json();
 }
