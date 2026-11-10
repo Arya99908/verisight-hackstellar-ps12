@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Layers,
   Activity,
@@ -7,8 +7,9 @@ import {
   Split,
   Grid,
   Eye,
-  Sliders,
-  Crosshair,
+  ZoomIn,
+  ZoomOut,
+  Move,
   Maximize2,
 } from "lucide-react";
 import {
@@ -34,6 +35,9 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
   const [showLasers, setShowLasers] = useState<boolean>(true);
   const [showBoxes, setShowBoxes] = useState<boolean>(true);
   const [showGrid, setShowGrid] = useState<boolean>(false);
+  const [zoom, setZoom] = useState(1);
+  const [isPanning, setIsPanning] = useState(false);
+  const [viewportSize, setViewportSize] = useState({ width: 1280, height: 800 });
 
   // Loupe tracking state
   const [loupePos, setLoupePos] = useState<{ x: number; y: number }>({
@@ -42,6 +46,29 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
   });
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const panStartRef = useRef<{
+    pointerId: number;
+    clientX: number;
+    clientY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const updateSize = () =>
+      setViewportSize({ width: viewport.clientWidth, height: viewport.clientHeight });
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [Boolean(report)]);
+
+  useEffect(() => {
+    setZoom(1);
+  }, [report?.file_sha256]);
 
   if (!report) {
     return (
@@ -94,6 +121,39 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
       Math.min(100, ((e.clientY - rect.top) / rect.height) * 100),
     );
     setLoupePos({ x: xPct, y: yPct });
+  };
+
+  const clampZoom = (value: number) => Math.min(5, Math.max(1, value));
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    setZoom((current) => clampZoom(current + (e.deltaY < 0 ? 0.2 : -0.2)));
+  };
+  const handlePanStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (zoom <= 1 || e.button !== 0 || !viewportRef.current) return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    panStartRef.current = {
+      pointerId: e.pointerId,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      scrollLeft: viewportRef.current.scrollLeft,
+      scrollTop: viewportRef.current.scrollTop,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsPanning(true);
+    e.preventDefault();
+  };
+  const handlePanMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = panStartRef.current;
+    const viewport = viewportRef.current;
+    if (!start || !viewport || start.pointerId !== e.pointerId) return;
+    viewport.scrollLeft = start.scrollLeft - (e.clientX - start.clientX);
+    viewport.scrollTop = start.scrollTop - (e.clientY - start.clientY);
+  };
+  const handlePanEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (panStartRef.current?.pointerId !== e.pointerId) return;
+    panStartRef.current = null;
+    setIsPanning(false);
   };
 
   return (
@@ -214,10 +274,46 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
       </div>
 
       {/* Main Forensic Canvas */}
-      <div className="flex-1 overflow-auto p-4 flex items-center justify-center relative">
+      {(() => {
+        const availableWidth = Math.max(240, viewportSize.width - 32);
+        const availableHeight = Math.max(240, viewportSize.height - 32);
+        const quadWidth = Math.min(860, availableWidth, availableHeight * 0.9);
+        const fitScale = Math.min(
+          availableWidth / image_width,
+          availableHeight / image_height,
+          1,
+        );
+        const canvasWidth = Math.round(
+          (viewMode === "QUAD" ? quadWidth : image_width * fitScale) * zoom,
+        );
+        const canvasHeight = Math.round(
+          (viewMode === "QUAD" ? quadWidth * (10 / 9) : image_height * fitScale) * zoom,
+        );
+        return (
+          <>
+      <div
+        ref={viewportRef}
+        onWheel={handleWheel}
+        onPointerDown={handlePanStart}
+        onPointerMove={handlePanMove}
+        onPointerUp={handlePanEnd}
+        onPointerCancel={handlePanEnd}
+        className="flex-1 overflow-auto p-4 relative"
+        aria-label="Zoomable forensic screenshot viewer"
+      >
+        <div
+          className={`flex ${canvasWidth > availableWidth ? "justify-start" : "justify-center"} ${canvasHeight > availableHeight ? "items-start" : "items-center"}`}
+          style={{
+            width: Math.max(availableWidth, canvasWidth),
+            height: Math.max(availableHeight, canvasHeight),
+          }}
+        >
         {viewMode === "QUAD" ? (
           /* 2x2 Synchronized Quad-Spectral Grid */
-          <div className="grid grid-cols-2 gap-3 max-h-full max-w-[860px] aspect-[9/10] w-full">
+          <div
+            className="grid grid-cols-2 gap-3 aspect-[9/10] w-full"
+            style={{ width: canvasWidth, height: canvasHeight }}
+          >
             <div className="flex flex-col bg-[#0b1120] border border-[#1e293b] rounded-lg overflow-hidden">
               <div className="px-2 py-1 bg-[#070b14] border-b border-[#1e293b] text-[10px] font-mono text-sky-400">
                 1. ORIGINAL EVIDENCE CAPTURE
@@ -279,8 +375,10 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
             onMouseMove={handleMouseMove}
             className="relative max-h-full flex items-center justify-center rounded-lg overflow-hidden shadow-2xl border border-[#1e293b] bg-black"
             style={{
-              maxHeight: "calc(100vh - 180px)",
+              width: canvasWidth,
+              height: canvasHeight,
               aspectRatio: `${image_width} / ${image_height}`,
+              cursor: zoom > 1 ? (isPanning ? "grabbing" : "grab") : "default",
             }}
           >
             {/* Base Image */}
@@ -478,6 +576,54 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
           imgHeight={image_height}
         />
       </div>
+      </div>
+      <div className="absolute bottom-6 left-6 z-40 flex items-center gap-1 rounded-xl border border-[#334155] bg-[#070b14]/95 p-1.5 shadow-xl backdrop-blur">
+        <button
+          type="button"
+          onClick={() => setZoom((current) => clampZoom(current - 0.25))}
+          disabled={zoom <= 1}
+          title="Zoom out"
+          aria-label="Zoom out"
+          className="rounded-lg p-2 text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </button>
+        <span className="min-w-14 text-center font-mono text-xs text-sky-300" aria-live="polite">
+          {Math.round(zoom * 100)}%
+        </span>
+        <button
+          type="button"
+          onClick={() => setZoom((current) => clampZoom(current + 0.25))}
+          disabled={zoom >= 5}
+          title="Zoom in"
+          aria-label="Zoom in"
+          className="rounded-lg p-2 text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </button>
+        <span className="mx-1 h-5 w-px bg-slate-700" />
+        <button
+          type="button"
+          onClick={() => setZoom(1)}
+          title="Fit screenshot to view"
+          aria-label="Fit screenshot to view"
+          className="flex items-center gap-1.5 rounded-lg px-2 py-2 text-xs text-slate-300 hover:bg-slate-800"
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+          <span>Fit</span>
+        </button>
+        <span className="hidden items-center gap-1 pl-2 pr-1 text-[10px] text-slate-500 xl:flex">
+          <Move className="h-3 w-3" /> Drag to pan
+        </span>
+      </div>
+      {!isPanning && zoom === 1 && (
+        <span className="pointer-events-none absolute bottom-8 right-6 z-30 hidden text-[10px] text-slate-500 xl:block">
+          Ctrl/⌘ + scroll to zoom
+        </span>
+      )}
+          </>
+        );
+      })()}
     </div>
   );
 };
