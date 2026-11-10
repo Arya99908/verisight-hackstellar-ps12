@@ -8,9 +8,9 @@ uploads/*
 !uploads/.gitkeep
 .env
 .env.*
-!.env.example
 .vercel/
 .vercel
 .env*
+!.env.example
 
 supabase/.temp/

@@ -44,3 +44,25 @@ async def save_case(report, source: str = "web") -> bool:
     except Exception:
         log.exception("Supabase forensic case persistence failed")
         return False
+
+
+async def database_status() -> str:
+    """Return a safe connectivity status without exposing credentials or rows."""
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    if not url or not key:
+        return "NOT_CONFIGURED"
+
+    def check() -> bool:
+        request = Request(
+            f"{url}/rest/v1/forensic_cases?select=id&limit=0",
+            headers={"apikey": key, "Authorization": f"Bearer {key}"},
+        )
+        with urlopen(request, timeout=4) as response:
+            return 200 <= response.status < 300
+
+    try:
+        return "HEALTHY" if await asyncio.to_thread(check) else "UNAVAILABLE"
+    except Exception:
+        log.warning("Supabase health check failed")
+        return "UNAVAILABLE"

@@ -10,6 +10,7 @@ const API_BASE = "/api";
 export async function fetchHealth(): Promise<{
   status: string;
   service: string;
+  database: "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED";
 }> {
   const res = await fetch(`${API_BASE}/health`);
   if (!res.ok) throw new Error("Health check failed");
@@ -78,8 +79,11 @@ export async function fetchNetworkInfo(): Promise<NetworkInfo> {
   return res.json();
 }
 
-export async function fetchLatestMobileUpload(): Promise<ForensicAnalysisReport | null> {
-  const res = await fetch(`${API_BASE}/latest-mobile-upload`);
+export async function fetchLatestMobileUpload(
+  sessionId: string,
+): Promise<ForensicAnalysisReport | null> {
+  const query = new URLSearchParams({ session_id: sessionId });
+  const res = await fetch(`${API_BASE}/latest-mobile-upload?${query}`);
   if (!res.ok) return null;
   const data = await res.json();
   return data.report || null;
@@ -87,10 +91,12 @@ export async function fetchLatestMobileUpload(): Promise<ForensicAnalysisReport 
 
 export async function uploadMobile(
   file: File,
-): Promise<ForensicAnalysisReport> {
+  sessionId: string,
+): Promise<void> {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await fetch(`${API_BASE}/mobile-upload`, {
+  const query = new URLSearchParams({ session_id: sessionId });
+  const res = await fetch(`${API_BASE}/mobile-upload?${query}`, {
     method: "POST",
     body: formData,
   });
@@ -100,6 +106,5 @@ export async function uploadMobile(
       .catch(() => ({ detail: "Mobile upload failed" }));
     throw new Error(err.detail || "Mobile upload failed");
   }
-  const data = await res.json();
-  return data.report;
+  await res.json();
 }

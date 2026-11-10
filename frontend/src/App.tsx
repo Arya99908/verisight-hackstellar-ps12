@@ -17,25 +17,26 @@ import {
   analyzeDemoSample,
   analyzeUpload,
   simulateWhatsApp,
+  fetchHealth,
 } from "./services/api";
 
 export const App: React.FC = () => {
-  // Check if mobile mode is requested (?mode=mobile)
   const isMobileMode =
     new URLSearchParams(window.location.search).get("mode") === "mobile";
+  return isMobileMode ? <MobileUploadView /> : <DesktopWorkbench />;
+};
 
-  if (isMobileMode) {
-    return <MobileUploadView />;
-  }
-
+const DesktopWorkbench: React.FC = () => {
   // Desktop Workbench State
   const [demoSamples, setDemoSamples] = useState<DemoSampleMeta[]>([]);
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(
     "sample_1",
   );
   const [report, setReport] = useState<ForensicAnalysisReport | null>(null);
+  const [appError, setAppError] = useState<string | null>(null);
   const [selectedLocus, setSelectedLocus] = useState<BoundingBox | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [databaseStatus, setDatabaseStatus] = useState<"CHECKING" | "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED">("CHECKING");
 
   // Modals state
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] =
@@ -49,14 +50,20 @@ export const App: React.FC = () => {
 
   // Load demo samples list and analyze sample_1 on startup
   useEffect(() => {
+    fetchHealth()
+      .then((health) => setDatabaseStatus(health.database))
+      .catch(() => setDatabaseStatus("UNAVAILABLE"));
+
     fetchDemoSamples()
       .then((samples) => {
         setDemoSamples(samples);
         if (samples.length > 0) {
           handleSelectSample("sample_1");
+        } else {
+          setAppError("The demo sample list is empty.");
         }
       })
-      .catch((err) => console.error("Failed to load demo samples:", err));
+      .catch((err) => setAppError(`Could not load demo samples: ${err.message}`));
   }, []);
 
   // Handle selecting a golden demo sample
@@ -64,12 +71,13 @@ export const App: React.FC = () => {
     setSelectedSampleId(sampleId);
     setSelectedLocus(null);
     setIsLoading(true);
+    setAppError(null);
 
     try {
       const res = await analyzeDemoSample(sampleId);
       setReport(res);
     } catch (err) {
-      console.error("Failed to analyze sample:", err);
+      setAppError(`Sample analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setIsLoading(false);
     }
@@ -80,12 +88,13 @@ export const App: React.FC = () => {
     setSelectedSampleId(null);
     setSelectedLocus(null);
     setIsLoading(true);
+    setAppError(null);
 
     try {
       const res = await analyzeUpload(file);
       setReport(res);
-    } catch (err: any) {
-      alert(`Upload Analysis Failed: ${err.message}`);
+    } catch (err) {
+      setAppError(`Upload analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +124,7 @@ export const App: React.FC = () => {
       );
       setWhatsAppDat(simRes);
     } catch (err) {
-      console.error("WhatsApp simulation failed:", err);
+      setAppError(`WhatsApp simulation failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setIsWhatsAppLoading(false);
     }
@@ -132,6 +141,7 @@ export const App: React.FC = () => {
     <div className="h-screen w-screen flex flex-col bg-[#070b14] overflow-hidden">
       {/* Top Command Bar */}
       <TopCommandBar
+        databaseStatus={databaseStatus}
         demoSamples={demoSamples}
         selectedSampleId={selectedSampleId}
         onSelectSample={handleSelectSample}
@@ -141,6 +151,12 @@ export const App: React.FC = () => {
         onOpenReportModal={() => setIsReportModalOpen(true)}
         isLoading={isLoading}
       />
+      {appError && (
+        <div role="alert" className="px-4 py-2 bg-rose-950/80 border-b border-rose-800 text-rose-200 text-xs flex items-center justify-between">
+          <span>{appError}</span>
+          <button onClick={() => setAppError(null)} className="ml-4 text-rose-100 hover:text-white">Dismiss</button>
+        </div>
+      )}
 
       {/* Main Workspace: Central Multi-Spectral Viewer + Right Risk Dossier */}
       <div className="flex-1 flex overflow-hidden">

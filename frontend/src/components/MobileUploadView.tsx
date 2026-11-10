@@ -10,6 +10,7 @@ import {
 import { uploadMobile } from "../services/api";
 
 export const MobileUploadView: React.FC = () => {
+  const sessionId = new URLSearchParams(window.location.search).get("session_id");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploaded, setUploaded] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -23,7 +24,8 @@ export const MobileUploadView: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      await uploadMobile(file);
+      if (!sessionId) throw new Error("Open this page from the desktop workbench QR code to link your upload.");
+      await uploadMobile(file, sessionId);
       setUploaded(true);
     } catch (err: any) {
       setErrorMsg(err.message || "Upload failed. Please try again.");
@@ -66,8 +68,8 @@ export const MobileUploadView: React.FC = () => {
                 Evidence Transmitted!
               </h2>
               <p className="text-xs text-[#94a3b8] max-w-xs mx-auto">
-                Your mobile payment screenshot was received. Look at the desktop
-                workbench to view the live 4-layer forensic investigation!
+                Your screenshot was securely queued for the paired desktop
+                workbench. Switch back there to view its 4-layer investigation.
               </p>
             </div>
             <button
@@ -105,7 +107,7 @@ export const MobileUploadView: React.FC = () => {
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
+              disabled={isUploading || !sessionId}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 hover:from-sky-500 hover:to-purple-500 font-bold text-sm text-white shadow-xl shadow-indigo-600/30 transition-all flex flex-col items-center justify-center space-y-2 active:scale-95 disabled:opacity-50"
             >
               {isUploading ? (
@@ -125,6 +127,12 @@ export const MobileUploadView: React.FC = () => {
                 </>
               )}
             </button>
+
+            {!sessionId && (
+              <p className="text-xs text-amber-300 bg-amber-950/40 p-2.5 rounded-lg border border-amber-800">
+                Open this page by scanning the QR code in the desktop workbench so your upload can be linked to that session.
+              </p>
+            )}
 
             {errorMsg && (
               <p className="text-xs text-rose-400 bg-rose-950/40 p-2.5 rounded-lg border border-rose-800">

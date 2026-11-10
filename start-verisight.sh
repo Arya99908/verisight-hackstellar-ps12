@@ -2,6 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
+if [ -f "$ROOT/.env" ]; then set -a; . "$ROOT/.env"; set +a; fi
 if [ ! -x .venv/bin/python ]; then echo 'Create .venv and install backend/requirements.txt first.' >&2; exit 1; fi
 if [ ! -d frontend/node_modules ]; then echo 'Run npm ci in frontend first.' >&2; exit 1; fi
 .venv/bin/python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8101 & API_PID=$!

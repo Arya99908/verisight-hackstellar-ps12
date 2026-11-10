@@ -9,8 +9,18 @@ import {
   Radio,
   Loader2,
 } from "lucide-react";
-import { NetworkInfo, ForensicAnalysisReport } from "../types/forensic";
-import { fetchNetworkInfo, fetchLatestMobileUpload } from "../services/api";
+import { ForensicAnalysisReport } from "../types/forensic";
+import { fetchLatestMobileUpload } from "../services/api";
+
+function createSessionId(): string {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 
 interface MobileUploadModalProps {
   isOpen: boolean;
@@ -23,43 +33,40 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
   onClose,
   onMobileUploadReceived,
 }) => {
-  const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);
+  const [sessionId] = useState(createSessionId);
   const [copied, setCopied] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(true);
-
-  // Load network info on open
-  useEffect(() => {
-    if (!isOpen) return;
-
-    fetchNetworkInfo()
-      .then((info) => setNetworkInfo(info))
-      .catch((err) => console.error("Failed to load network info:", err));
-  }, [isOpen]);
 
   // Live polling for stage judge uploads
   useEffect(() => {
     if (!isOpen || !isListening) return;
 
+    let inFlight = false;
     const interval = setInterval(async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
-        const latestReport = await fetchLatestMobileUpload();
+        const latestReport = await fetchLatestMobileUpload(sessionId);
         if (latestReport) {
           onMobileUploadReceived(latestReport);
           onClose();
         }
       } catch (e) {
-        // Ignore polling errors
+        console.error("Mobile upload polling failed:", e);
+      } finally {
+        inFlight = false;
       }
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [isOpen, isListening, onMobileUploadReceived, onClose]);
+  }, [isOpen, isListening, onMobileUploadReceived, onClose, sessionId]);
 
   if (!isOpen) return null;
 
-  const mobileUrl =
-    networkInfo?.mobile_upload_url ||
-    `http://${window.location.hostname}:5173/?mode=mobile`;
+  const mobileLink = new URL(window.location.href);
+  mobileLink.searchParams.set("mode", "mobile");
+  mobileLink.searchParams.set("session_id", sessionId);
+  const mobileUrl = mobileLink.toString();
 
   const copyUrl = () => {
     navigator.clipboard.writeText(mobileUrl);
@@ -134,7 +141,7 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
 
           {/* Instructions for HackStellar Judges */}
           <div className="w-full text-[11px] text-[#64748b] space-y-1 text-center leading-relaxed">
-            <p>1. Connect smartphone to the same Wi-Fi / Local Area Network.</p>
+            <p>1. Scan this link on your phone. For a local session, use the same Wi-Fi network.</p>
             <p>2. Scan QR with iOS Camera or Android Google Lens.</p>
             <p>
               3. Snap any UPI payment screenshot on your phone to trigger

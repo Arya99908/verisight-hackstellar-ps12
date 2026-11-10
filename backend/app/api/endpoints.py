@@ -1,7 +1,10 @@
 import socket
+import os
+from uuid import UUID
+from urllib.parse import urlsplit
 from typing import Any
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
 from app.core.config import settings
 from app.core.schemas import (
@@ -10,7 +13,11 @@ from app.core.schemas import (
     WhatsAppSimulationResponse,
 )
 from app.services.forensic.pipeline import analyze_screenshot
-from app.services.supabase_store import save_case
+from app.services.supabase_store import database_status, save_case
+from app.services.mobile_upload_store import (
+    consume_mobile_upload,
+    save_mobile_image,
+)
 from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
 
 router = APIRouter()
@@ -23,13 +30,14 @@ async def health_check():
     """Health and readiness endpoint."""
     return {
         "status": "HEALTHY",
+        "database": await database_status(),
         "service": settings.APP_NAME,
         "version": settings.VERSION,
         "active_layers": ["L1_Signal", "L2_Typography_Geometry", "L3_Metadata_Protocol", "L4_Ensemble_Synergy"]
     }
 
 @router.get("/network-info")
-async def get_network_info():
+async def get_network_info(request: Request):
     """
     Auto-detects the host machine's local LAN IP address for the Stage Judge Mobile Upload QR code.
     """
@@ -47,7 +55,19 @@ async def get_network_info():
         except Exception:
             local_ip = "127.0.0.1"
 
-    qr_url = f"http://{local_ip}:5174/?mode=mobile"
+    origin = request.headers.get("origin")
+    referer = request.headers.get("referer")
+    if not origin and referer:
+        parsed = urlsplit(referer)
+        if parsed.scheme and parsed.netloc:
+            origin = f"{parsed.scheme}://{parsed.netloc}"
+    if not origin:
+        forwarded_host = request.headers.get("x-forwarded-host")
+        forwarded_proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+        host = forwarded_host or request.headers.get("host", f"{local_ip}:5174")
+        origin = f"{forwarded_proto}://{host}"
+
+    qr_url = f"{origin}/?mode=mobile"
 
     return {
         "local_ip": local_ip,
@@ -76,9 +96,9 @@ async def get_demo_samples():
             filename="sample_2_spliced_amount.jpg",
             title="Sample 2 — Pixel-Spliced Amount (₹95,250.00)",
             scenario="Amount altered with an off-color patch (ΔE=5.2), +3.5px baseline laser drop, and zero-noise wavelet void.",
-            expected_verdict="MANIPULATED_FORGERY",
-            target_score_range="91% – 97%",
-            description="Layer 1 ELA/Wavelet outlier + Layer 2 Baseline Laser critical drift + CIELAB patch alert.",
+            expected_verdict="SUSPICIOUS_ANOMALIES",
+            target_score_range="45% – 60%",
+            description="The fixture contains an edited amount. Current signal and typography checks flag it for review, but do not yet meet the pipeline's manipulated verdict threshold.",
             tags=["Spliced", "Forgery", "High-Risk", "Baseline Drift"],
             url="/samples/sample_2_spliced_amount.jpg"
         ),
@@ -177,31 +197,64 @@ async def simulate_whatsapp(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Simulation failed: {e!s}")
 
 @router.post("/mobile-upload")
-async def mobile_upload(file: UploadFile = File(...)):
+async def mobile_upload(request: Request, file: UploadFile = File(...)):
     """
     Mobile upload route accessed by stage judges scanning the QR code on their phones.
-    Stores latest upload in memory for instant desktop sync.
+    Pairs the upload to the desktop session; Vercel uses private Supabase Storage
+    because serverless instances do not share in-memory state.
     """
     global _LATEST_MOBILE_UPLOAD
     content = await file.read()
+    if len(content) > settings.MAX_FILE_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="File size exceeds 20MB limit.")
+    session_text = request.query_params.get("session_id")
+    session_id: UUID | None = None
+    if session_text:
+        try:
+            session_id = UUID(session_text)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Invalid mobile session.") from exc
+    if os.getenv("VERCEL") and session_id is None:
+        raise HTTPException(status_code=400, detail="Open this upload page from the desktop QR code.")
+
+    # Local development keeps the existing in-memory handoff. Production
+    # stores the image privately until the paired desktop retrieves it.
+    if os.getenv("VERCEL"):
+        stored = await save_mobile_image(session_id, file.filename or "mobile_upload.jpg", content)
+        if not stored:
+            raise HTTPException(status_code=503, detail="Could not queue the upload for the desktop session.")
+        return {"status": "SUCCESS", "message": "Screenshot queued for the paired desktop workbench."}
+
     report = analyze_screenshot(content, filename=file.filename or "mobile_upload.jpg")
 
     _LATEST_MOBILE_UPLOAD = {
+        "session_id": str(session_id) if session_id else None,
         "filename": file.filename or "mobile_upload.jpg",
         "timestamp": report.timestamp,
         "report": report.model_dump()
     }
     await save_case(report, "mobile_upload")
 
-    return {"status": "SUCCESS", "message": "Screenshot uploaded and analyzed.", "verdict": report.verdict, "report": report.model_dump()}
+    return {"status": "SUCCESS", "message": "Screenshot uploaded and analyzed.", "verdict": report.verdict}
 
 @router.get("/latest-mobile-upload")
-async def get_latest_mobile_upload(clear: bool = False):
+async def get_latest_mobile_upload(clear: bool = False, session_id: UUID | None = None):
     """
-    Desktop workbench polling endpoint. Returns latest phone upload if available.
+    Desktop workbench polling endpoint. Returns the upload paired to this session.
     """
     global _LATEST_MOBILE_UPLOAD
+    if os.getenv("VERCEL"):
+        if session_id is None:
+            return {"report": None}
+        try:
+            report = await consume_mobile_upload(session_id)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="Could not retrieve the mobile upload.") from e
+        return {"report": report}
+
     data = _LATEST_MOBILE_UPLOAD
+    if session_id and data and data.get("session_id") != str(session_id):
+        data = None
     if clear:
         _LATEST_MOBILE_UPLOAD = None
-    return {"latest": data}
+    return {"report": data.get("report") if data else None}

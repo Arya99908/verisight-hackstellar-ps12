@@ -13,6 +13,7 @@ import {
 import { DemoSampleMeta } from "../types/forensic";
 
 interface TopCommandBarProps {
+  databaseStatus: "CHECKING" | "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED";
   demoSamples: DemoSampleMeta[];
   selectedSampleId: string | null;
   onSelectSample: (sampleId: string) => void;
@@ -24,6 +25,7 @@ interface TopCommandBarProps {
 }
 
 export const TopCommandBar: React.FC<TopCommandBarProps> = ({
+  databaseStatus,
   demoSamples,
   selectedSampleId,
   onSelectSample,
@@ -58,8 +60,8 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
             </span>
           </div>
           <div className="flex items-center space-x-1.5 text-[11px] text-[#64748b]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-mono">4-LAYER FORENSIC CORE ONLINE</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${databaseStatus === "HEALTHY" ? "bg-emerald-500 animate-pulse" : databaseStatus === "CHECKING" ? "bg-amber-400 animate-pulse" : "bg-rose-500"}`} />
+            <span className="font-mono">4-LAYER CORE · DB {databaseStatus}</span>
           </div>
         </div>
       </div>

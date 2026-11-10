@@ -7,7 +7,9 @@
 - **Demo samples:** `https://verisight-ps12.vercel.app/api/demo-samples`
 - **Database:** Supabase project `ytxfhmdzlelcpjsnlndh` (ap-south-1), table `public.forensic_cases`.
 
-The Vercel FastAPI service serves the React dashboard and its API from one public origin. Screenshot analysis results are persisted to Supabase as metadata, verdicts, findings, and layer summaries; uploaded image bytes and heatmap payloads are not stored in the database. The table has RLS enabled with no public read/write policies. The server uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; keep the service key only in Vercel's encrypted environment settings or a local ignored env file. The schema is versioned at `supabase/migrations/202611100001_create_forensic_cases.sql`.
+The Vercel FastAPI service serves the React dashboard and its API from one public origin. Screenshot analysis results are persisted to Supabase as metadata, verdicts, findings, and layer summaries; uploaded image bytes and heatmap payloads are not stored in the database. The table has RLS enabled with no public read/write policies. The server uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; keep the server key only in Vercel's encrypted environment settings or a local ignored env file. The schema is versioned under `supabase/migrations/`.
+
+The judge mobile handoff uses a one-use session UUID. Its screenshot is kept in the private `mobile-evidence` Storage bucket only until the paired desktop workbench retrieves and analyzes it, then the object is deleted. Abandoned uploads are removed when the next mobile upload arrives after the 24-hour retention window. The `mobile_uploads` table has RLS enabled with no public policies.
 
 Vercel production variables are configured for Production. To recreate a local Supabase integration, apply the migration with the Supabase CLI and set the two variables in an ignored `.env` file before starting the API. Never use the server-side database key in browser code.
 
