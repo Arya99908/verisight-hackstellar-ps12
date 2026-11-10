@@ -9,6 +9,7 @@ import {
   Layers,
   FileCheck,
 } from "lucide-react";
+import { verdictLabel } from "../services/verdictLabel";
 import { ForensicAnalysisReport } from "../types/forensic";
 
 interface ForensicReportModalProps {
@@ -124,12 +125,12 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
               <div className="text-xl font-bold font-mono tracking-wide">
                 <span
                   className={
-                    verdict === "CORROBORATED_ANOMALIES"
+                    verdict !== "INCONCLUSIVE"
                       ? "text-rose-300 print:text-rose-700"
-                      : "text-amber-300 print:text-amber-700"
+                      : "text-emerald-300 print:text-emerald-700"
                   }
                 >
-                  {verdict.replace(/_/g, " ")}
+                  {verdictLabel(verdict)}
                 </span>
               </div>
               <div className="text-xs text-[#94a3b8] print:text-gray-700">

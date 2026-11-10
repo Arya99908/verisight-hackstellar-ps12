@@ -2,6 +2,7 @@ import React from "react";
 import {
   AlertTriangle,
   AlertCircle,
+  CheckCircle2,
   Copy,
   ExternalLink,
   Layers,
@@ -14,6 +15,7 @@ import {
   Zap,
   Target,
 } from "lucide-react";
+import { verdictLabel } from "../services/verdictLabel";
 import { ForensicAnalysisReport, BoundingBox } from "../types/forensic";
 
 interface RiskDossierSidebarProps {
@@ -60,7 +62,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   const strokeDashoffset =
     circumference - (overall_tamper_score / 100) * circumference;
 
-  const gaugeColor = isCorroborated ? "#f43f5e" : "#f59e0b";
+  const gaugeColor = isReviewRequired ? "#f43f5e" : "#22c55e";
 
   const copyHash = () => {
     navigator.clipboard.writeText(file_sha256);
@@ -122,17 +124,17 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           <div className="mt-3 flex flex-col items-center w-full">
             <div
               className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wider flex items-center space-x-1.5 ${
-                isCorroborated
+                isReviewRequired
                   ? "bg-rose-950/80 text-rose-300 border border-rose-700"
-                  : "bg-amber-950/80 text-amber-300 border border-amber-700"
+                  : "bg-emerald-950/80 text-emerald-300 border border-emerald-700"
               }`}
             >
               {isReviewRequired ? (
                 <AlertTriangle className="w-3.5 h-3.5" />
               ) : (
-                <AlertCircle className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-3.5 h-3.5" />
               )}
-              <span>{verdict.replace(/_/g, " ")}</span>
+              <span>{verdictLabel(verdict)}</span>
             </div>
 
             <div className="flex items-center space-x-2 text-[11px] text-[#64748b] mt-1.5">
@@ -141,7 +143,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
               <span className="truncate max-w-[180px]">{channel_detected}</span>
             </div>
             <p className="mt-2 max-w-sm text-center text-[10px] leading-relaxed text-[#94a3b8]">
-              This prototype cannot certify a screenshot or verify payment. Use these cues for review only.
+              Green indicates no strong editing signals were detected; red indicates signals that warrant caution. Neither verifies payment or proves who received it.
             </p>
           </div>
         </div>

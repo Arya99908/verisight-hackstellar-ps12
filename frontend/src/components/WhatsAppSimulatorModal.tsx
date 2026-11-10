@@ -9,6 +9,7 @@ import {
   Info,
   Check,
 } from "lucide-react";
+import { verdictLabel } from "../services/verdictLabel";
 import {
   WhatsAppSimulationResponse,
   ForensicAnalysisReport,
@@ -129,8 +130,8 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                   <span className="text-[10px] font-mono text-[#64748b] uppercase">
                     Surviving Verdict
                   </span>
-                  <div className="text-base font-bold font-mono text-rose-400 mt-0.5 truncate">
-                    {simulationData.reanalysis.verdict.replace(/_/g, " ")}
+                  <div className={`text-base font-bold font-mono mt-0.5 truncate ${simulationData.reanalysis.verdict === "INCONCLUSIVE" ? "text-emerald-400" : "text-rose-400"}`}>
+                    {verdictLabel(simulationData.reanalysis.verdict)}
                   </div>
                   <span className="text-[10px] text-rose-400/80 font-mono">
                     Score:{" "}
