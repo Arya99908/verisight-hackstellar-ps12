@@ -54,7 +54,7 @@ def test_clean_ensemble_calibration():
     final_score, confidence, verdict, synergy, findings, all_boxes = calibrate_ensemble(l1, l2, l3, l4)
 
     assert final_score < 25.0
-    assert "AUTHENTIC" in verdict
+    assert verdict == "INCONCLUSIVE"
     assert not synergy.synergy_multiplier_applied
 
 
@@ -124,5 +124,5 @@ def test_cross_layer_spatial_iou_synergy():
     assert synergy.multiplier_factor == 1.0
     assert synergy.primary_forgery_locus is not None
     assert final_score >= 72.0
-    assert verdict == "MANIPULATED_FORGERY"
+    assert verdict == "CORROBORATED_ANOMALIES"
     assert len(findings) > 0

@@ -104,12 +104,11 @@ export interface ForensicAnalysisReport {
   image_width: number;
   image_height: number;
   overall_tamper_score: number;
-  confidence_score: number;
+  confidence_score: number | null;
   verdict:
-    | "LIKELY_AUTHENTIC"
-    | "AUTHENTIC_VERIFIED"
-    | "SUSPICIOUS_ANOMALIES"
-    | "MANIPULATED_FORGERY"
+    | "INCONCLUSIVE"
+    | "REVIEW_REQUIRED"
+    | "CORROBORATED_ANOMALIES"
     | string;
   channel_detected: string;
   layer1: Layer1SignalResult;

@@ -37,7 +37,8 @@ def test_sample_1_authentic():
 
     report = analyze_screenshot(file_bytes, sample_path.name)
     assert report.overall_tamper_score < 35.0
-    assert report.verdict == "LIKELY_AUTHENTIC"
+    assert report.verdict == "INCONCLUSIVE"
+    assert report.confidence_score is None
     assert not any(f.id == "f-l2-laser" for f in report.findings)
 
 
@@ -59,7 +60,7 @@ def test_authentic_screenshot_transforms_do_not_escalate_to_manipulated():
 
     for name, data in variants:
         report = analyze_screenshot(data, name)
-        assert report.verdict != "MANIPULATED_FORGERY", name
+        assert report.verdict != "CORROBORATED_ANOMALIES", name
 
 
 def test_png_ela_is_not_scored_as_manipulation_evidence():
@@ -76,7 +77,7 @@ def test_sample_2_spliced_amount():
 
     report = analyze_screenshot(file_bytes, sample_path.name)
     # This labeled synthetic fixture combines a baseline anomaly with independent cues.
-    assert report.verdict == "MANIPULATED_FORGERY"
+    assert report.verdict == "CORROBORATED_ANOMALIES"
 
 
 def test_sample_3_temporal_paradox():

@@ -1,7 +1,6 @@
 import React from "react";
 import {
   AlertTriangle,
-  CheckCircle2,
   AlertCircle,
   Copy,
   ExternalLink,
@@ -39,7 +38,6 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
   const {
     overall_tamper_score,
-    confidence_score,
     verdict,
     file_sha256,
     image_width,
@@ -53,9 +51,8 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
     findings,
   } = report;
 
-  const isAuthentic = verdict === "LIKELY_AUTHENTIC" || verdict === "AUTHENTIC_VERIFIED";
-  const isSuspicious = verdict === "SUSPICIOUS_ANOMALIES";
-  const isManipulated = verdict === "MANIPULATED_FORGERY";
+  const isCorroborated = verdict === "CORROBORATED_ANOMALIES";
+  const isReviewRequired = verdict === "REVIEW_REQUIRED" || isCorroborated;
 
   // Circular gauge calculations
   const radius = 48;
@@ -63,11 +60,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   const strokeDashoffset =
     circumference - (overall_tamper_score / 100) * circumference;
 
-  const gaugeColor = isAuthentic
-    ? "#10b981"
-    : isSuspicious
-      ? "#f59e0b"
-      : "#f43f5e";
+  const gaugeColor = isCorroborated ? "#f43f5e" : "#f59e0b";
 
   const copyHash = () => {
     navigator.clipboard.writeText(file_sha256);
@@ -117,10 +110,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </svg>
             <div className="absolute flex flex-col items-center justify-center">
               <span className="text-2xl font-bold font-mono text-[#f1f5f9]">
-                {overall_tamper_score.toFixed(1)}%
+                {overall_tamper_score.toFixed(1)}
               </span>
               <span className="text-[10px] font-mono uppercase tracking-wider text-[#94a3b8]">
-                Anomaly score
+                Heuristic score · not a probability
               </span>
             </div>
           </div>
@@ -129,28 +122,27 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           <div className="mt-3 flex flex-col items-center w-full">
             <div
               className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wider flex items-center space-x-1.5 ${
-                isAuthentic
-                  ? "bg-emerald-950/80 text-emerald-400 border border-emerald-600"
-                  : isSuspicious
-                    ? "bg-amber-950/80 text-amber-400 border border-amber-600"
-                    : "bg-rose-950/80 text-rose-400 border border-rose-600"
+                isCorroborated
+                  ? "bg-rose-950/80 text-rose-300 border border-rose-700"
+                  : "bg-amber-950/80 text-amber-300 border border-amber-700"
               }`}
             >
-              {isAuthentic ? (
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              ) : isSuspicious ? (
-                <AlertCircle className="w-3.5 h-3.5" />
-              ) : (
+              {isReviewRequired ? (
                 <AlertTriangle className="w-3.5 h-3.5" />
+              ) : (
+                <AlertCircle className="w-3.5 h-3.5" />
               )}
               <span>{verdict.replace(/_/g, " ")}</span>
             </div>
 
             <div className="flex items-center space-x-2 text-[11px] text-[#64748b] mt-1.5">
-              <span>Assessment confidence: {confidence_score.toFixed(1)}%</span>
+              <span>Classifier confidence: not available</span>
               <span>•</span>
               <span className="truncate max-w-[180px]">{channel_detected}</span>
             </div>
+            <p className="mt-2 max-w-sm text-center text-[10px] leading-relaxed text-[#94a3b8]">
+              This prototype cannot certify a screenshot or verify payment. Use these cues for review only.
+            </p>
           </div>
         </div>
 
@@ -196,7 +188,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 Layer 1: Physical & Noise Signals
               </span>
               <span className="font-mono text-xs font-bold text-sky-400">
-                {layer1.layer_score.toFixed(1)}%
+                {layer1.layer_score.toFixed(1)}
               </span>
             </div>
             <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
@@ -206,8 +198,8 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
               />
             </div>
             <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
-              <span>ELA: {layer1.ela_score.toFixed(1)}%</span>
-              <span>Wavelet: {layer1.wavelet_noise_score.toFixed(1)}%</span>
+              <span>ELA cue: {layer1.ela_score.toFixed(1)}</span>
+              <span>Wavelet cue: {layer1.wavelet_noise_score.toFixed(1)}</span>
               <span>Clones: {layer1.clone_count}</span>
             </div>
           </div>
@@ -219,7 +211,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 Layer 2: Typography & Geometry
               </span>
               <span className="font-mono text-xs font-bold text-rose-400">
-                {layer2.layer_score.toFixed(1)}%
+                {layer2.layer_score.toFixed(1)}
               </span>
             </div>
             <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
@@ -242,7 +234,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 Layer 3: Metadata & Protocol Rules
               </span>
               <span className="font-mono text-xs font-bold text-purple-400">
-                {layer3.layer_score.toFixed(1)}%
+                {layer3.layer_score.toFixed(1)}
               </span>
             </div>
             <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
@@ -269,7 +261,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 Layer 4: Heuristic Review
               </span>
               <span className="font-mono text-xs font-bold text-amber-400">
-                {layer4.layer_score.toFixed(1)}%
+                {layer4.layer_score.toFixed(1)}
               </span>
             </div>
             <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">

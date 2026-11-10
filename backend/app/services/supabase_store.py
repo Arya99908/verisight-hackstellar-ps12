@@ -12,6 +12,11 @@ async def save_case(report, source: str = "web") -> bool:
     key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     if not url or not key:
         return False
+    layer3_summary = report.layer3.model_dump(mode="json")
+    qr_summary = layer3_summary.get("details", {}).get("qr_inspection")
+    if isinstance(qr_summary, dict):
+        qr_summary["results"] = []
+        qr_summary["payloads_persisted"] = False
     row = {
         "file_sha256": report.file_sha256,
         "filename": (report.filename or "evidence image")[:255],
@@ -21,11 +26,11 @@ async def save_case(report, source: str = "web") -> bool:
         "confidence_score": report.confidence_score,
         "verdict": report.verdict,
         "channel_detected": report.channel_detected,
-        "findings": [x.model_dump(mode="json") for x in report.findings],
+        "findings": [x.model_dump(mode="json") for x in report.findings if not x.id.startswith("f-qr-")],
         "layer_summary": {
             "layer1": report.layer1.model_dump(mode="json", exclude={"ela_b64", "wavelet_noise_b64", "clone_b64"}),
             "layer2": report.layer2.model_dump(mode="json"),
-            "layer3": report.layer3.model_dump(mode="json"),
+            "layer3": layer3_summary,
             "layer4": report.layer4.model_dump(mode="json"),
         },
         "source": source,

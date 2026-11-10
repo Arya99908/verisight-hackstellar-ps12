@@ -134,7 +134,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                   </div>
                   <span className="text-[10px] text-rose-400/80 font-mono">
                     Score:{" "}
-                    {simulationData.reanalysis.overall_tamper_score.toFixed(1)}%
+                    {simulationData.reanalysis.overall_tamper_score.toFixed(1)}
                   </span>
                 </div>
               </div>

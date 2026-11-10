@@ -55,7 +55,7 @@ To maintain complete architectural integrity, distribution safety, and license c
 | **Copy-Move Translation Clustering** | Amerini et al. (2011); Sherloq `copy_move.py` | Independently implemented in `pixel_analysis/copy_move.py` using ORB keypoints, Hamming distance matching, neighbor suppression ($d \ge 24\text{ px}$), and $\pm 3\text{ px}$ translation vector clustering. |
 | **Typographic Horizontal Baseline Laser** | Digital typography rasterization standards | Novel deterministic pipeline in `typography/baseline_laser.py`. Fits linear regressions across token bottom anchors, flagging $\ge 1.8\text{ px}$ deviations as critical red lasers. |
 | **CIELAB Perceptual Card Background Patch Detector** | CIE 1976 $\Delta E_{ab}$ standard | Independently implemented in `typography/cielab_patch.py`. Compares inner background margin against outer card reference, flagging $\Delta E_{ab} > 2.4$ discontinuities. |
-| **Status-Bar Clock Paradox & UPI Protocol Rules** | NPCI UPI specification & Android/iOS system bar layouts | Novel temporal and format verification in `metadata/domain_rules.py`. Detects future transaction timestamps relative to status-bar clock and validates 12-digit UPI UTR structure. |
+| **Status-Bar Clock & UPI Format Heuristics** | Displayed image/metadata strings | Prototype-only format and time consistency cues. Current offline mode does not OCR screenshot text; format matches are not bank validation or transaction confirmation. |
 | **Cross-Layer Spatial IoU Synergy** | Evidentiary ensemble theory | Novel multi-modal correlation in `ensemble/calibrator.py`. Correlates Layer 1 physical signal anomalies with Layer 2 typographic anomalies using spatial IoU intersection. |
 
 ---
@@ -66,7 +66,7 @@ To maintain complete architectural integrity, distribution safety, and license c
 | :--- | :--- | :--- |
 | **TruFor** | Guillaro et al. (CVPR 2023), GRIP-UNINA | Researched and evaluated. VeriSight implements a clean decoupled adapter interface (`services/forensic/adapters/advanced_model_adapter.py`). Because TruFor requires large model weights (~500MB) and CUDA dependencies, the adapter gracefully reports its status while VeriSight's deterministic mathematical engine operates with zero external dependencies. |
 | **Noiseprint** | Cozzolino & Verdoliva (TIFS 2020), GRIP-UNINA | Researched. Found to have limited direct applicability to digital screenshots due to lack of optical camera sensor PRNU in framebuffer captures. |
-| **C2PA / Content Credentials** | Coalition for Content Provenance and Authenticity | Evaluated against official test files. VeriSight parses container markers (`jumbf`, `c2pa`) and accurately reflects verification states without treating missing manifests as proof of manipulation. |
+| **C2PA / Content Credentials** | Coalition for Content Provenance and Authenticity | The prototype only detects possible marker strings. It does not parse manifests or validate signatures, trust chains, or asset binding. |
 
 ---
 

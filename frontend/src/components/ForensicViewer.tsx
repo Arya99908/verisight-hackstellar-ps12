@@ -402,7 +402,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
               {/* Layer 2: Sub-pixel Horizontal Baseline Lasers */}
               {showLasers &&
                 layer2.lasers.map((laser, idx) => {
-                  const isTampered = laser.is_tampered;
+                  const hasAlignmentCue = laser.is_tampered;
                   const x1 = laser.x_start ?? 40;
                   const x2 = laser.x_end ?? image_width - 40;
                   const y = laser.y_baseline;
@@ -415,11 +415,11 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                         y1={y}
                         x2={x2}
                         y2={y}
-                        stroke={isTampered ? "#f43f5e" : "#38bdf8"}
-                        strokeWidth={isTampered ? "2.5" : "1.5"}
-                        strokeDasharray={isTampered ? "none" : "4 3"}
+                        stroke={hasAlignmentCue ? "#f43f5e" : "#38bdf8"}
+                        strokeWidth={hasAlignmentCue ? "2.5" : "1.5"}
+                        strokeDasharray={hasAlignmentCue ? "none" : "4 3"}
                         className={
-                          isTampered ? "laser-critical" : "laser-aligned"
+                          hasAlignmentCue ? "laser-critical" : "laser-aligned"
                         }
                       />
 
@@ -427,12 +427,12 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
                       <circle
                         cx={x1}
                         cy={y}
-                        r={isTampered ? 4 : 2.5}
-                        fill={isTampered ? "#f43f5e" : "#38bdf8"}
+                        r={hasAlignmentCue ? 4 : 2.5}
+                        fill={hasAlignmentCue ? "#f43f5e" : "#38bdf8"}
                       />
 
-                      {/* Callout Badge for Tampered Drift */}
-                      {isTampered && laser.callout_text && (
+                      {/* Callout badge for a baseline alignment review cue */}
+                      {hasAlignmentCue && laser.callout_text && (
                         <g transform={`translate(${x2 + 8}, ${y - 8})`}>
                           <rect
                             x="0"

@@ -112,7 +112,7 @@ This document provides a comparative analysis of the digital image forensics alg
   - ELA, noise, sharpness, color variation, crop geometry, and software metadata are weak review cues. PNG ELA scoring is disabled. Compression, cropping, and metadata presence alone never establish tampering.
   - Manipulated verdicts require corroboration across signal families or a paired time/reference inconsistency. Overlap localization is limited to a sufficiently strong copy-move match that intersects a flagged text baseline; there is no score multiplier or centroid-proximity shortcut.
   - Offline text extraction detects text-like components but does not recognize their characters, so screenshot OCR rules are unavailable.
-* **Expected Outputs:** Heuristic anomaly score, bounded assessment confidence, verdict (`LIKELY_AUTHENTIC`, `SUSPICIOUS_ANOMALIES`, `MANIPULATED_FORGERY`), optional reviewed region. A likely-authentic result is not proof of origin or payment.
+* **Expected Outputs:** Heuristic point score, unavailable classifier confidence, verdict (`INCONCLUSIVE`, `REVIEW_REQUIRED`, `CORROBORATED_ANOMALIES`), optional reviewed region. These do not establish authenticity or payment state.
 
 ---
 

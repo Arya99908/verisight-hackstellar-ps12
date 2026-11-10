@@ -18,19 +18,19 @@ Forensic evaluation requires unambiguous ground truth. VeriSight adopts a dual-t
 
 ## 2. Ground-Truth Golden Demonstration Suite
 
-| Sample File | Scenario & Ground-Truth Manipulations | Expected Forensic Signatures | Target Tamper Score | Expected Verdict |
+| Sample File | Scenario & Ground-Truth Manipulations | Expected Forensic Signatures | Heuristic Score Band | Assessment |
 | :--- | :--- | :--- | :---: | :---: |
-| **`sample_1_authentic_gpay.png`** | Clean synthetic payment-style UI fixture. It is **not** a genuine bank, merchant, or payment screenshot. | Expected low review score. PNG ELA does not contribute to the score. | **0% – 15%** | `LIKELY_AUTHENTIC` |
-| **`sample_2_spliced_amount.jpg`** | Synthetic fixture with a deliberately edited amount and a text-baseline anomaly. | Multiple weak pixel/rendering cues plus a baseline anomaly place it in the manipulated band for this controlled fixture. | **72% – 92%** | `MANIPULATED_FORGERY` |
-| **`sample_3_fake_generator_paradox.png`** | Synthetic fixture with conflicting displayed times, an invalid reference-format example, and a generator metadata tag. | Rule contradictions are reported with caveats; generator metadata is not treated as proof by itself. | **72% – 92%** | `MANIPULATED_FORGERY` |
-| **`sample_4_whatsapp_laundered.jpg`** | Recompressed synthetic edited fixture. | Compression alone does not count as proof; baseline and additional cues corroborate this controlled example. | **72% – 92%** | `MANIPULATED_FORGERY` |
-| **`sample_5_cloned_chat_receipt.jpg`** | Synthetic fixture with repeated regions and a non-native crop. | Copy-move matching alone is a review cue because repeated UI elements can match. | **25% – 70%** | `SUSPICIOUS_ANOMALIES` |
+| **`sample_1_authentic_gpay.png`** | Clean synthetic payment-style UI fixture. It is **not** a genuine bank, merchant, or payment screenshot. | Expected low review score. PNG ELA does not contribute to the score. | **0–15 points** | `INCONCLUSIVE` |
+| **`sample_2_spliced_amount.jpg`** | Synthetic fixture with a deliberately edited amount and a text-baseline anomaly. | Heuristic pixel/rendering cues plus baseline anomaly; assessment remains an anomaly review, not proof. | **72–92 points** | `CORROBORATED_ANOMALIES` |
+| **`sample_3_fake_generator_paradox.png`** | Synthetic fixture with conflicting displayed times, an invalid reference-format example, and a generator metadata tag. | Rule contradictions are review cues; generator metadata is not treated as proof by itself. | **72–92 points** | `CORROBORATED_ANOMALIES` |
+| **`sample_4_whatsapp_laundered.jpg`** | Recompressed synthetic edited fixture. | Compression alone is not proof; baseline and additional cues corroborate this controlled fixture. | **72–92 points** | `CORROBORATED_ANOMALIES` |
+| **`sample_5_cloned_chat_receipt.jpg`** | Synthetic fixture with repeated regions and a non-native crop. | Copy-move matching alone is a review cue because repeated UI elements can match. | **25–70 points** | `REVIEW_REQUIRED` |
 
 ---
 
 ## 3. Quantitative Evaluation Benchmarks
 
-The current repository does not contain a representative labeled real-world dataset or statistically valid precision/recall benchmark. The following are regression fixtures, not production accuracy claims:
+The current repository does not contain a representative labeled real-world dataset or statistically valid precision/recall benchmark. These are regression fixtures, not production accuracy claims:
 
 | Metric | Target Specification | Measured Benchmark Result | Status |
 | :--- | :--- | :--- | :---: |

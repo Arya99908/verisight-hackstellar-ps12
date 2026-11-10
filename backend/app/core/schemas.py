@@ -103,8 +103,8 @@ class ForensicAnalysisReport(BaseModel):
     image_width: int
     image_height: int
     overall_tamper_score: float
-    confidence_score: float
-    verdict: str  # "AUTHENTIC_VERIFIED", "SUSPICIOUS_ANOMALIES", "MANIPULATED_FORGERY"
+    confidence_score: float | None = None
+    verdict: str  # INCONCLUSIVE, REVIEW_REQUIRED, or CORROBORATED_ANOMALIES
     channel_detected: str
     layer1: Layer1SignalResult
     layer2: Layer2GeometryResult

@@ -31,7 +31,6 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
     image_width,
     image_height,
     overall_tamper_score,
-    confidence_score,
     verdict,
     channel_detected,
     layer1,
@@ -125,19 +124,16 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
               <div className="text-xl font-bold font-mono tracking-wide">
                 <span
                   className={
-                    verdict === "LIKELY_AUTHENTIC" || verdict === "AUTHENTIC_VERIFIED"
-                      ? "text-emerald-400 print:text-emerald-700"
-                      : verdict === "SUSPICIOUS_ANOMALIES"
-                        ? "text-amber-400 print:text-amber-700"
-                        : "text-rose-400 print:text-rose-700"
+                    verdict === "CORROBORATED_ANOMALIES"
+                      ? "text-rose-300 print:text-rose-700"
+                      : "text-amber-300 print:text-amber-700"
                   }
                 >
-                  {verdict === "LIKELY_AUTHENTIC" ? "LIKELY AUTHENTIC" : verdict.replace(/_/g, " ")}
+                  {verdict.replace(/_/g, " ")}
                 </span>
               </div>
               <div className="text-xs text-[#94a3b8] print:text-gray-700">
-                Anomaly Score: <strong>{overall_tamper_score.toFixed(1)}%</strong> | Assessment
-                Confidence: <strong>{confidence_score.toFixed(1)}%</strong>
+                Heuristic Score: <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Classifier confidence: <strong>Unavailable</strong>
               </div>
             </div>
 
@@ -191,12 +187,12 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                       Physical Signal & Wavelet Noise
                     </td>
                     <td className="p-2.5">
-                      ELA Score: {layer1.ela_score.toFixed(1)}% | Wavelet db4
-                      Noise: {layer1.wavelet_noise_score.toFixed(1)}% | Clones:{" "}
+                      ELA cue: {layer1.ela_score.toFixed(1)} | Wavelet db4
+                      noise cue: {layer1.wavelet_noise_score.toFixed(1)} | Clones:{" "}
                       {layer1.clone_count}
                     </td>
                     <td className="p-2.5 text-right font-bold text-sky-400 print:text-black">
-                      {layer1.layer_score.toFixed(1)}%
+                      {layer1.layer_score.toFixed(1)}
                     </td>
                   </tr>
                   <tr>
@@ -213,7 +209,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                       {layer2.lasers.length}
                     </td>
                     <td className="p-2.5 text-right font-bold text-rose-400 print:text-black">
-                      {layer2.layer_score.toFixed(1)}%
+                      {layer2.layer_score.toFixed(1)}
                     </td>
                   </tr>
                   <tr>
@@ -226,13 +222,14 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                     <td className="p-2.5">
                       Viewport Match:{" "}
                       {layer3.is_non_native_viewport ? "Non-Native" : "Native"}{" "}
-                      | Temporal Paradox:{" "}
-                      {layer3.clock_paradox_detected ? "DRIFT DETECTED" : "OK"}{" "}
-                      | UPI UTR:{" "}
-                      {layer3.upi_utr_valid === false ? "INVALID" : "VALID"}
+                      | Time check:{" "}
+                      {layer3.clock_paradox_detected ? "CONFLICT" : layer2.details.ocr_mode === "OFFLINE_COMPONENTS_ONLY" ? "NOT CHECKED" : "NO CONFLICT FOUND"}{" "}
+                      | Reference format:{" "}
+                      {layer3.upi_utr_valid == null ? "NOT CHECKED" : layer3.upi_utr_valid ? "FORMAT MATCH" : "REVIEW"}{" "}
+                      | QR codes: {layer3.details.qr_inspection?.decoded_count ?? 0} decoded
                     </td>
                     <td className="p-2.5 text-right font-bold text-purple-400 print:text-black">
-                      {layer3.layer_score.toFixed(1)}%
+                      {layer3.layer_score.toFixed(1)}
                     </td>
                   </tr>
                   <tr>
@@ -249,7 +246,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                         : "None found"}
                     </td>
                     <td className="p-2.5 text-right font-bold text-amber-400 print:text-black">
-                      {layer4.layer_score.toFixed(1)}%
+                      {layer4.layer_score.toFixed(1)}
                     </td>
                   </tr>
                 </tbody>

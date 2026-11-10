@@ -24,7 +24,7 @@ def calibrate_ensemble(
     layer3: Layer3MetadataResult,
     layer4: Layer4SemanticResult,
     is_whatsapp: bool = False,
-) -> tuple[float, float, str, CrossLayerSynergy, list[ForensicFinding], list[BoundingBox]]:
+) -> tuple[float, None, str, CrossLayerSynergy, list[ForensicFinding], list[BoundingBox]]:
     """Conservative, transparent heuristic scoring. Scores are not probabilities."""
     del is_whatsapp  # Recompression/channel is context, never proof of editing.
     findings: list[ForensicFinding] = []
@@ -130,6 +130,18 @@ def calibrate_ensemble(
             description=f"The file names '{layer3.software_signature}' in metadata. Metadata can be added, changed, or preserved during ordinary processing and is not proof of editing.",
             metric_name="Software metadata", metric_value=layer3.software_signature,
         ))
+
+    qr_inspection = layer3.details.get("qr_inspection", {})
+    for index, qr in enumerate(qr_inspection.get("results", [])):
+        payload = str(qr.get("payload", ""))
+        cue = qr.get("review_cue")
+        findings.append(ForensicFinding(
+            id=f"f-qr-{index + 1}", layer=3, severity="INFO",
+            title=f"QR content decoded: {qr.get('kind', 'UNKNOWN')}",
+            description=(f"Payload: {payload}. " if payload else "")
+            + str(cue or "Decoded content only; the QR destination and payment status are not verified."),
+            metric_name="QR payload", metric_value=payload[:180] or "Decoded",
+        ))
     # Cropping, missing EXIF, and social-app recompression are not positive tamper evidence.
 
     if primary_locus:
@@ -157,19 +169,16 @@ def calibrate_ensemble(
     score = min(92.0, sum(strong.values()) + min(weak_score, 12.0))
     if corroborated:
         score = max(score, 72.0)
-        verdict = "MANIPULATED_FORGERY"
-        confidence = 72.0
-    elif score >= 25.0:
-        verdict = "SUSPICIOUS_ANOMALIES"
-        confidence = 60.0
+        verdict = "CORROBORATED_ANOMALIES"
+    elif score >= 12.0:
+        verdict = "REVIEW_REQUIRED"
     else:
-        verdict = "LIKELY_AUTHENTIC"
-        confidence = 55.0
+        verdict = "INCONCLUSIVE"
         findings.append(ForensicFinding(
-            id="f-auth-likely", layer=4, severity="INFO",
-            title="No strong manipulation indicators detected",
-            description="This heuristic review did not find corroborated signs of editing. It cannot prove who created the image or whether a payment occurred.",
-            metric_name="Assessment", metric_value="No strong indicators",
+            id="f-inconclusive", layer=4, severity="INFO",
+            title="Image authenticity is inconclusive",
+            description="No strong image-editing indicators were found. That does not establish that the image is authentic or that a payment occurred.",
+            metric_name="Assessment", metric_value="Inconclusive",
         ))
 
     synergy = CrossLayerSynergy(
@@ -181,4 +190,5 @@ def calibrate_ensemble(
             if primary_locus else "No overlapping high-specificity indicators detected."
         ),
     )
-    return round(score, 1), confidence, verdict, synergy, findings, all_boxes
+    # No calibration dataset exists, so do not return a made-up confidence value.
+    return round(score, 1), None, verdict, synergy, findings, all_boxes

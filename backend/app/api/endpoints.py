@@ -95,7 +95,7 @@ async def health_check():
         "database": await database_status(),
         "service": settings.APP_NAME,
         "version": settings.VERSION,
-        "active_layers": ["L1_Signal", "L2_Typography_Geometry", "L3_Metadata_Protocol", "L4_Ensemble_Synergy"]
+        "active_layers": ["L1_Signal_Heuristics", "L2_Geometry_Heuristics", "L3_Metadata_QR", "L4_Evidence_Review"]
     }
 
 @router.get("/network-info")
@@ -147,8 +147,8 @@ async def get_demo_samples():
             filename="sample_1_authentic_gpay.png",
             title="Sample 1 — Clean Synthetic Payment UI (₹1,250.00)",
             scenario="Synthetic clean baseline used to demonstrate low anomaly indicators; it is not a genuine bank or payment receipt.",
-            expected_verdict="LIKELY_AUTHENTIC",
-            target_score_range="0% – 15%",
+            expected_verdict="INCONCLUSIVE",
+            target_score_range="0–15 heuristic points",
             description="Clean synthetic fixture with no corroborated manipulation indicators. The result does not verify a real payment or origin.",
             tags=["Clean Baseline", "Synthetic", "UPI-style", "Aligned"],
             url="/samples/sample_1_authentic_gpay.png"
@@ -158,8 +158,8 @@ async def get_demo_samples():
             filename="sample_2_spliced_amount.jpg",
             title="Sample 2 — Pixel-Spliced Amount (₹95,250.00)",
             scenario="Amount altered with an off-color patch (ΔE=5.2), +3.5px baseline laser drop, and zero-noise wavelet void.",
-            expected_verdict="MANIPULATED_FORGERY",
-            target_score_range="70% – 92%",
+            expected_verdict="CORROBORATED_ANOMALIES",
+            target_score_range="70–92 heuristic points",
             description="Synthetic fixture with an edited amount and corroborating geometry and pixel-level review cues.",
             tags=["Spliced", "Forgery", "High-Risk", "Baseline Drift"],
             url="/samples/sample_2_spliced_amount.jpg"
@@ -169,8 +169,8 @@ async def get_demo_samples():
             filename="sample_3_fake_generator_paradox.png",
             title="Sample 3 — Fake Generator / DOM Edit",
             scenario="Uniform PNG with status-bar clock paradox (11:12 vs 11:45 AM) and invalid 10-digit UTR.",
-            expected_verdict="MANIPULATED_FORGERY",
-            target_score_range="72% – 92%",
+            expected_verdict="CORROBORATED_ANOMALIES",
+            target_score_range="72–92 heuristic points",
             description="Synthetic fixture with conflicting displayed times and a reference-format mismatch; checks are heuristics, not bank verification.",
             tags=["DOM Edit", "Generator", "Clock Paradox", "Fake UTR"],
             url="/samples/sample_3_fake_generator_paradox.png"
@@ -180,8 +180,8 @@ async def get_demo_samples():
             filename="sample_4_whatsapp_laundered.jpg",
             title="Sample 4 — WhatsApp-Forwarded Forgery",
             scenario="Sample 2 passed through WhatsApp delivery (EXIF stripped, 4:2:0 subsampling, JPEG Q=77).",
-            expected_verdict="MANIPULATED_FORGERY",
-            target_score_range="70% – 92%",
+            expected_verdict="CORROBORATED_ANOMALIES",
+            target_score_range="70–92 heuristic points",
             description="Recompressed synthetic edited fixture; compression alone is not considered proof, so the result relies on combined review cues.",
             tags=["WhatsApp", "Laundered", "Re-compressed", "Surviving Geometry"],
             url="/samples/sample_4_whatsapp_laundered.jpg"
@@ -191,8 +191,8 @@ async def get_demo_samples():
             filename="sample_5_cloned_chat_receipt.jpg",
             title="Sample 5 — Copy-Move Cloned Digits",
             scenario="Digit sequence cloned to inflate balance; non-native cropped viewport (680x1120).",
-            expected_verdict="SUSPICIOUS_ANOMALIES",
-            target_score_range="25% – 70%",
+            expected_verdict="REVIEW_REQUIRED",
+            target_score_range="25–70 heuristic points",
             description="Synthetic cloned-region fixture. Copy-move matching is a review cue and can match repeated interface elements.",
             tags=["Copy-Move", "Cloned Digits", "ORB", "Cropped Viewport"],
             url="/samples/sample_5_cloned_chat_receipt.jpg"

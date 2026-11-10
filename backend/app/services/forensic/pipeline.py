@@ -26,6 +26,7 @@ from app.services.forensic.pixel_analysis.wavelet_noise import (
     run_wavelet_noise_analysis,
 )
 from app.services.forensic.provenance.c2pa_inspector import inspect_c2pa_provenance
+from app.services.forensic.qr_inspector import inspect_qr_codes
 from app.services.forensic.typography.baseline_laser import run_baseline_laser_audit
 from app.services.forensic.typography.cielab_patch import (
     run_cielab_patch_and_sharpness_audit,
@@ -66,6 +67,7 @@ def analyze_screenshot(
     )
     viewport_name, is_cropped, viewport_details = check_viewport_geometry(w, h)
     has_c2pa, c2pa_status, c2pa_details = inspect_c2pa_provenance(image_bytes)
+    qr_details = inspect_qr_codes(img_bgr)
 
     # 4. Layer 1: Pixel & Frequency Signal Forensics
     ela_score, ela_b64, ela_blocks, ela_boxes, ela_details = run_ela_analysis(
@@ -103,6 +105,17 @@ def analyze_screenshot(
 
     # 5. Layer 2: Typographic Geometry & OCR Forensic Audit
     tokens = extract_text_tokens(img_bgr, use_neural=False)
+    tokens_before_qr_exclusion = len(tokens)
+    qr_regions = qr_details.get("regions", [])
+    if qr_regions:
+        def inside_qr(token):
+            cx, cy = token.center_x, token.center_y
+            return any(
+                region["x"] - 4 <= cx <= region["x"] + region["width"] + 4
+                and region["y"] - 4 <= cy <= region["y"] + region["height"] + 4
+                for region in qr_regions
+            )
+        tokens = [token for token in tokens if not inside_qr(token)]
     drift_score, max_drift_px, lasers, baseline_boxes, baseline_details = run_baseline_laser_audit(
         tokens, img_width=w, img_height=h
     )
@@ -126,6 +139,7 @@ def analyze_screenshot(
             "baseline": baseline_details,
             "patch_sharpness": patch_details,
             "tokens_extracted": len(tokens),
+            "tokens_in_qr_regions_excluded": tokens_before_qr_exclusion - len(tokens),
             "ocr_mode": "OFFLINE_COMPONENTS_ONLY",
             "ocr_note": "Offline mode identifies text-like image components but does not recognize their text. Pixel-based transaction text rules are unavailable in this mode.",
         }
@@ -171,7 +185,8 @@ def analyze_screenshot(
             "metadata": metadata_info,
             "viewport": viewport_details,
             "rules": rule_details,
-            "c2pa": c2pa_details
+            "c2pa": c2pa_details,
+            "qr_inspection": qr_details,
         }
     )
 

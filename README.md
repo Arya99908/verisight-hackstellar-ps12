@@ -60,7 +60,9 @@ python3 server.py
 
 ## Accuracy boundary
 
-This is a prototype, not a validated forensic product. Server ELA/residual measures are diagnostic cues, not proof of tampering. OCR is optional and uses Tesseract if installed; otherwise OCR-dependent checks are unavailable. The front-end score remains an uncalibrated triage heuristic. C2PA cryptographic trust-chain verification and calibrated Bayesian fusion are not implemented; status remains unknown/unverified. Do not use this demo to decide whether a payment occurred. Verify through the payment provider.
+This is a prototype, not a validated forensic product. The React workbench does not contain a trained image-forgery classifier; its five bundled examples are synthetic fixtures. It reports `INCONCLUSIVE`, `REVIEW_REQUIRED`, or `CORROBORATED_ANOMALIES`, never a verified-real or verified-fake result. Its point score is an uncalibrated triage heuristic and classifier confidence is unavailable. QR payloads can be decoded locally for inspection, but the payee, URL destination, and payment state are not verified. C2PA marker detection does not cryptographically validate a manifest. Do not use this demo to decide whether a payment occurred; confirm through the payment provider or bank.
+
+See [MODEL_TRAINING_READINESS.md](docs/MODEL_TRAINING_READINESS.md) for why no model was trained on the current five fixtures and the data, split, calibration, and evaluation needed before an accuracy claim is appropriate.
 
 ## Implemented API
 

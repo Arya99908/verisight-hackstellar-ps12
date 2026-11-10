@@ -106,9 +106,9 @@ interface BoundingBox {
 
 ## 4. Conservative Evidence Combination
 
-The pipeline uses handcrafted heuristics rather than a trained or calibrated classifier. Low-level pixel variation, JPEG recompression, viewport cropping, and software metadata are weak review cues and can also occur in ordinary images. PNG ELA is shown only as an exploratory view and is excluded from scoring. The manipulated verdict requires corroboration; an individual cue produces at most a review-level result. An overlapping region is highlighted only when a sufficiently strong copy-move match intersects a flagged text baseline. The score and confidence are not probabilities.
+The pipeline uses handcrafted heuristics rather than a trained or calibrated classifier. Low-level pixel variation, JPEG recompression, viewport cropping, and software metadata are weak review cues and can also occur in ordinary images. PNG ELA is shown only as an exploratory view and is excluded from scoring. Results are `INCONCLUSIVE`, `REVIEW_REQUIRED`, or `CORROBORATED_ANOMALIES`; none asserts that an image is genuine or fake. An overlapping region is highlighted only when a sufficiently strong copy-move match intersects a flagged text baseline. The score is a heuristic point scale and classifier confidence is unavailable.
 
-The offline text component extractor does not recognize words. Time and transaction-reference rules that require recognized image text are therefore unavailable in the current build. File metadata can be inspected, but it does not independently verify transaction content. Possible C2PA marker strings are detected without validating the manifest or its signature.
+The offline text component extractor does not recognize words. Time and transaction-reference rules that require recognized image text are therefore unavailable in the current build. QR payloads can be decoded locally and displayed for manual review, but decoding does not validate the destination, payee, or payment. File metadata can be inspected, but it does not independently verify transaction content. Possible C2PA marker strings are detected without validating the manifest or its signature.
 
 ---
 
