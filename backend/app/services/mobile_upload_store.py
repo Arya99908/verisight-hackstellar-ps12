@@ -37,8 +37,15 @@ def _request(path: str, key: str, method: str = "GET", body: bytes | None = None
     if extra_headers:
         headers.update(extra_headers)
     request = Request(f"{url}{path}", data=body, headers=headers, method=method)
-    with urlopen(request, timeout=20) as response:
-        return response.read()
+    try:
+        with urlopen(request, timeout=20) as response:
+            return response.read()
+    except HTTPError as exc:
+        # Storage's response body identifies path, auth, and object-state errors;
+        # include it in server logs while keeping public API errors generic.
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        log.warning("Supabase Storage %s failed for %s: HTTP %s %s", method, path, exc.code, detail)
+        raise
 
 
 async def save_mobile_image(session_id: UUID, filename: str, content: bytes) -> bool:

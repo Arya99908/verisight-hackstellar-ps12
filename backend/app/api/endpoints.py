@@ -83,7 +83,7 @@ async def analyze_upload_session(session_id: UUID):
     except Exception as exc:
         raise HTTPException(
             status_code=422,
-            detail="The uploaded file could not be decoded. Choose a PNG, JPG, WebP, or BMP screenshot.",
+            detail="The uploaded screenshot could not be retrieved or analyzed. Please try again with a PNG, JPG, WebP, or BMP file.",
         ) from exc
 
 @router.get("/health")
