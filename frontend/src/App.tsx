@@ -29,7 +29,9 @@ export const App: React.FC = () => {
 const DesktopWorkbench: React.FC = () => {
   // Desktop Workbench State
   const [demoSamples, setDemoSamples] = useState<DemoSampleMeta[]>([]);
-  const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
+  const [selectedSampleId, setSelectedSampleId] = useState<string | null>(
+    "sample_1",
+  );
   const [report, setReport] = useState<ForensicAnalysisReport | null>(null);
   const [appError, setAppError] = useState<string | null>(null);
   const [selectedLocus, setSelectedLocus] = useState<BoundingBox | null>(null);
@@ -48,31 +50,35 @@ const DesktopWorkbench: React.FC = () => {
   const [isMobileModalOpen, setIsMobileModalOpen] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
 
-  // Load only the lightweight sample catalog during startup. Image analysis is
-  // deliberately deferred until the user selects a sample or uploads an image.
+  // Keep the normal Sample 1 startup view, but request the catalog and analysis
+  // in parallel so the catalog request does not add a serial round trip.
   useEffect(() => {
     let active = true;
     fetchHealth()
       .then((health) => { if (active) setDatabaseStatus(health.database); })
       .catch(() => { if (active) setDatabaseStatus("UNAVAILABLE"); });
 
-    fetchDemoSamples()
+    const catalogRequest = fetchDemoSamples()
       .then((samples) => {
         if (!active) return;
         setDemoSamples(samples);
         setDemoLoadFailed(false);
-        if (samples.length === 0) setAppError("The demo sample list is empty.");
+        if (samples.length === 0) {
+          setAppError("The demo sample list is empty.");
+        }
       })
       .catch((err) => {
         if (!active) return;
         setDemoLoadFailed(true);
         setAppError(`Could not load demo samples: ${err.message}`);
       });
+    void catalogRequest;
+    void handleSelectSample("sample_1");
     return () => { active = false; };
   }, [demoRetry]);
 
   // Handle selecting a golden demo sample
-  const handleSelectSample = async (sampleId: string) => {
+  async function handleSelectSample(sampleId: string) {
     setSelectedSampleId(sampleId);
     setSelectedLocus(null);
     setIsLoading(true);
@@ -86,7 +92,7 @@ const DesktopWorkbench: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   // Handle custom screenshot upload
   const handleFileUpload = async (file: File) => {
@@ -121,7 +127,8 @@ const DesktopWorkbench: React.FC = () => {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: "image/png" });
+      const previewMime = report.original_image_b64.match(/^data:([^;]+);/)?.[1] || "image/png";
+      const blob = new Blob([byteArray], { type: previewMime });
 
       const simRes = await simulateWhatsApp(
         blob,

@@ -194,9 +194,10 @@ def analyze_screenshot(
         is_whatsapp=is_whatsapp
     )
 
-    # 9. Encode Original Image as base64 PNG for frontend viewer
-    _, orig_png = cv2.imencode('.png', img_bgr)
-    orig_b64 = f"data:image/png;base64,{base64.b64encode(orig_png.tobytes()).decode('utf-8')}"
+    # 9. Send lossless WebP viewer assets to reduce the report payload. The
+    # original uploaded bytes above remain the source for all forensic checks.
+    _, orig_webp = cv2.imencode('.webp', img_bgr, [cv2.IMWRITE_WEBP_QUALITY, 101])
+    orig_b64 = f"data:image/webp;base64,{base64.b64encode(orig_webp.tobytes()).decode('utf-8')}"
 
     return ForensicAnalysisReport(
         file_sha256=sha256_hash,

@@ -28,8 +28,8 @@ def run_copy_move_analysis(
     bounding_boxes: list[BoundingBox] = []
 
     if descriptors is None or len(descriptors) < 10:
-        _, png_buf = cv2.imencode('.png', clone_canvas)
-        clone_b64 = f"data:image/png;base64,{base64.b64encode(png_buf.tobytes()).decode('utf-8')}"
+        _, webp_buf = cv2.imencode('.webp', clone_canvas, [cv2.IMWRITE_WEBP_QUALITY, 101])
+        clone_b64 = f"data:image/webp;base64,{base64.b64encode(webp_buf.tobytes()).decode('utf-8')}"
         return False, 0, clone_b64, [], {"keypoints_extracted": 0, "clusters_found": 0}
 
     # 2. Brute-Force Hamming Matching (k=4)
@@ -152,8 +152,8 @@ def run_copy_move_analysis(
         ))
 
     # Encode clone canvas
-    _, png_buf = cv2.imencode('.png', clone_canvas)
-    clone_b64 = f"data:image/png;base64,{base64.b64encode(png_buf.tobytes()).decode('utf-8')}"
+    _, webp_buf = cv2.imencode('.webp', clone_canvas, [cv2.IMWRITE_WEBP_QUALITY, 101])
+    clone_b64 = f"data:image/webp;base64,{base64.b64encode(webp_buf.tobytes()).decode('utf-8')}"
 
     details = {
         "total_keypoints": len(keypoints),

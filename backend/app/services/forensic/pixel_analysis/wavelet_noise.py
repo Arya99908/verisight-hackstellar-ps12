@@ -106,8 +106,8 @@ def run_wavelet_noise_analysis(
     heatmap_colored = cv2.applyColorMap(norm_noise, cv2.COLORMAP_COOL)
     
     # Invert so voids show dark/black and edges glow brightly
-    _, noise_png = cv2.imencode('.png', heatmap_colored)
-    wavelet_noise_b64 = f"data:image/png;base64,{base64.b64encode(noise_png.tobytes()).decode('utf-8')}"
+    _, noise_webp = cv2.imencode('.webp', heatmap_colored, [cv2.IMWRITE_WEBP_QUALITY, 101])
+    wavelet_noise_b64 = f"data:image/webp;base64,{base64.b64encode(noise_webp.tobytes()).decode('utf-8')}"
 
     # 7. Compute noise inconsistency score (0-100)
     # Calibrated primarily by localized zero-noise voids and splicing boundaries

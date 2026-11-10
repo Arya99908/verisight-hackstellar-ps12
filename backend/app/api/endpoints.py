@@ -1,10 +1,13 @@
 import socket
 import os
+from datetime import datetime
+from functools import lru_cache
+from pathlib import Path
 from uuid import UUID, uuid4
 from urllib.parse import quote, urlsplit
 from typing import Any
 
-from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 
 from app.core.config import settings
@@ -213,16 +216,19 @@ async def analyze_upload(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Forensic investigation failed: {e!s}")
 
 @router.post("/analyze-sample", response_model=ForensicAnalysisReport)
-async def analyze_sample(sample_id: str = Form(...)):
+async def analyze_sample(background_tasks: BackgroundTasks, sample_id: str = Form(...)):
     """Instantly executes the 4-layer pipeline against a golden demo sample via form body."""
-    return await execute_sample_analysis(sample_id)
+    return await execute_sample_analysis(sample_id, background_tasks)
 
 @router.post("/analyze-sample/{sample_id}", response_model=ForensicAnalysisReport)
-async def analyze_sample_path(sample_id: str):
+async def analyze_sample_path(sample_id: str, background_tasks: BackgroundTasks):
     """Instantly executes the 4-layer pipeline against a golden demo sample via path parameter."""
-    return await execute_sample_analysis(sample_id)
+    return await execute_sample_analysis(sample_id, background_tasks)
 
-async def execute_sample_analysis(sample_id: str) -> ForensicAnalysisReport:
+async def execute_sample_analysis(
+    sample_id: str,
+    background_tasks: BackgroundTasks | None = None,
+) -> ForensicAnalysisReport:
     sample_files = {
         "sample_1": "sample_1_authentic_gpay.png",
         "sample_2": "sample_2_spliced_amount.jpg",
@@ -239,13 +245,21 @@ async def execute_sample_analysis(sample_id: str) -> ForensicAnalysisReport:
         from samples.generator import generate_all_samples
         generate_all_samples()
 
-    with open(sample_path, "rb") as f:
-        content = f.read()
-
     from app.services.forensic.pipeline import analyze_screenshot
-    report = analyze_screenshot(content, filename=filename)
-    await save_case(report, "synthetic_sample")
+    report = _cached_demo_analysis(filename, sample_path.stat().st_mtime_ns, str(sample_path))
+    report = report.model_copy(update={"timestamp": datetime.now().isoformat()})
+    if background_tasks is not None:
+        background_tasks.add_task(save_case, report, "synthetic_sample")
+    else:
+        await save_case(report, "synthetic_sample")
     return report
+
+
+@lru_cache(maxsize=5)
+def _cached_demo_analysis(filename: str, modified_ns: int, path: str) -> ForensicAnalysisReport:
+    """Keep demo analyses warm in a reused serverless instance."""
+    from app.services.forensic.pipeline import analyze_screenshot
+    return analyze_screenshot(Path(path).read_bytes(), filename=filename)
 
 @router.post("/simulate-whatsapp", response_model=WhatsAppSimulationResponse)
 async def simulate_whatsapp(file: UploadFile = File(...)):

@@ -44,8 +44,8 @@ def run_ela_analysis(
     
     # 4. Generate Colormap (INFERNO)
     colormap_img = cv2.applyColorMap(amplified, cv2.COLORMAP_INFERNO)
-    _, ela_png = cv2.imencode('.png', colormap_img)
-    ela_b64 = f"data:image/png;base64,{base64.b64encode(ela_png.tobytes()).decode('utf-8')}"
+    _, ela_webp = cv2.imencode('.webp', colormap_img, [cv2.IMWRITE_WEBP_QUALITY, 101])
+    ela_b64 = f"data:image/webp;base64,{base64.b64encode(ela_webp.tobytes()).decode('utf-8')}"
 
     # 5. Macroblock Z-Score Splicing Localization (16x16 blocks)
     block_size = 16
