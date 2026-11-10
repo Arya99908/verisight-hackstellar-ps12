@@ -1,4 +1,5 @@
 import sys
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -14,7 +15,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from samples.generator import generate_all_samples
 
 from app.api.endpoints import router as api_router
 from app.core.config import settings
@@ -24,7 +24,12 @@ from app.core.config import settings
 async def lifespan(app: FastAPI):
     # Startup: ensure golden demo samples are generated
     try:
-        generate_all_samples()
+        if os.getenv("VERCEL"):
+            yield
+            return
+        if not any(settings.SAMPLES_DIR.glob("sample_*")):
+            from samples.generator import generate_all_samples
+            generate_all_samples()
     except Exception as e:
         print(f"[Startup Warning] Could not auto-generate samples: {e}")
     yield
@@ -46,7 +51,8 @@ app.add_middleware(
 )
 
 # Mount samples static directory
-settings.SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
+if not settings.SAMPLES_DIR.exists():
+    raise RuntimeError(f"Packaged sample directory is missing: {settings.SAMPLES_DIR}")
 app.mount("/samples", StaticFiles(directory=str(settings.SAMPLES_DIR)), name="samples")
 
 # Mount API router

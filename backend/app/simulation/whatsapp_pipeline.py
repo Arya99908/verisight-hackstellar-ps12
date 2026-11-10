@@ -1,9 +1,7 @@
 import base64
-import io
 
 import cv2
 import numpy as np
-from PIL import Image
 
 from app.core.schemas import WhatsAppSimulationResponse
 from app.services.forensic.pipeline import analyze_screenshot
@@ -23,30 +21,23 @@ def run_whatsapp_simulation(
     """
     orig_size = len(image_bytes)
 
-    # 1. Process via PIL
-    with Image.open(io.BytesIO(image_bytes)) as pil_img:
-        pil_img = pil_img.convert('RGB')
-        w_orig, h_orig = pil_img.size
-
-        # Clamp long edge to 1600px
-        max_edge = max(w_orig, h_orig)
-        if max_edge > 1600:
-            scale = 1600.0 / max_edge
-            new_w = int(round(w_orig * scale))
-            new_h = int(round(h_orig * scale))
-            pil_img = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-        else:
-            new_w, new_h = w_orig, h_orig
-
-        out_buf = io.BytesIO()
-        pil_img.save(
-            out_buf,
-            format='JPEG',
-            quality=77,
-            subsampling=2,  # 4:2:0 subsampling
-            optimize=True
-        )
-        simulated_bytes = out_buf.getvalue()
+    # Decode, resize to 1600px maximum and JPEG re-encode (OpenCV uses 4:2:0 by default).
+    np_orig = np.frombuffer(image_bytes, np.uint8)
+    orig_bgr = cv2.imdecode(np_orig, cv2.IMREAD_COLOR)
+    if orig_bgr is None:
+        raise ValueError("Unsupported or corrupt image")
+    h_orig, w_orig = orig_bgr.shape[:2]
+    max_edge = max(w_orig, h_orig)
+    if max_edge > 1600:
+        scale = 1600.0 / max_edge
+        new_w, new_h = int(round(w_orig * scale)), int(round(h_orig * scale))
+        resized = cv2.resize(orig_bgr, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    else:
+        new_w, new_h, resized = w_orig, h_orig, orig_bgr
+    ok, encoded = cv2.imencode('.jpg', resized, [cv2.IMWRITE_JPEG_QUALITY, 77])
+    if not ok:
+        raise ValueError("JPEG recompression failed")
+    simulated_bytes = encoded.tobytes()
 
     sim_size = len(simulated_bytes)
     comp_ratio = round(float(orig_size) / max(1, sim_size), 2)
@@ -54,10 +45,6 @@ def run_whatsapp_simulation(
     # Decode simulated image
     np_sim = np.frombuffer(simulated_bytes, np.uint8)
     sim_bgr = cv2.imdecode(np_sim, cv2.IMREAD_COLOR)
-
-    # Decode original image for diff
-    np_orig = np.frombuffer(image_bytes, np.uint8)
-    orig_bgr = cv2.imdecode(np_orig, cv2.IMREAD_COLOR)
 
     # Match sizes for diff if resized
     if orig_bgr.shape[:2] != sim_bgr.shape[:2]:

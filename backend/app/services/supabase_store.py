@@ -1,7 +1,9 @@
 """Server-only persistence for analysis summaries; never store uploaded image bytes."""
 import logging
 import os
-import httpx
+import asyncio
+import json
+from urllib.request import Request, urlopen
 
 log = logging.getLogger(__name__)
 
@@ -28,15 +30,17 @@ async def save_case(report, source: str = "web") -> bool:
         },
         "source": source,
     }
+    def send():
+        request = Request(
+            f"{url}/rest/v1/forensic_cases",
+            data=json.dumps(row).encode(),
+            headers={"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json", "Prefer": "return=minimal"},
+            method="POST",
+        )
+        with urlopen(request, timeout=8) as response:
+            return 200 <= response.status < 300
     try:
-        async with httpx.AsyncClient(timeout=8) as client:
-            response = await client.post(
-                f"{url}/rest/v1/forensic_cases",
-                headers={"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json", "Prefer": "return=minimal"},
-                json=row,
-            )
-            response.raise_for_status()
-        return True
+        return await asyncio.to_thread(send)
     except Exception:
         log.exception("Supabase forensic case persistence failed")
         return False

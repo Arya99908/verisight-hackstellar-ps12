@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 from pydantic import BaseModel
 
@@ -11,7 +12,9 @@ class Settings(BaseModel):
     # Path settings
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent.parent
     SAMPLES_DIR: Path = BASE_DIR / "samples"
-    REPORTS_DIR: Path = BASE_DIR / "reports"
+    # Vercel's deployment bundle is read-only. Keep transient reports in /tmp
+    # there while preserving the existing local development layout.
+    REPORTS_DIR: Path = Path("/tmp/verisight/reports") if os.getenv("VERCEL") else BASE_DIR / "reports"
     
     # File limits
     MAX_FILE_SIZE_BYTES: int = 20 * 1024 * 1024  # 20 MB
@@ -31,6 +34,8 @@ class Settings(BaseModel):
 
 settings = Settings()
 
-# Ensure directories exist
-settings.SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
+# Ensure writable directories exist. Sample assets are packaged with the
+# deployment and must not be created in Vercel's read-only bundle.
+if not os.getenv("VERCEL"):
+    settings.SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
 settings.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
