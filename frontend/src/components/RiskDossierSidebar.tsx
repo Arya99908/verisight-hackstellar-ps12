@@ -53,7 +53,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
     findings,
   } = report;
 
-  const isAuthentic = verdict === "AUTHENTIC_VERIFIED";
+  const isAuthentic = verdict === "LIKELY_AUTHENTIC" || verdict === "AUTHENTIC_VERIFIED";
   const isSuspicious = verdict === "SUSPICIOUS_ANOMALIES";
   const isManipulated = verdict === "MANIPULATED_FORGERY";
 
@@ -120,7 +120,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 {overall_tamper_score.toFixed(1)}%
               </span>
               <span className="text-[10px] font-mono uppercase tracking-wider text-[#94a3b8]">
-                Tamper Risk
+                Anomaly score
               </span>
             </div>
           </div>
@@ -147,7 +147,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </div>
 
             <div className="flex items-center space-x-2 text-[11px] text-[#64748b] mt-1.5">
-              <span>Confidence: {confidence_score.toFixed(1)}%</span>
+              <span>Assessment confidence: {confidence_score.toFixed(1)}%</span>
               <span>•</span>
               <span className="truncate max-w-[180px]">{channel_detected}</span>
             </div>
@@ -160,10 +160,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             <div className="flex items-center justify-between text-amber-400 font-semibold mb-1">
               <div className="flex items-center space-x-1.5">
                 <Sparkles className="w-4 h-4 animate-pulse" />
-                <span>Cross-Layer Spatial IoU Synergy</span>
+                <span>Overlapping image indicators</span>
               </div>
               <span className="px-1.5 py-0.5 rounded bg-amber-900/60 text-amber-300 font-mono text-[10px]">
-                x{synergy.multiplier_factor} MULTIPLIER
+                REGION OVERLAP
               </span>
             </div>
             <p className="text-[11px] text-amber-200/80 leading-relaxed">
@@ -177,7 +177,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 className="mt-2 w-full py-1 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 rounded font-mono text-[10px] flex items-center justify-center space-x-1.5 border border-amber-500/40"
               >
                 <Target className="w-3 h-3" />
-                <span>Target Primary Forgery Locus</span>
+                <span>Inspect overlapping indicators</span>
               </button>
             )}
           </div>
@@ -186,7 +186,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
         {/* 3. 4-Layer Forensic Scores Breakdown */}
         <div className="space-y-2">
           <span className="text-[11px] font-mono text-[#64748b] tracking-wider uppercase font-semibold">
-            4-Layer Evidentiary Scoring
+            Forensic checks (heuristic)
           </span>
 
           {/* Layer 1: Physical Signal */}
@@ -257,7 +257,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 Clock Drift: {layer3.clock_paradox_detected ? "PARADOX" : "OK"}
               </span>
               <span>
-                UTR: {layer3.upi_utr_valid === false ? "INVALID" : "VALID"}
+                Reference: {layer3.upi_utr_valid == null ? "UNAVAILABLE" : layer3.upi_utr_valid ? "FORMAT OK" : "REVIEW"}
               </span>
             </div>
           </div>
@@ -266,7 +266,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-2.5 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#f1f5f9]">
-                Layer 4: Cross-Layer Spatial Ensemble
+                Layer 4: Heuristic Review
               </span>
               <span className="font-mono text-xs font-bold text-amber-400">
                 {layer4.layer_score.toFixed(1)}%
@@ -280,11 +280,11 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </div>
             <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
               <span>
-                Synergy:{" "}
+                Overlap:{" "}
                 {synergy.synergy_multiplier_applied ? "ACTIVE" : "NONE"}
               </span>
               <span>
-                VLM: {layer4.vlm_used ? layer4.vlm_provider : "OFFLINE OPT"}
+                Vision model: {layer4.vlm_used ? layer4.vlm_provider : "NOT USED"}
               </span>
             </div>
           </div>
@@ -300,7 +300,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
           {findings.length === 0 ? (
             <div className="p-3 bg-[#070b14] border border-[#1e293b] rounded-lg text-center text-[#64748b] font-mono text-[11px]">
-              No tampering indicators identified. All layers verified authentic.
+              No strong manipulation indicators were detected. This heuristic result does not prove the image’s origin or that a payment occurred.
             </div>
           ) : (
             <div className="space-y-2">

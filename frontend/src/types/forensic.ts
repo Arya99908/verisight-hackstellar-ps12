@@ -106,6 +106,7 @@ export interface ForensicAnalysisReport {
   overall_tamper_score: number;
   confidence_score: number;
   verdict:
+    | "LIKELY_AUTHENTIC"
     | "AUTHENTIC_VERIFIED"
     | "SUSPICIOUS_ANOMALIES"
     | "MANIPULATED_FORGERY"

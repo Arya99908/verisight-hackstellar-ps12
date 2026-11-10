@@ -64,13 +64,13 @@ def test_cross_layer_spatial_iou_synergy():
         x=200, y=400, width=150, height=50,
         label="ELA Inconsistency Patch",
         layer=1,
-        anomaly_type="ELA_LOCAL_VARIANCE_OUTLIER"
+        anomaly_type="CLONED_PIXEL_REGION_DETECTED"
     )
     box2 = BoundingBox(
         x=210, y=405, width=140, height=45,
         label="Spliced Amount (Laser Drift)",
         layer=2,
-        anomaly_type="CRITICAL_BASELINE_DRIFT"
+        anomaly_type="SUBPIXEL_BASELINE_DRIFT"
     )
 
     l1 = Layer1SignalResult(
@@ -78,8 +78,8 @@ def test_cross_layer_spatial_iou_synergy():
         ela_b64="",
         wavelet_noise_score=78.0,
         wavelet_noise_b64="",
-        clone_detected=False,
-        clone_count=0,
+        clone_detected=True,
+        clone_count=55,
         clone_b64="",
         anomalous_blocks_count=5,
         layer_score=82.0,
@@ -119,10 +119,10 @@ def test_cross_layer_spatial_iou_synergy():
 
     final_score, confidence, verdict, synergy, findings, all_boxes = calibrate_ensemble(l1, l2, l3, l4)
 
-    # IoU synergy multiplier should trigger!
+    # Strong, overlapping indicators should localize a corroborated anomaly.
     assert synergy.synergy_multiplier_applied is True
-    assert synergy.multiplier_factor == 1.35
+    assert synergy.multiplier_factor == 1.0
     assert synergy.primary_forgery_locus is not None
-    assert final_score >= 80.0
-    assert "MANIPULATED" in verdict or "SUSPICIOUS" in verdict
+    assert final_score >= 72.0
+    assert verdict == "MANIPULATED_FORGERY"
     assert len(findings) > 0

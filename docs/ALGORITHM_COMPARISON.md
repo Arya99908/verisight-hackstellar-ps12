@@ -96,22 +96,23 @@ This document provides a comparative analysis of the digital image forensics alg
 * **Prior Art:** ExifTool, ExifRead.
 * **VeriSight Implementation (`services/forensic/metadata/`):**
   - **Container & Chunk Inspection:** Traverses EXIF metadata, PNG `tEXt` / `iTXt` / `zTXt` / `pHYs` chunks, ICC color profiles, and software signatures (`Photoshop`, `Canva`, `GIMP`, `Figma`, `FakeGen`).
-  - **WhatsApp Media Re-Compression Fingerprinter:** Detects laundering when format is JPEG + EXIF stripped + chroma subsampling is 4:2:0 + long edge matches WhatsApp media thresholds ($\{1600, 1280, 1080, 1024, 960\}$). Dynamically shifts ensemble weights toward Layer 2 geometry and Layer 1 wavelet noise.
+  - **WhatsApp Media Re-Compression Fingerprinter:** Estimates whether an image resembles a recompressed social-media image. This is channel context only and does not add positive tamper evidence.
   - **Clock Temporal Paradox Detector:** Extracts top OS status-bar clock ($y < 0.07H$, e.g., `11:12`) vs. receipt transaction timestamp (e.g., `11:45 AM`). Raises `TEMPORAL_PARADOX_CLOCK_DRIFT` if receipt time is in the future relative to the phone's clock.
-  - **UPI 12-Digit Reference/UTR Validator:** Validates 12-digit numeric structure, flags truncated lengths (e.g. 10 digits) or dummy repetitive entropy sequences (`9999999999`, `123456789012`).
+  - **Reference Format Rule:** Checks the format of reference strings available to the deterministic rule layer. This is not an NPCI/bank lookup, checksum, or payment confirmation; image OCR is not enabled in the current offline prototype.
 * **Expected Outputs:** Detailed metadata breakdown, WhatsApp detection pill, clock drift telemetry, UTR validity state.
 * **Computational Requirements:** $< 10\text{ ms}$.
 * **Known Limitations:** Users can take a screenshot hours after a transaction occurred (which is valid). The paradox triggers only if the transaction time is *ahead* of the status bar clock on the same calendar day.
 
 ---
 
-### 1.7 Spatial IoU Cross-Layer Synergy Ensemble
+### 1.7 Conservative Evidence Combination
 * **Prior Art:** Most forensic tools output disconnected reports for each algorithm without spatial cross-correlation.
 * **VeriSight Implementation (`services/forensic/ensemble/calibrator.py`):**
-  - Computes layer scores $S_1, S_2, S_3, S_4 \in [0, 100]$.
-  - Cross-Layer Spatial IoU Intersection: Evaluates intersection-over-union ($\text{IoU}$) and bounding box centroid proximity ($d \le 15\text{ px}$) between Layer 1 signal anomalies (ELA / Wavelet / Clone) and Layer 2 typography anomalies (Baseline drift / $\Delta E_{ab}$ patch / Sharpness Z-score).
-  - Synergy Boost: When both physical signal forensics and geometric typographic forensics flag the *exact same spatial region* (e.g., currency digits), applies a calibrated $1.35\times$ synergy boost and marks that region as the **Primary Forgery Locus**.
-* **Expected Outputs:** Calibrated overall tamper score ($0–100\%$), confidence score ($0–100\%$), final investigative verdict (`AUTHENTIC_VERIFIED`, `SUSPICIOUS_ANOMALIES`, `MANIPULATED_FORGERY`), primary forgery locus.
+  - Uses a transparent, conservative heuristic. Score and assessment confidence are not probabilities and have not been calibrated against a representative real-world dataset.
+  - ELA, noise, sharpness, color variation, crop geometry, and software metadata are weak review cues. PNG ELA scoring is disabled. Compression, cropping, and metadata presence alone never establish tampering.
+  - Manipulated verdicts require corroboration across signal families or a paired time/reference inconsistency. Overlap localization is limited to a sufficiently strong copy-move match that intersects a flagged text baseline; there is no score multiplier or centroid-proximity shortcut.
+  - Offline text extraction detects text-like components but does not recognize their characters, so screenshot OCR rules are unavailable.
+* **Expected Outputs:** Heuristic anomaly score, bounded assessment confidence, verdict (`LIKELY_AUTHENTIC`, `SUSPICIOUS_ANOMALIES`, `MANIPULATED_FORGERY`), optional reviewed region. A likely-authentic result is not proof of origin or payment.
 
 ---
 

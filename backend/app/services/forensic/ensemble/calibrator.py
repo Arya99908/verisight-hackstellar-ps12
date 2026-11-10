@@ -1,7 +1,3 @@
-
-import numpy as np
-
-from app.core.config import settings
 from app.core.schemas import (
     BoundingBox,
     CrossLayerSynergy,
@@ -14,289 +10,175 @@ from app.core.schemas import (
 
 
 def compute_box_iou(b1: BoundingBox, b2: BoundingBox) -> float:
-    """Computes Intersection over Union (IoU) of two bounding boxes."""
-    x1 = max(b1.x, b2.x)
-    y1 = max(b1.y, b2.y)
+    x1, y1 = max(b1.x, b2.x), max(b1.y, b2.y)
     x2 = min(b1.x + b1.width, b2.x + b2.width)
     y2 = min(b1.y + b1.height, b2.y + b2.height)
+    intersection = max(0, x2 - x1) * max(0, y2 - y1)
+    union = b1.width * b1.height + b2.width * b2.height - intersection
+    return intersection / union if union > 0 else 0.0
 
-    inter_w = max(0, x2 - x1)
-    inter_h = max(0, y2 - y1)
-    inter_area = inter_w * inter_h
-
-    if inter_area == 0:
-        return 0.0
-
-    b1_area = b1.width * b1.height
-    b2_area = b2.width * b2.height
-    union_area = float(b1_area + b2_area - inter_area)
-
-    return inter_area / union_area if union_area > 0 else 0.0
-
-def are_boxes_proximate(b1: BoundingBox, b2: BoundingBox, max_dist: float = 20.0) -> bool:
-    """Checks if two bounding box centroids or edges are within close proximity."""
-    c1_x = b1.x + b1.width / 2.0
-    c1_y = b1.y + b1.height / 2.0
-    c2_x = b2.x + b2.width / 2.0
-    c2_y = b2.y + b2.height / 2.0
-
-    dist = np.hypot(c1_x - c2_x, c1_y - c2_y)
-    return dist <= max_dist
 
 def calibrate_ensemble(
     layer1: Layer1SignalResult,
     layer2: Layer2GeometryResult,
     layer3: Layer3MetadataResult,
     layer4: Layer4SemanticResult,
-    is_whatsapp: bool = False
+    is_whatsapp: bool = False,
 ) -> tuple[float, float, str, CrossLayerSynergy, list[ForensicFinding], list[BoundingBox]]:
-    """
-    Bayesian Evidentiary Ensemble & Cross-Layer Spatial IoU Synergy.
-    Weighs Layer 1 (Signal), Layer 2 (Typography), Layer 3 (Metadata), and Layer 4.
-    If Layer 1 physical signal anomalies overlap Layer 2 typography anomalies (IoU > 0.20),
-    applies a 1.35x synergy multiplier and isolates the Primary Forgery Locus.
-    """
+    """Conservative, transparent heuristic scoring. Scores are not probabilities."""
+    del is_whatsapp  # Recompression/channel is context, never proof of editing.
     findings: list[ForensicFinding] = []
-    all_boxes: list[BoundingBox] = []
+    all_boxes = layer1.bounding_boxes + layer2.bounding_boxes + layer3.bounding_boxes
 
-    # Collect all bounding boxes
-    all_boxes.extend(layer1.bounding_boxes)
-    all_boxes.extend(layer2.bounding_boxes)
-    all_boxes.extend(layer3.bounding_boxes)
-
-    # 1. Weight adjustments based on detected channel
-    # If WhatsApp re-compressed, EXIF is stripped and ELA is smoothed;
-    # shift weights toward Layer 2 (Typography geometry & Delta-E) and Layer 1 Wavelets.
-    if is_whatsapp:
-        w1 = 0.35
-        w2 = 0.45
-        w3 = 0.15
-        w4 = 0.05
-    else:
-        w1 = 0.35
-        w2 = 0.35
-        w3 = 0.25
-        w4 = 0.05
-
-    # 2. Check Cross-Layer Spatial Synergy (Layer 1 vs Layer 2)
-    synergy_applied = False
-    synergy_factor = 1.0
-    primary_locus: BoundingBox | None = None
-    synergy_explanation = "No cross-layer spatial overlap detected between physical signal and typography."
-
-    l1_boxes = layer1.bounding_boxes
-    l2_boxes = layer2.bounding_boxes
-
-    for b1 in l1_boxes:
-        for b2 in l2_boxes:
-            iou = compute_box_iou(b1, b2)
-            proximate = are_boxes_proximate(b1, b2, max_dist=25.0)
-            if iou > 0.15 or proximate:
-                synergy_applied = True
-                synergy_factor = settings.CROSS_LAYER_SYNERGY_MULTIPLIER
-                
-                # Merge into primary forgery locus
-                px = min(b1.x, b2.x)
-                py = min(b1.y, b2.y)
-                pw = max(b1.x + b1.width, b2.x + b2.width) - px
-                ph = max(b1.y + b1.height, b2.y + b2.height) - py
-
+    baseline_boxes = [b for b in layer2.bounding_boxes if b.anomaly_type == "SUBPIXEL_BASELINE_DRIFT"]
+    clone_boxes = [
+        b for b in layer1.bounding_boxes
+        if b.anomaly_type == "CLONED_PIXEL_REGION_DETECTED" and layer1.clone_detected and layer1.clone_count >= 20
+    ]
+    # Only combine two relatively specific signals when their actual regions overlap.
+    primary_locus = None
+    for clone_box in clone_boxes:
+        for baseline_box in baseline_boxes:
+            iou = compute_box_iou(clone_box, baseline_box)
+            if iou >= 0.20:
+                x, y = min(clone_box.x, baseline_box.x), min(clone_box.y, baseline_box.y)
+                right = max(clone_box.x + clone_box.width, baseline_box.x + baseline_box.width)
+                bottom = max(clone_box.y + clone_box.height, baseline_box.y + baseline_box.height)
                 primary_locus = BoundingBox(
-                    x=px,
-                    y=py,
-                    width=pw,
-                    height=ph,
-                    points=[[px, py], [px + pw, py], [px + pw, py + ph], [px, py + ph]],
-                    label=f"PRIMARY FORGERY LOCUS ({b1.anomaly_type} ✕ {b2.anomaly_type})",
-                    confidence=0.99,
-                    layer=4,
-                    anomaly_type="CROSS_LAYER_SYNERGY_LOCUS",
-                    details={"iou": round(iou, 3), "l1_label": b1.label, "l2_label": b2.label}
-                )
-                synergy_explanation = (
-                    f"Cross-Layer Synergy Triggered: Physical signal anomaly '{b1.label}' spatial footprint "
-                    f"intersects typographic anomaly '{b2.label}' (IoU={iou:.2f}). 1.35x confidence boost applied."
+                    x=x, y=y, width=right - x, height=bottom - y,
+                    points=[[x, y], [right, y], [right, bottom], [x, bottom]],
+                    label="Overlapping clone and text-baseline indicators", confidence=0.75,
+                    layer=4, anomaly_type="CROSS_LAYER_SYNERGY_LOCUS",
+                    details={"iou": round(iou, 3)},
                 )
                 break
-        if synergy_applied:
+        if primary_locus:
             break
+
+    strong: dict[str, int] = {}
+    if any(row.is_tampered for row in layer2.lasers):
+        strong["text_geometry"] = 35
+        findings.append(ForensicFinding(
+            id="f-l2-laser", layer=2, severity="MEDIUM",
+            title="Text baseline alignment needs review",
+            description="A text row has a geometric alignment anomaly. Font rendering, scaling, and OCR segmentation can also affect this heuristic.",
+            metric_name="Maximum baseline deviation", metric_value=f"{layer2.max_baseline_drift_px:.1f}px",
+            bounding_box=baseline_boxes[0] if baseline_boxes else None,
+        ))
+    if layer1.clone_detected and layer1.clone_count >= 20:
+        strong["copy_move"] = 42 if layer1.clone_count >= 40 else 28
+        findings.append(ForensicFinding(
+            id="f-l1-clone", layer=1, severity="MEDIUM",
+            title="Possible duplicated image regions",
+            description=f"The copy-move heuristic found {layer1.clone_count} matching feature pairs. Repeated interface elements can produce similar matches; inspect the highlighted region.",
+            metric_name="Matching feature pairs", metric_value=f"{layer1.clone_count}",
+            bounding_box=clone_boxes[0] if clone_boxes else None,
+        ))
+    if layer3.clock_paradox_detected:
+        strong["time_consistency"] = 35
+        findings.append(ForensicFinding(
+            id="f-l3-clock", layer=3, severity="MEDIUM",
+            title="Displayed receipt and status-bar times conflict",
+            description=f"The displayed receipt time ({layer3.transaction_time}) is later than the displayed status-bar time ({layer3.status_bar_clock}). Check timezone, delayed capture, and OCR accuracy before drawing a conclusion.",
+            metric_name="Displayed time consistency", metric_value="Conflict detected",
+            bounding_box=next((b for b in layer3.bounding_boxes if b.anomaly_type == "TEMPORAL_PARADOX_CLOCK_DRIFT"), None),
+        ))
+    if layer3.upi_utr_valid is False:
+        strong["reference_format"] = 20
+        findings.append(ForensicFinding(
+            id="f-l3-utr", layer=3, severity="LOW",
+            title="Transaction reference format needs review",
+            description="The extracted reference did not match the configured format check. This format check is not an issuer or bank validation.",
+            metric_name="Reference format", metric_value="Does not match configured pattern",
+            bounding_box=next((b for b in layer3.bounding_boxes if b.anomaly_type == "INVALID_UPI_UTR_FORMAT"), None),
+        ))
+
+    # Image statistics are deliberately low-weight review cues, not proof of tampering.
+    weak_score = 0.0
+    if layer1.anomalous_blocks_count:
+        weak_score += 4
+        findings.append(ForensicFinding(
+            id="f-l1-ela", layer=1, severity="LOW",
+            title="Compression residual variation (review cue)",
+            description="ELA highlights differences after recompression. Screenshots and ordinary compression can create these patterns; this is not proof of editing.",
+            metric_name="Highlighted macroblocks", metric_value=f"{layer1.anomalous_blocks_count}",
+            bounding_box=next((b for b in layer1.bounding_boxes if b.anomaly_type == "ELA_MACROBLOCK_OUTLIER"), None),
+        ))
+    if layer1.wavelet_noise_score > 40:
+        weak_score += 4
+        findings.append(ForensicFinding(
+            id="f-l1-wavelet", layer=1, severity="LOW",
+            title="Local noise variation (review cue)",
+            description="Compression, sharpening, resizing, and screenshot capture can change local noise statistics.",
+            metric_name="Noise variation", metric_value=f"{layer1.wavelet_noise_score:.1f}%",
+            bounding_box=next((b for b in layer1.bounding_boxes if b.anomaly_type == "WAVELET_NOISE_VOID"), None),
+        ))
+    if layer2.cielab_patch_anomaly or layer2.sharpness_z_anomaly:
+        weak_score += 4
+        findings.append(ForensicFinding(
+            id="f-l2-rendering", layer=2, severity="LOW",
+            title="Rendering variation (review cue)",
+            description="Color and edge differences can result from rescaling, display capture, compression, and device-specific rendering.",
+            metric_name="Rendering checks", metric_value="Variation detected",
+            bounding_box=next((b for b in layer2.bounding_boxes if b.anomaly_type in {"LOCAL_BACKGROUND_PATCH_MISMATCH", "SHARPNESS_Z_ANOMALY"}), None),
+        ))
+    if layer3.software_signature:
+        weak_score += 3
+        findings.append(ForensicFinding(
+            id="f-l3-software", layer=3, severity="LOW",
+            title="Image software metadata is present",
+            description=f"The file names '{layer3.software_signature}' in metadata. Metadata can be added, changed, or preserved during ordinary processing and is not proof of editing.",
+            metric_name="Software metadata", metric_value=layer3.software_signature,
+        ))
+    # Cropping, missing EXIF, and social-app recompression are not positive tamper evidence.
 
     if primary_locus:
         all_boxes.insert(0, primary_locus)
+        findings.append(ForensicFinding(
+            id="f-cross-layer", layer=4, severity="HIGH",
+            title="Overlapping independent image indicators",
+            description="A copy-move match overlaps an anomalous text baseline. Review the highlighted region; the combined indicators still require human verification.",
+            metric_name="Cross-layer overlap", metric_value="Overlapping regions", bounding_box=primary_locus,
+        ))
 
-    # 3. Base Ensemble Composite Score
-    # S = w1*S1 + w2*S2 + w3*S3 + w4*S4
-    raw_composite = (
-        w1 * layer1.layer_score +
-        w2 * layer2.layer_score +
-        w3 * layer3.layer_score +
-        w4 * layer4.layer_score
+    # Strong indicators only combine across distinct evidence families. Metadata time and
+    # reference rules are separate, but on their own they support review, not certainty.
+    supporting_signal_families = sum((
+        bool(layer1.anomalous_blocks_count),
+        layer1.wavelet_noise_score > 70,
+        layer2.cielab_patch_anomaly or layer2.sharpness_z_anomaly,
+    ))
+    corroborated = (
+        ("copy_move" in strong and "text_geometry" in strong)
+        or ("time_consistency" in strong and "reference_format" in strong)
+        or ("text_geometry" in strong and supporting_signal_families >= 2)
+        or primary_locus is not None
     )
-
-    # Apply synergy multiplier if triggered
-    if synergy_applied:
-        calibrated_score = min(99.0, raw_composite * synergy_factor)
-        # Ensure high-confidence floor for clear dual-layer forgeries
-        calibrated_score = max(calibrated_score, 88.0)
-    else:
-        calibrated_score = min(100.0, raw_composite)
-
-    # Calibrate low genuine scores
-    if raw_composite < 12.0 and not synergy_applied and not layer3.clock_paradox_detected and not layer1.clone_detected:
-        calibrated_score = round(min(8.5, raw_composite * 0.7), 1)
-    else:
-        calibrated_score = round(calibrated_score, 1)
-
-    # 4. Determine Verdict
-    if calibrated_score < 25.0:
-        verdict = "AUTHENTIC_VERIFIED"
-        confidence = round(max(85.0, 100.0 - calibrated_score), 1)
-    elif calibrated_score < 70.0:
-        verdict = "SUSPICIOUS_ANOMALIES"
-        confidence = 78.0
-    else:
+    score = min(92.0, sum(strong.values()) + min(weak_score, 12.0))
+    if corroborated:
+        score = max(score, 72.0)
         verdict = "MANIPULATED_FORGERY"
-        confidence = round(min(98.5, 75.0 + calibrated_score * 0.23), 1)
-
-    # 5. Populate Structured Forensic Findings
-    # Layer 1 findings
-    if layer1.anomalous_blocks_count > 0:
+        confidence = 72.0
+    elif score >= 25.0:
+        verdict = "SUSPICIOUS_ANOMALIES"
+        confidence = 60.0
+    else:
+        verdict = "LIKELY_AUTHENTIC"
+        confidence = 55.0
         findings.append(ForensicFinding(
-            id="f-l1-ela",
-            layer=1,
-            severity="HIGH" if layer1.ela_score > 60 else "MEDIUM",
-            title="Error Level Analysis (ELA) Compression Inconsistency",
-            description=f"Detected {layer1.anomalous_blocks_count} contiguous 16x16 macroblocks with Z-score > 2.6.",
-            metric_name="ELA Z-Score Outliers",
-            metric_value=f"{layer1.anomalous_blocks_count} blocks",
-            bounding_box=layer1.bounding_boxes[0] if layer1.bounding_boxes else None
-        ))
-
-    if layer1.clone_detected:
-        findings.append(ForensicFinding(
-            id="f-l1-clone",
-            layer=1,
-            severity="CRITICAL",
-            title="Copy-Move Cloned Pixel Clusters",
-            description=f"Isolated {layer1.clone_count} parallel translation vectors matching duplicated text/features.",
-            metric_name="Parallel Vectors",
-            metric_value=f"{layer1.clone_count} pairs",
-            bounding_box=layer1.bounding_boxes[0] if layer1.bounding_boxes else None
-        ))
-
-    if layer1.wavelet_noise_score > 40.0:
-        findings.append(ForensicFinding(
-            id="f-l1-wavelet",
-            layer=1,
-            severity="HIGH",
-            title="Wavelet High-Pass Noise Residual Discontinuity",
-            description="Identified sharp boundary or zero-noise void where local Daubechies db4 noise drops to zero.",
-            metric_name="Noise Heterogeneity",
-            metric_value=f"{layer1.wavelet_noise_score:.1f}%",
-            bounding_box=next((b for b in layer1.bounding_boxes if b.anomaly_type == "WAVELET_NOISE_VOID"), None)
-        ))
-
-    # Layer 2 findings
-    if layer2.max_baseline_drift_px >= settings.BASELINE_DRIFT_THRESHOLD_PX:
-        findings.append(ForensicFinding(
-            id="f-l2-laser",
-            layer=2,
-            severity="CRITICAL",
-            title="Sub-Pixel Typographic Baseline Drift",
-            description=f"Text row deviation exceeds threshold by {layer2.max_baseline_drift_px}px relative to row baseline.",
-            metric_name="Baseline Deviation",
-            metric_value=f"+{layer2.max_baseline_drift_px}px",
-            bounding_box=next((b for b in layer2.bounding_boxes if b.anomaly_type == "SUBPIXEL_BASELINE_DRIFT"), None)
-        ))
-
-    if layer2.cielab_patch_anomaly:
-        findings.append(ForensicFinding(
-            id="f-l2-cielab",
-            layer=2,
-            severity="HIGH",
-            title="CIELAB Perceptual Card Background Mismatch",
-            description=f"Color distance between inner character background and outer UI card exceeds ΔE = {layer2.max_delta_e:.1f}.",
-            metric_name="Perceptual Delta-E",
-            metric_value=f"ΔE = {layer2.max_delta_e:.1f}",
-            bounding_box=next((b for b in layer2.bounding_boxes if b.anomaly_type == "LOCAL_BACKGROUND_PATCH_MISMATCH"), None)
-        ))
-
-    if layer2.sharpness_z_anomaly:
-        findings.append(ForensicFinding(
-            id="f-l2-sharpness",
-            layer=2,
-            severity="MEDIUM",
-            title="Font Edge Anti-Aliasing Sharpness Inconsistency",
-            description="Laplacian edge gradient Z-score exceeds standard mobile rendering distribution (|Z| > 2.1).",
-            metric_name="Sharpness Z-Score",
-            metric_value="Outlier detected",
-            bounding_box=next((b for b in layer2.bounding_boxes if b.anomaly_type == "SHARPNESS_Z_ANOMALY"), None)
-        ))
-
-    # Layer 3 findings
-    if layer3.clock_paradox_detected:
-        findings.append(ForensicFinding(
-            id="f-l3-clock",
-            layer=3,
-            severity="CRITICAL",
-            title="Temporal Paradox: Status Bar Clock Drift",
-            description=f"Receipt timestamp ({layer3.transaction_time}) is in the future relative to OS status bar clock ({layer3.status_bar_clock}).",
-            metric_name="Temporal Paradox",
-            metric_value="Future Timestamp",
-            bounding_box=next((b for b in layer3.bounding_boxes if b.anomaly_type == "TEMPORAL_PARADOX_CLOCK_DRIFT"), None)
-        ))
-
-    if layer3.upi_utr_valid is False:
-        findings.append(ForensicFinding(
-            id="f-l3-utr",
-            layer=3,
-            severity="HIGH",
-            title="Invalid UPI 12-Digit Reference (UTR) Format",
-            description=f"Extracted transaction reference '{layer3.upi_utr_value}' violates NPCI 12-digit numeric checksum standard.",
-            metric_name="UTR Validity",
-            metric_value="Invalid Format",
-            bounding_box=next((b for b in layer3.bounding_boxes if b.anomaly_type == "INVALID_UPI_UTR_FORMAT"), None)
-        ))
-
-    if layer3.is_non_native_viewport:
-        findings.append(ForensicFinding(
-            id="f-l3-viewport",
-            layer=3,
-            severity="LOW",
-            title="Non-Native Viewport Aspect Ratio Crop",
-            description=f"Image dimensions ({layer3.viewport_aspect_ratio}) do not match standard mobile screen framebuffers.",
-            metric_name="Viewport Ratio",
-            metric_value=layer3.viewport_aspect_ratio
-        ))
-
-    if layer3.software_signature:
-        findings.append(ForensicFinding(
-            id="f-l3-software",
-            layer=3,
-            severity="HIGH",
-            title=f"Editing Software Signature Detected: {layer3.software_signature}",
-            description=f"Container metadata contains signature of known editing suite or generator: {layer3.software_signature}.",
-            metric_name="Software Tag",
-            metric_value=layer3.software_signature
-        ))
-
-    # Add Authentic confirmation finding if clean
-    if not findings:
-        findings.append(ForensicFinding(
-            id="f-auth-ok",
-            layer=1,
-            severity="INFO",
-            title="Homogeneous Physical Signal & Typography",
-            description="Baselines, noise residuals, and background color metrics are mathematically aligned with zero anomalies.",
-            metric_name="Integrity State",
-            metric_value="Verified Authentic"
+            id="f-auth-likely", layer=4, severity="INFO",
+            title="No strong manipulation indicators detected",
+            description="This heuristic review did not find corroborated signs of editing. It cannot prove who created the image or whether a payment occurred.",
+            metric_name="Assessment", metric_value="No strong indicators",
         ))
 
     synergy = CrossLayerSynergy(
-        synergy_multiplier_applied=synergy_applied,
-        multiplier_factor=synergy_factor,
+        synergy_multiplier_applied=primary_locus is not None,
+        multiplier_factor=1.0,
         primary_forgery_locus=primary_locus,
-        synergy_explanation=synergy_explanation
+        synergy_explanation=(
+            "Copy-move and text-baseline indicators overlap; inspect this region."
+            if primary_locus else "No overlapping high-specificity indicators detected."
+        ),
     )
-
-    return calibrated_score, confidence, verdict, synergy, findings, all_boxes
+    return round(score, 1), confidence, verdict, synergy, findings, all_boxes

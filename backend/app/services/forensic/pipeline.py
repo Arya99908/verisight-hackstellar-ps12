@@ -69,7 +69,7 @@ def analyze_screenshot(
 
     # 4. Layer 1: Pixel & Frequency Signal Forensics
     ela_score, ela_b64, ela_blocks, ela_boxes, ela_details = run_ela_analysis(
-        img_bgr, is_whatsapp=is_whatsapp
+        img_bgr, is_whatsapp=is_whatsapp, source_format=metadata_info["format"]
     )
     noise_score, noise_b64, noise_boxes, noise_details = run_wavelet_noise_analysis(
         img_bgr
@@ -125,7 +125,9 @@ def analyze_screenshot(
         details={
             "baseline": baseline_details,
             "patch_sharpness": patch_details,
-            "tokens_extracted": len(tokens)
+            "tokens_extracted": len(tokens),
+            "ocr_mode": "OFFLINE_COMPONENTS_ONLY",
+            "ocr_note": "Offline mode identifies text-like image components but does not recognize their text. Pixel-based transaction text rules are unavailable in this mode.",
         }
     )
 

@@ -1,4 +1,7 @@
 from pathlib import Path
+from io import BytesIO
+
+from PIL import Image
 
 from app.main import app
 from app.services.forensic.pipeline import analyze_screenshot
@@ -34,7 +37,35 @@ def test_sample_1_authentic():
 
     report = analyze_screenshot(file_bytes, sample_path.name)
     assert report.overall_tamper_score < 35.0
-    assert "AUTHENTIC" in report.verdict
+    assert report.verdict == "LIKELY_AUTHENTIC"
+    assert not any(f.id == "f-l2-laser" for f in report.findings)
+
+
+def test_authentic_screenshot_transforms_do_not_escalate_to_manipulated():
+    source = Image.open(SAMPLES_DIR / "sample_1_authentic_gpay.png").convert("RGB")
+    variants = []
+    for quality in (95, 80):
+        output = BytesIO()
+        source.save(output, format="JPEG", quality=quality)
+        variants.append((f"jpeg-{quality}", output.getvalue()))
+
+    resized = BytesIO()
+    source.resize((360, 780)).save(resized, format="PNG")
+    variants.append(("resized-png", resized.getvalue()))
+
+    cropped = BytesIO()
+    source.crop((20, 20, source.width - 20, source.height - 20)).save(cropped, format="PNG")
+    variants.append(("cropped-png", cropped.getvalue()))
+
+    for name, data in variants:
+        report = analyze_screenshot(data, name)
+        assert report.verdict != "MANIPULATED_FORGERY", name
+
+
+def test_png_ela_is_not_scored_as_manipulation_evidence():
+    report = analyze_screenshot((SAMPLES_DIR / "sample_1_authentic_gpay.png").read_bytes(), "clean.png")
+    assert report.layer1.ela_score == 0
+    assert report.layer1.details["ela"]["scoring_eligible"] is False
 
 
 def test_sample_2_spliced_amount():
@@ -44,9 +75,8 @@ def test_sample_2_spliced_amount():
         file_bytes = f.read()
 
     report = analyze_screenshot(file_bytes, sample_path.name)
-    # Spliced amount should be flagged
-    assert report.overall_tamper_score >= 50.0
-    assert "AUTHENTIC_VERIFIED" != report.verdict
+    # This labeled synthetic fixture combines a baseline anomaly with independent cues.
+    assert report.verdict == "MANIPULATED_FORGERY"
 
 
 def test_sample_3_temporal_paradox():

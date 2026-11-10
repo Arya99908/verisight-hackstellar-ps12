@@ -109,9 +109,9 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
               </div>
               <div>
                 <strong className="text-[#f1f5f9] print:text-black">
-                  Standard:
+                  Method:
                 </strong>{" "}
-                ISO/IEC 27037 Digital Evidence
+                Heuristic image review; not a payment verification
               </div>
             </div>
           </div>
@@ -125,19 +125,18 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
               <div className="text-xl font-bold font-mono tracking-wide">
                 <span
                   className={
-                    verdict === "AUTHENTIC_VERIFIED"
+                    verdict === "LIKELY_AUTHENTIC" || verdict === "AUTHENTIC_VERIFIED"
                       ? "text-emerald-400 print:text-emerald-700"
                       : verdict === "SUSPICIOUS_ANOMALIES"
                         ? "text-amber-400 print:text-amber-700"
                         : "text-rose-400 print:text-rose-700"
                   }
                 >
-                  {verdict.replace(/_/g, " ")}
+                  {verdict === "LIKELY_AUTHENTIC" ? "LIKELY AUTHENTIC" : verdict.replace(/_/g, " ")}
                 </span>
               </div>
               <div className="text-xs text-[#94a3b8] print:text-gray-700">
-                Overall Tamper Score:{" "}
-                <strong>{overall_tamper_score.toFixed(1)}%</strong> | Calibrated
+                Anomaly Score: <strong>{overall_tamper_score.toFixed(1)}%</strong> | Assessment
                 Confidence: <strong>{confidence_score.toFixed(1)}%</strong>
               </div>
             </div>
@@ -168,10 +167,10 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
             </div>
           </div>
 
-          {/* Section 2: 4-Layer Evidentiary Matrix */}
+          {/* Section 2: Forensic Checks */}
           <div className="space-y-2">
             <h4 className="font-bold text-xs uppercase font-mono tracking-wider text-[#94a3b8] print:text-gray-700">
-              4-Layer Forensic Measurement Breakdown
+              Forensic Measurement Breakdown (Heuristic)
             </h4>
             <div className="border border-[#1e293b] print:border-gray-300 rounded-xl overflow-hidden">
               <table className="w-full text-left text-xs font-mono">
@@ -180,7 +179,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                     <th className="p-2.5">Layer</th>
                     <th className="p-2.5">Forensic Domain</th>
                     <th className="p-2.5">Key Deterministic Metrics</th>
-                    <th className="p-2.5 text-right">Risk Score</th>
+                    <th className="p-2.5 text-right">Signal Score</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#1e293b] print:divide-gray-300 text-[#94a3b8] print:text-gray-800">
@@ -241,13 +240,13 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                       L4
                     </td>
                     <td className="p-2.5 text-[#f1f5f9] print:text-black font-semibold">
-                      Spatial Ensemble Synergy
+                      Heuristic Evidence Combination
                     </td>
                     <td className="p-2.5">
-                      Multiplier:{" "}
+                      Overlapping indicators:{" "}
                       {synergy.synergy_multiplier_applied
-                        ? `Active (x${synergy.multiplier_factor})`
-                        : "1.0x (No Spatial Overlap)"}
+                        ? "Found in highlighted region"
+                        : "None found"}
                     </td>
                     <td className="p-2.5 text-right font-bold text-amber-400 print:text-black">
                       {layer4.layer_score.toFixed(1)}%

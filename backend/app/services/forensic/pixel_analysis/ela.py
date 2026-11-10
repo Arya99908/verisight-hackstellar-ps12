@@ -11,7 +11,8 @@ from app.core.schemas import BoundingBox
 def run_ela_analysis(
     img_bgr: np.ndarray,
     is_whatsapp: bool = False,
-    override_quality: int = None
+    override_quality: int = None,
+    source_format: str | None = None,
 ) -> tuple[float, str, int, list[BoundingBox], dict[str, Any]]:
     """
     Multi-Scale Error Level Analysis (ELA) with Macroblock Z-Score Splicing Localization.
@@ -105,7 +106,23 @@ def run_ela_analysis(
                 }
             ))
 
-    # 6. Normalized ELA score (0-100)
+    # ELA compares an image to a newly JPEG-compressed copy. It is not a valid
+    # manipulation score for a lossless PNG source, so retain the heatmap for
+    # exploration but disable the anomaly score for non-JPEG inputs.
+    if (source_format or "").upper() not in {"JPEG", "JPG"}:
+        details = {
+            "q_ref": q_ref,
+            "global_mean_diff": round(mu_ela, 3),
+            "global_std_diff": round(sigma_ela, 3),
+            "total_macroblocks": int(n_blocks_y * n_blocks_x),
+            "anomalous_blocks": 0,
+            "max_z_score": 0.0,
+            "scoring_eligible": False,
+            "warning": "ELA scoring is disabled for non-JPEG source images; recompression residuals are not evidence of editing.",
+        }
+        return 0.0, ela_b64, 0, [], details
+
+    # 6. Normalized ELA score (0-100), only for JPEG sources.
     # Calibrated based on anomalous block density and max z-score
     max_z = 0.0
     if mu_ela < 3.0 and sigma_ela < 2.0 and anomalous_blocks_count == 0:

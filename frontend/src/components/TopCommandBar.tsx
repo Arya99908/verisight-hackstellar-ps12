@@ -87,7 +87,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
             >
               <span>{`S${idx + 1}`}</span>
               <span className="hidden sm:inline font-mono">
-                {sample.id === "sample_1" && "Genuine GPay"}
+                {sample.id === "sample_1" && "Clean Synthetic"}
                 {sample.id === "sample_2" && "Spliced ₹95k"}
                 {sample.id === "sample_3" && "Clock Paradox"}
                 {sample.id === "sample_4" && "WhatsApp Recomp"}
