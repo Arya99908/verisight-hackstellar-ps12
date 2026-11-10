@@ -20,7 +20,11 @@ class Handler(SimpleHTTPRequestHandler):
             return super().do_GET()
         if path == "/api/latest":
             files = sorted((p for p in UPLOADS.iterdir() if p.is_file() and p.name != ".gitkeep"), key=lambda p: p.stat().st_mtime, reverse=True)
-            payload = {"id": files[0].name, "name": files[0].name} if files else None
+            payload = None
+            if files:
+                meta = UPLOADS / (files[0].name + ".json")
+                original = json.loads(meta.read_text()).get("name", files[0].name) if meta.exists() else files[0].name
+                payload = {"id": files[0].name, "name": original}
             return self.reply(200, json.dumps(payload).encode(), "application/json")
         if path == "/api/info":
             return self.reply(200, json.dumps({"mobile_url": f"http://{self.server.lan_ip}:{self.server.server_port}/mobile"}).encode(), "application/json")
@@ -65,6 +69,7 @@ class Handler(SimpleHTTPRequestHandler):
         if ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}: ext = ".img"
         ident = f"{int(time.time())}-{uuid.uuid4().hex[:8]}{ext}"
         (UPLOADS / ident).write_bytes(data)
+        (UPLOADS / (ident + ".json")).write_text(json.dumps({"name": Path(filename).name}))
         return self.reply(201, json.dumps({"id": ident, "name": Path(filename).name}).encode(), "application/json")
     def reply(self, code, body, content_type):
         self.send_response(code); self.send_header("Content-Type", content_type); self.send_header("Content-Length", str(len(body))); self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(body)
