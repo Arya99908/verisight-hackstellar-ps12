@@ -12,3 +12,5 @@ uploads/*
 .vercel/
 .vercel
 .env*
+
+supabase/.temp/
