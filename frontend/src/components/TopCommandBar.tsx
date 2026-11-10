@@ -38,16 +38,16 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onFileUpload(e.target.files[0]);
-    }
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (file) onFileUpload(file);
   };
 
   return (
-    <header className="h-16 border-b border-[#1e293b] bg-[#070b14]/95 backdrop-blur px-4 flex items-center justify-between z-20">
+    <header className="relative z-20 flex w-full flex-col gap-2 border-b border-[#1e293b] bg-[#070b14]/95 px-2 py-2 backdrop-blur sm:px-4 md:h-16 md:flex-row md:items-center md:justify-between md:gap-3 md:py-0">
       {/* Brand & System Indicator */}
-      <div className="flex items-center space-x-3 min-w-[280px]">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+      <div className="flex min-w-0 items-center space-x-2 md:min-w-[230px] md:space-x-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 shadow-lg shadow-sky-500/20">
           <ShieldAlert className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -67,7 +67,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
       </div>
 
       {/* Golden Demo Sample Selector Pills */}
-      <div className="flex items-center space-x-1.5 bg-[#0b1120] p-1 rounded-lg border border-[#1e293b] overflow-x-auto max-w-[580px]">
+      <div className="flex w-full max-w-full items-center space-x-1.5 overflow-x-auto rounded-lg border border-[#1e293b] bg-[#0b1120] p-1 md:max-w-[580px] md:flex-1">
         {demoSamples.map((sample, idx) => {
           const isSelected = selectedSampleId === sample.id;
           const isAuthentic = sample.id === "sample_1";
@@ -99,12 +99,12 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
       </div>
 
       {/* Action Commands */}
-      <div className="flex items-center space-x-2">
+      <div className="flex w-full items-center gap-1.5 overflow-x-auto md:w-auto md:justify-end md:gap-2">
         <input
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          accept="image/*"
+          accept="image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp"
           className="hidden"
         />
 
@@ -112,21 +112,21 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
-          className="px-3 py-1.5 rounded-md bg-[#1e293b] hover:bg-[#334155] text-xs font-medium text-[#f1f5f9] transition-all flex items-center space-x-1.5 border border-[#334155]"
+          className="shrink-0 whitespace-nowrap rounded-md border border-[#334155] bg-[#1e293b] px-3 py-2 text-xs font-medium text-[#f1f5f9] transition-all hover:bg-[#334155] flex items-center space-x-1.5"
         >
           {isLoading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
           ) : (
             <Upload className="w-3.5 h-3.5 text-sky-400" />
           )}
-          <span className="hidden md:inline">Upload Screenshot</span>
+          <span>Upload Screenshot</span>
         </button>
 
         {/* Simulate WhatsApp Button */}
         <button
           onClick={onOpenWhatsAppModal}
           disabled={isLoading}
-          className="px-3 py-1.5 rounded-md bg-[#0f172a] hover:bg-[#1e293b] text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-all flex items-center space-x-1.5 border border-emerald-900/60"
+          className="shrink-0 whitespace-nowrap rounded-md border border-emerald-900/60 bg-[#0f172a] px-3 py-2 text-xs font-medium text-emerald-400 transition-all hover:bg-[#1e293b] hover:text-emerald-300 flex items-center space-x-1.5"
           title="Simulate WhatsApp compression laundering"
         >
           <Share2 className="w-3.5 h-3.5" />
@@ -137,7 +137,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
         <button
           onClick={onOpenMobileModal}
           disabled={isLoading}
-          className="px-3 py-1.5 rounded-md bg-[#0f172a] hover:bg-[#1e293b] text-xs font-medium text-amber-400 hover:text-amber-300 transition-all flex items-center space-x-1.5 border border-amber-900/60"
+          className="shrink-0 whitespace-nowrap rounded-md border border-amber-900/60 bg-[#0f172a] px-3 py-2 text-xs font-medium text-amber-400 transition-all hover:bg-[#1e293b] hover:text-amber-300 flex items-center space-x-1.5"
           title="Scan QR to live-upload from phone camera"
         >
           <QrCode className="w-3.5 h-3.5" />
@@ -148,7 +148,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
         <button
           onClick={onOpenReportModal}
           disabled={isLoading}
-          className="px-3 py-1.5 rounded-md bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-xs font-medium text-white transition-all flex items-center space-x-1.5 shadow-md shadow-sky-600/20"
+          className="shrink-0 whitespace-nowrap rounded-md bg-gradient-to-r from-sky-600 to-indigo-600 px-3 py-2 text-xs font-medium text-white shadow-md shadow-sky-600/20 transition-all hover:from-sky-500 hover:to-indigo-500 flex items-center space-x-1.5"
         >
           <FileText className="w-3.5 h-3.5" />
           <span className="hidden md:inline">Print Dossier</span>

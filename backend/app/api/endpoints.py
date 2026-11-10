@@ -1,10 +1,11 @@
 import socket
 import os
-from uuid import UUID
-from urllib.parse import urlsplit
+from uuid import UUID, uuid4
+from urllib.parse import quote, urlsplit
 from typing import Any
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
+from pydantic import BaseModel
 
 from app.core.config import settings
 from app.core.schemas import (
@@ -15,7 +16,9 @@ from app.core.schemas import (
 from app.services.forensic.pipeline import analyze_screenshot
 from app.services.supabase_store import database_status, save_case
 from app.services.mobile_upload_store import (
+    ALLOWED_UPLOAD_TYPES,
     consume_mobile_upload,
+    create_signed_upload,
     save_mobile_image,
 )
 from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
@@ -24,6 +27,57 @@ router = APIRouter()
 
 # In-memory storage for latest mobile upload (for stage judge real-time sync)
 _LATEST_MOBILE_UPLOAD: dict[str, Any] | None = None
+
+
+class UploadSessionRequest(BaseModel):
+    filename: str
+    content_type: str
+    size: int
+    session_id: UUID | None = None
+
+
+@router.post("/upload-session")
+async def create_upload_session(payload: UploadSessionRequest):
+    """Issue a one-file, signed Storage upload so large phone files avoid function body limits."""
+    if payload.size < 1 or payload.size > settings.MAX_FILE_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="Choose an image smaller than 20 MB.")
+    content_type = payload.content_type.split(";", 1)[0].strip().lower()
+    if content_type not in ALLOWED_UPLOAD_TYPES:
+        raise HTTPException(status_code=415, detail="Use a PNG, JPG, WebP, or BMP screenshot.")
+
+    session_id = payload.session_id or uuid4()
+    try:
+        upload = await create_signed_upload(session_id, payload.filename)
+        supabase_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+        if not supabase_url:
+            raise RuntimeError("Supabase Storage is not configured")
+        upload_url = (
+            f"{supabase_url}/storage/v1/object/upload/sign/mobile-evidence/"
+            f"{quote(upload['path'], safe='/')}?token={quote(upload['token'])}"
+        )
+        return {"session_id": str(session_id), "upload_url": upload_url}
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Secure screenshot upload is temporarily unavailable. Please try again.",
+        ) from exc
+
+
+@router.post("/analyze-upload-session/{session_id}", response_model=ForensicAnalysisReport)
+async def analyze_upload_session(session_id: UUID):
+    """Analyze a screenshot already placed in private Storage, then consume and delete it."""
+    try:
+        report = await consume_mobile_upload(session_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail="Screenshot upload was not found or was already used.")
+        return report
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="The uploaded file could not be decoded. Choose a PNG, JPG, WebP, or BMP screenshot.",
+        ) from exc
 
 @router.get("/health")
 async def health_check():

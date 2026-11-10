@@ -17,8 +17,9 @@ export const MobileUploadView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0]) return;
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
 
     setIsUploading(true);
     setErrorMsg(null);
@@ -100,8 +101,7 @@ export const MobileUploadView: React.FC = () => {
               type="file"
               ref={fileInputRef}
               onChange={handleFile}
-              accept="image/*"
-              capture="environment"
+              accept="image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp"
               className="hidden"
             />
 

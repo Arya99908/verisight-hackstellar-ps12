@@ -7,6 +7,15 @@ import {
 
 const API_BASE = "/api";
 
+async function responseError(res: Response, fallback: string): Promise<Error> {
+  if (res.status === 413) {
+    return new Error("This screenshot is too large to upload. Choose an image under 20 MB.");
+  }
+  const data = await res.json().catch(() => null);
+  const detail = typeof data?.detail === "string" ? data.detail : fallback;
+  return new Error(detail);
+}
+
 export async function fetchHealth(): Promise<{
   status: string;
   service: string;
@@ -39,19 +48,58 @@ export async function analyzeDemoSample(
 export async function analyzeUpload(
   file: File,
 ): Promise<ForensicAnalysisReport> {
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch(`${API_BASE}/analyze`, {
+  const session = await uploadFileToPrivateStorage(file);
+  const analyzeRes = await fetch(`${API_BASE}/analyze-upload-session/${session.session_id}`, {
     method: "POST",
-    body: formData,
   });
-  if (!res.ok) {
-    const err = await res
-      .json()
-      .catch(() => ({ detail: "Upload analysis failed" }));
-    throw new Error(err.detail || "Upload analysis failed");
+  if (!analyzeRes.ok) {
+    throw await responseError(analyzeRes, "Screenshot analysis failed. Choose a PNG, JPG, WebP, or BMP image.");
   }
-  return res.json();
+  return analyzeRes.json();
+}
+
+async function uploadFileToPrivateStorage(file: File, sessionId?: string) {
+  if (file.size > 20 * 1024 * 1024) {
+    throw new Error("Choose an image smaller than 20 MB.");
+  }
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  const contentType = file.type || ({
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    webp: "image/webp",
+    bmp: "image/bmp",
+  } as Record<string, string>)[extension || ""] || "application/octet-stream";
+  const sessionRes = await fetch(`${API_BASE}/upload-session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: file.name,
+      content_type: contentType,
+      size: file.size,
+      ...(sessionId ? { session_id: sessionId } : {}),
+    }),
+  });
+  if (!sessionRes.ok) {
+    throw await responseError(sessionRes, "Could not prepare secure screenshot upload.");
+  }
+
+  const { session_id, upload_url } = await sessionRes.json();
+  const uploadRes = await fetch(upload_url, {
+    method: "POST",
+    headers: { "Content-Type": contentType },
+    body: file,
+  });
+  if (!uploadRes.ok) {
+    const detail = await uploadRes.json().catch(() => null);
+    throw new Error(
+      typeof detail?.message === "string"
+        ? detail.message
+        : "Secure upload failed. Check your connection and try again.",
+    );
+  }
+
+  return { session_id: session_id as string };
 }
 
 export async function simulateWhatsApp(
@@ -93,18 +141,5 @@ export async function uploadMobile(
   file: File,
   sessionId: string,
 ): Promise<void> {
-  const formData = new FormData();
-  formData.append("file", file);
-  const query = new URLSearchParams({ session_id: sessionId });
-  const res = await fetch(`${API_BASE}/mobile-upload?${query}`, {
-    method: "POST",
-    body: formData,
-  });
-  if (!res.ok) {
-    const err = await res
-      .json()
-      .catch(() => ({ detail: "Mobile upload failed" }));
-    throw new Error(err.detail || "Mobile upload failed");
-  }
-  await res.json();
+  await uploadFileToPrivateStorage(file, sessionId);
 }

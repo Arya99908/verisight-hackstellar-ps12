@@ -72,7 +72,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
 
   if (!report) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#070b14] text-[#64748b]">
+      <div className="flex min-h-[55dvh] w-full flex-col items-center justify-center bg-[#070b14] text-[#64748b] md:min-h-0 md:flex-1">
         <Layers className="w-12 h-12 mb-3 stroke-[1.5] text-sky-500/40 animate-pulse" />
         <p className="text-sm font-mono tracking-wider">
           AWAITING SCREENSHOT EVIDENCE INPUT
@@ -157,11 +157,11 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#070b14] overflow-hidden relative">
+    <div className="relative flex h-[72dvh] min-h-[500px] w-full flex-none flex-col overflow-hidden bg-[#070b14] md:h-full md:min-h-0 md:flex-1">
       {/* Top Toolbar: View Mode Tabs + Overlay Toggles */}
-      <div className="h-12 border-b border-[#1e293b] bg-[#0b1120] px-4 flex items-center justify-between text-xs">
+      <div className="flex min-h-12 w-full shrink-0 flex-col gap-2 border-b border-[#1e293b] bg-[#0b1120] px-2 py-2 text-xs md:h-12 md:flex-row md:items-center md:justify-between md:px-4 md:py-0">
         {/* Spectral Tabs */}
-        <div className="flex items-center space-x-1">
+        <div className="flex max-w-full shrink-0 items-center space-x-1 overflow-x-auto">
           <button
             onClick={() => setViewMode("ORIGINAL")}
             className={`px-3 py-1.5 rounded font-medium flex items-center space-x-1.5 transition-all ${
@@ -236,7 +236,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
         </div>
 
         {/* Overlay Switches */}
-        <div className="flex items-center space-x-3 text-[11px] font-mono">
+        <div className="flex max-w-full items-center space-x-3 overflow-x-auto text-[11px] font-mono">
           <label className="flex items-center space-x-1.5 cursor-pointer text-[#94a3b8] hover:text-[#f1f5f9]">
             <input
               type="checkbox"
@@ -298,7 +298,7 @@ export const ForensicViewer: React.FC<ForensicViewerProps> = ({
         onPointerMove={handlePanMove}
         onPointerUp={handlePanEnd}
         onPointerCancel={handlePanEnd}
-        className="flex-1 overflow-auto p-4 relative"
+        className="relative min-h-0 flex-1 touch-pan-x touch-pan-y overflow-auto p-2 md:p-4"
         aria-label="Zoomable forensic screenshot viewer"
       >
         <div

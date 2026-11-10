@@ -30,7 +30,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 }) => {
   if (!report) {
     return (
-      <div className="w-96 border-l border-[#1e293b] bg-[#0b1120] p-4 flex flex-col items-center justify-center text-[#64748b]">
+      <div className="flex min-h-32 w-full flex-col items-center justify-center border-t border-[#1e293b] bg-[#0b1120] p-4 text-[#64748b] md:min-h-0 md:w-96 md:border-l md:border-t-0">
         <Layers className="w-8 h-8 mb-2 stroke-[1.5]" />
         <span className="text-xs font-mono">NO EVIDENCE DOSSIER LOADED</span>
       </div>
@@ -74,7 +74,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   };
 
   return (
-    <aside className="w-96 border-l border-[#1e293b] bg-[#0b1120] flex flex-col h-full overflow-hidden text-xs select-text">
+    <aside className="flex w-full flex-col border-t border-[#1e293b] bg-[#0b1120] text-xs select-text md:h-full md:w-96 md:shrink-0 md:overflow-hidden md:border-l md:border-t-0">
       {/* Sidebar Header */}
       <div className="p-3.5 border-b border-[#1e293b] flex items-center justify-between bg-[#070b14]/50">
         <div className="flex items-center space-x-2">
@@ -89,7 +89,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
       </div>
 
       {/* Scrollable Dossier Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="space-y-4 p-3 md:flex-1 md:overflow-y-auto md:p-4">
         {/* 1. Master Gauge & Verdict Card */}
         <div className="bg-[#070b14] border border-[#1e293b] rounded-xl p-4 flex flex-col items-center relative overflow-hidden shadow-lg">
           <div className="relative w-32 h-32 flex items-center justify-center">

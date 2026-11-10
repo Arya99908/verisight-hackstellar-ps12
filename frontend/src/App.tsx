@@ -138,7 +138,7 @@ const DesktopWorkbench: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#070b14] overflow-hidden">
+    <div className="flex h-[100dvh] min-h-[100dvh] w-full flex-col overflow-hidden bg-[#070b14] md:h-screen md:min-h-0">
       {/* Top Command Bar */}
       <TopCommandBar
         databaseStatus={databaseStatus}
@@ -159,7 +159,7 @@ const DesktopWorkbench: React.FC = () => {
       )}
 
       {/* Main Workspace: Central Multi-Spectral Viewer + Right Risk Dossier */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
         <ForensicViewer report={report} selectedLocus={selectedLocus} />
         <RiskDossierSidebar
           report={report}

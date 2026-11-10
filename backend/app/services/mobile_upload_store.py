@@ -14,6 +14,7 @@ from app.services.supabase_store import save_case
 
 log = logging.getLogger(__name__)
 BUCKET = "mobile-evidence"
+ALLOWED_UPLOAD_TYPES = {"image/png", "image/jpeg", "image/webp", "image/bmp"}
 
 
 def _credentials() -> tuple[str, str]:
@@ -67,6 +68,34 @@ async def save_mobile_image(session_id: UUID, filename: str, content: bytes) -> 
     except Exception:
         log.exception("Could not queue private mobile evidence")
         return False
+
+
+async def create_signed_upload(session_id: UUID, filename: str) -> dict:
+    """Create a short-lived, one-object upload token so browsers bypass Vercel's body limit."""
+    safe_name = filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][:255] or "screenshot.png"
+    path = f"{session_id}/evidence"
+
+    def create() -> dict:
+        _, key = _credentials()
+        _cleanup_expired(key)
+        encoded_path = quote(path, safe="/")
+        signed = json.loads(_request(
+            f"/storage/v1/object/upload/sign/{BUCKET}/{encoded_path}", key, "POST",
+            b"{}", "application/json",
+        ))
+        row = {
+            "session_id": str(session_id),
+            "filename": safe_name,
+            "storage_path": path,
+            "consumed_at": None,
+        }
+        _request(
+            "/rest/v1/mobile_uploads?on_conflict=session_id", key, "POST",
+            json.dumps(row).encode(), "application/json", "resolution=merge-duplicates,return=minimal",
+        )
+        return {"path": path, "token": signed["token"]}
+
+    return await asyncio.to_thread(create)
 
 
 async def delete_mobile_image(session_id: UUID) -> None:
