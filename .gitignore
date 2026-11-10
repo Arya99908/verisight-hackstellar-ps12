@@ -10,6 +10,7 @@ uploads/*
 .env.*
 .vercel/
 .vercel
+_uv/
 .env*
 !.env.example
 
