@@ -1,5 +1,18 @@
 # VeriSight - HackStellar PS-12
 
+## Hosted prototype
+
+- **Prototype:** [https://verisight-ps12.vercel.app](https://verisight-ps12.vercel.app)
+- **Health:** `https://verisight-ps12.vercel.app/api/health`
+- **Demo samples:** `https://verisight-ps12.vercel.app/api/demo-samples`
+- **Database:** Supabase project `ytxfhmdzlelcpjsnlndh` (ap-south-1), table `public.forensic_cases`.
+
+The Vercel FastAPI service serves the React dashboard and its API from one public origin. Screenshot analysis results are persisted to Supabase as metadata, verdicts, findings, and layer summaries; uploaded image bytes and heatmap payloads are not stored in the database. The table has RLS enabled with no public read/write policies. The server uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; keep the service key only in Vercel's encrypted environment settings or a local ignored env file. The schema is versioned at `supabase/migrations/202611100001_create_forensic_cases.sql`.
+
+Vercel production variables are configured for Production, Preview, and Development. To recreate a local Supabase integration, apply the migration with the Supabase CLI and set the two variables in an ignored `.env` file before starting the API. Never use the service role key in browser code.
+
+The project is deployed from GitHub `Arya99908/verisight-hackstellar-ps12`, branch `main`.
+
 The repository now contains two additive local interfaces: the original lightweight, offline-first workbench at `http://localhost:8100`, and the expanded React/TypeScript four-layer forensics workbench at `http://localhost:5174` backed by FastAPI at port `8101`. The original uploader, simulator, API, samples, and report controls remain in place; the expanded application adds the integrated forensic pipeline, five labeled synthetic examples, mobile QR intake, spectral viewer, and richer report.
 
 ## Expanded application quickstart (macOS/Linux)
