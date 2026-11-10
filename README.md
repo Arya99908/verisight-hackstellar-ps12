@@ -167,6 +167,8 @@ cp .env.example .env
 
 Vercel installs the slim production set from `requirements.vercel.txt` plus the frontend packages. The complete local/test dependencies remain in `requirements.txt`; Pillow is needed for generating missing synthetic fixtures locally, while the checked-in sample fixtures are deployed with the app.
 
+The Vercel project uses Fluid Compute and the `VERCEL_SUPPORT_LARGE_FUNCTIONS=1` setting because the OpenCV-backed Python function exceeds the standard package cap. Keep that non-secret setting enabled in Production and Preview when deploying.
+
 ---
 
 ## API Reference
