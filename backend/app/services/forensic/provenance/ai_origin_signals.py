@@ -191,6 +191,13 @@ def inspect_ai_origin_signals(
                 "limitation": "Visible marks can be cropped or removed; this app does not send images to external detectors.",
             },
             {
+                "id": "source_layers",
+                "label": "Native editing-layer structure",
+                "status": "NOT_CHECKED",
+                "evidence": "The analyzer reads flattened PNG, JPEG, WebP, and BMP images; it does not inspect PSD or editing-project layers.",
+                "limitation": "An exported screenshot does not preserve the source document's editable layer history.",
+            },
+            {
                 "id": "generic_pixel_cues",
                 "label": "Generic pixel / noise review cues",
                 "status": "DETECTED" if generic_pixel_cue_count else "NOT_DETECTED",

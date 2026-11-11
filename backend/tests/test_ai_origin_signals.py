@@ -39,6 +39,7 @@ def test_absent_generator_metadata_does_not_claim_human_origin():
     assert _signal(report, "generator_metadata")["status"] == "NOT_DETECTED"
     assert _signal(report, "c2pa_provenance")["status"] == "NOT_DETECTED"
     assert _signal(report, "visible_ai_mark")["status"] == "NOT_CHECKED"
+    assert _signal(report, "source_layers")["status"] == "NOT_CHECKED"
     assert _signal(report, "ai_origin_classifier")["status"] == "NOT_AVAILABLE"
 
 

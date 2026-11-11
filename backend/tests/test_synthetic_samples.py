@@ -127,6 +127,7 @@ def test_api_analyze_sample_endpoint():
         "generator_metadata",
         "c2pa_provenance",
         "visible_ai_mark",
+        "source_layers",
         "generic_pixel_cues",
         "ai_origin_classifier",
     }
