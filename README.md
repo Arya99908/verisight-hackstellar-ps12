@@ -25,7 +25,7 @@ VeriSight accepts common image formats and computes pixel, layout, metadata, and
 - **Copy-Move Cue:** Matches ORB descriptors and displacement clusters. Repeated icons and text can match; this is a candidate region, not a confirmed clone.
 - **JPEG Quality Sweep:** Reports global reconstruction error across selected JPEG qualities. It does not localize a JPEG ghost or determine whether editing occurred.
 
-**Layer 2 — Typographic Geometry Forensics**
+**Layer 2 — Text-like Region Geometry**
 - **Text-like geometry:** OpenCV connected components provide boxes; they do not recognize text. Rows are grouped and compared against a median baseline, so ordinary UI alignments may trigger cues. QR-detected regions are excluded.
 - **CIELAB and sharpness cues:** Compare local colors beside components and Laplacian variation among components. Thresholds are exploratory and can flag normal rendering differences.
 
@@ -38,7 +38,7 @@ VeriSight accepts common image formats and computes pixel, layout, metadata, and
 
 **Layer 4 — Ensemble & Cross-Layer Corroboration**
 - **Weighted risk aggregation:** Strong indicators (`text_geometry` = 35 pts, `copy_move` = 28–42 pts, `time_consistency` = 35 pts, `reference_format` = 20 pts) are combined with weak review cues (ELA macroblock count, wavelet noise, rendering variation, software metadata) capped at 12 pts. Total score is capped at 92.0.
-- **Cross-Layer Spatial IoU:** For each clone-detected bounding box and each anomalous baseline box, pairwise IoU is computed. A primary forgery locus is declared when IoU ≥ 0.20, upgrading the verdict and adding a `CROSS_LAYER_SYNERGY_LOCUS` bounding box to the report.
+- **Cross-Layer Spatial IoU:** For each repeated-feature candidate box and anomalous text-like baseline box, pairwise IoU is computed. An overlapping candidate review locus is reported when IoU ≥ 0.20; it is not a confirmed forgery location.
 - **Assessment:** The API returns `INCONCLUSIVE`, `REVIEW_REQUIRED`, or `CORROBORATED_ANOMALIES` as heuristic evidence states. Error probability and calibrated confidence are unavailable.
 
 ---
@@ -78,7 +78,7 @@ The upload accepts these images, but the pipeline has not been validated across 
 
 ## Demo Samples
 
-Five synthetic, watermarked samples are bundled for instant demonstration:
+Five synthetic sample fixtures are bundled for demonstration:
 
 | ID | Sample | Expected Verdict | Key Signals |
 |---|---|---|---|
@@ -373,6 +373,12 @@ VeriSight is a **heuristic triage tool**, not a validated forensic classifier.
 | **QR payment not verified** | QR payloads are decoded locally for content inspection. The payee identity, URL destination, and actual payment state are not verified against any payment rail. |
 | **C2PA not validated** | Possible marker strings are searched in bytes; manifest presence, signature, and trust anchor are not verified. |
 | **Not a legal instrument** | Outputs are investigative cues for a human reviewer. Do not use VeriSight results as sole evidence to determine whether a payment occurred. Always confirm with the payment provider or bank. |
+
+### What is needed before training or claiming accuracy
+
+The current five fixtures are not a suitable training or validation corpus. A useful evaluation needs a permissioned, in-scope collection with ground-truth labels, including authentic screenshots from multiple payment apps/devices and carefully recorded edits (for example altered amount, recipient, time, reference, QR payload, and full synthetic UI). Keep transactions, templates, devices, and editing sessions separated between train, validation, and test splits to avoid near-duplicate leakage. Store region masks for edited pixels and record normal transformations such as resize, recompression, forwarding, and crop.
+
+Report false-positive and false-negative rates by input type, plus localization quality and calibration on an untouched test set before selecting a threshold. Do not infer these values from the bundled fixtures. OCR can read visible fields but cannot establish that a transaction settled; payment confirmation requires an authorized status/history integration with the participating bank or payment provider. General image-forgery models are not automatically validated for payment screenshots.
 
 ---
 

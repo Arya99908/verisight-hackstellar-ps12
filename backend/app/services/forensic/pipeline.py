@@ -40,9 +40,10 @@ def analyze_screenshot(
     is_whatsapp_simulated: bool = False
 ) -> ForensicAnalysisReport:
     """
-    Master 4-Layer Forensic Investigation Pipeline Orchestrator.
+    Four-stage screenshot review pipeline.
     Runs image residual cues, text-like component geometry, metadata rules,
-    QR decoding, and rule-based review scoring.
+    QR decoding, and heuristic triage scoring. It does not OCR visible text,
+    classify authenticity, or verify payment status.
     """
     # 1. Cryptographic SHA-256 Hash & Timestamp
     sha256_hash = hashlib.sha256(image_bytes).hexdigest()
@@ -103,7 +104,7 @@ def analyze_screenshot(
         }
     )
 
-    # 5. Layer 2: Typographic Geometry & OCR Forensic Audit
+    # 5. Layer 2: Text-like component geometry (no OCR recognition)
     tokens = extract_text_tokens(img_bgr, use_neural=False)
     tokens_before_qr_exclusion = len(tokens)
     qr_regions = qr_details.get("regions", [])
@@ -188,14 +189,14 @@ def analyze_screenshot(
         }
     )
 
-    # 7. Layer 4: Semantic / VLM Telemetry
+    # 7. Layer 4: Semantic model is not deployed; carry rule-context only.
     layer4_result = Layer4SemanticResult(
         vlm_used=False,
         vlm_provider=None,
         semantic_inconsistency=clock_paradox,
         layer_score=l3_score * 0.5,
-        findings=[f"Detected clock: {sb_clock}", f"Detected receipt time: {rc_time}"] if sb_clock else [],
-        details={"heuristic_mode": "Strict Deterministic Evaluation"}
+        findings=[f"Supplied clock value: {sb_clock}", f"Supplied time value: {rc_time}"] if sb_clock else [],
+        details={"heuristic_mode": "RULE_BASED_NO_VLM", "text_recognition": "NOT_RUN"}
     )
 
     # 8. Layer 4: Ensemble Calibration & Cross-Layer Spatial IoU Synergy

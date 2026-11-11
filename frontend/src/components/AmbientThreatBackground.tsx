@@ -14,12 +14,12 @@ export const AmbientThreatBackground: React.FC<AmbientThreatBackgroundProps> = (
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Threat color calculation
-  // Authentic (< 25): Cool Emerald/Cyan
+  // Low heuristic cue score: neutral blue, not an authenticity signal
   // Suspicious (25-65): Amber/Orange
   // Tampered / Spliced (> 65): Crimson/Rose
-  let threatColor1 = "rgba(16, 185, 129, 0.16)"; // emerald
+  let threatColor1 = "rgba(56, 189, 248, 0.12)"; // sky
   let threatColor2 = "rgba(14, 165, 233, 0.10)"; // sky
-  let threatAccentGlow = "rgba(16, 185, 129, 0.08)";
+  let threatAccentGlow = "rgba(56, 189, 248, 0.06)";
 
   if (threatScore >= 65) {
     threatColor1 = "rgba(244, 63, 94, 0.22)"; // rose

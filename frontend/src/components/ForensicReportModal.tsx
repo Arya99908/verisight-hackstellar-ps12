@@ -92,15 +92,14 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-xl tracking-wider text-[#f1f5f9] print:text-black">
-                  VERISIGHT FORENSIC AUDIT DOSSIER
+                  VERISIGHT SCREENSHOT REVIEW SUMMARY
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800 print:border-black print:bg-gray-100 print:text-black">
-                  OFFICIAL AUDIT REPORT
+                  HEURISTIC REVIEW
                 </span>
               </div>
               <p className="text-xs text-[#94a3b8] print:text-gray-600 mt-1">
-                Multi-Layer Digital Screenshot Verification & Splicing
-                Investigation Platform
+                Multi-layer image review cues. This summary does not verify payment status or image authenticity.
               </p>
             </div>
             <div className="text-right font-mono text-[11px] text-[#94a3b8] print:text-gray-700 space-y-0.5">
@@ -129,27 +128,29 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-xl border border-[#1e293b] print:border-gray-300 bg-[#070b14] print:bg-gray-50 space-y-2">
               <span className="text-[10px] font-mono text-[#64748b] print:text-gray-500 uppercase tracking-wider">
-                Investigative Determination
+                Heuristic triage label
               </span>
               <div className="text-xl font-bold font-mono tracking-wide">
                 <span
                   className={
-                    verdict !== "INCONCLUSIVE"
+                    verdict === "CORROBORATED_ANOMALIES"
                       ? "text-rose-300 print:text-rose-700"
-                      : "text-emerald-300 print:text-emerald-700"
+                      : verdict === "REVIEW_REQUIRED"
+                        ? "text-amber-300 print:text-amber-700"
+                        : "text-amber-300 print:text-amber-700"
                   }
                 >
                   {verdictLabel(verdict)}
                 </span>
               </div>
               <div className="text-xs text-[#94a3b8] print:text-gray-700">
-                Heuristic Score: <strong>{overall_tamper_score.toFixed(1)} / 100</strong> | Classifier confidence: <strong>Unavailable</strong>
+                Heuristic points: <strong>{overall_tamper_score.toFixed(1)} (not a probability)</strong> | Calibrated confidence: <strong>Unavailable</strong>
               </div>
             </div>
 
             <div className="p-4 rounded-xl border border-[#1e293b] print:border-gray-300 bg-[#070b14] print:bg-gray-50 space-y-1.5 font-mono text-xs">
               <span className="text-[10px] text-[#64748b] print:text-gray-500 uppercase tracking-wider block">
-                Evidence Custody Hashes
+                Uploaded File Fingerprint
               </span>
               <div
                 className="truncate text-[#94a3b8] print:text-gray-700"
@@ -168,7 +169,7 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                 ({layer3.viewport_aspect_ratio})
               </div>
               <div className="text-[#94a3b8] print:text-gray-700">
-                Inferred Carrier: <strong>{channel_detected}</strong>
+                Image profile cue: <strong>{channel_detected}</strong>
               </div>
             </div>
           </div>
@@ -210,12 +211,12 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
                       L2
                     </td>
                     <td className="p-2.5 text-[#f1f5f9] print:text-black font-semibold">
-                      Typography & Geometry
+                      Text-like Region Geometry
                     </td>
                     <td className="p-2.5">
-                      Max Laser Drift: +
+                      Max region baseline deviation: +
                       {layer2.max_baseline_drift_px.toFixed(1)}px | CIELAB ΔE:{" "}
-                      {layer2.max_delta_e.toFixed(1)} | Rows Audited:{" "}
+                      {layer2.max_delta_e.toFixed(1)} | Candidate rows:{" "}
                       {layer2.lasers.length}
                     </td>
                     <td className="p-2.5 text-right font-bold text-rose-400 print:text-black">
@@ -296,14 +297,11 @@ export const ForensicReportModal: React.FC<ForensicReportModalProps> = ({
 
           {/* Section 4: Legal & Scientific Disclaimer */}
           <div className="p-3.5 rounded-xl border border-[#1e293b] print:border-gray-300 bg-[#070b14] print:bg-gray-100 text-[11px] text-[#64748b] print:text-gray-600 leading-relaxed">
-            <strong>Scientific & Evidentiary Disclaimer:</strong> VeriSight
-            produces deterministic, mathematically reproducible forensic
-            indicators across pixel signal distributions, sub-pixel typography
-            alignment, and metadata consistency. However, digital image analysis
-            alone cannot definitively confirm or deny whether a financial
-            transaction occurred on the banking settlement network. This dossier
-            constitutes technical investigative assistance and should be
-            cross-referenced with bank core ledger records.
+            <strong>Analyzer limitation:</strong> This report summarizes deterministic image heuristics.
+            No trained or calibrated authenticity classifier is deployed, visible screenshot text is not OCR-read,
+            and no payment provider or bank was queried. Scores are not probabilities and accuracy has not been
+            established. SHA-256 fingerprints the uploaded bytes; it does not prove chain of custody. Confirm
+            payment status with the participating payment app or bank.
           </div>
         </div>
       </div>

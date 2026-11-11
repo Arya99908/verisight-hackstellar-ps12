@@ -36,34 +36,34 @@ const SAMPLE_DETAILS: Record<
   { label: string; badge: string; color: string; desc: string }
 > = {
   sample_1: {
-    label: "Clean Synthetic UPI",
-    badge: "Authentic",
-    color: "emerald",
-    desc: "Clean baseline reference receipt",
+    label: "Clean Synthetic Baseline",
+    badge: "No strong cues",
+    color: "amber",
+    desc: "Synthetic demo fixture; not a verified payment",
   },
   sample_2: {
-    label: "Spliced ₹95,000 Payout",
-    badge: "Amount Edit",
+    label: "Synthetic Edited Amount",
+    badge: "Known fixture edit",
     color: "rose",
-    desc: "Digital text insertion & font drift",
+    desc: "Check which configured cues this fixture triggers",
   },
   sample_3: {
-    label: "Clock Paradox UPI",
-    badge: "Time Drift",
+    label: "Synthetic Metadata Conflict",
+    badge: "Metadata cue",
     color: "amber",
-    desc: "Status bar vs transaction mismatch",
+    desc: "Conflict in fixture metadata; visible text is not OCR-checked",
   },
   sample_4: {
-    label: "WhatsApp Recompressed",
-    badge: "Recompressed",
+    label: "Synthetic JPEG Re-encode",
+    badge: "Re-encoded",
     color: "amber",
-    desc: "Compression laundering artifact",
+    desc: "Compression profile alone cannot identify its source",
   },
   sample_5: {
-    label: "ORB Cloned Icons",
-    badge: "Copy-Move",
+    label: "Synthetic Repeated Regions",
+    badge: "ORB candidates",
     color: "rose",
-    desc: "Duplicated bank badge keypoints",
+    desc: "Repeated visual features may also occur in normal interface elements",
   },
 };
 
@@ -316,7 +316,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
           onClick={onOpenWhatsAppModal}
           disabled={isLoading}
           className="flex items-center gap-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-all hover:bg-emerald-500/20 active:scale-[0.97]"
-          title="Simulate WhatsApp compression laundering"
+          title="Open JPEG recompression demonstration"
         >
           <Share2 className="h-3.5 w-3.5 text-emerald-400" />
           <span className="hidden xl:inline">WhatsApp</span>

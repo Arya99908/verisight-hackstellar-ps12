@@ -62,11 +62,10 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
             </div>
             <div>
               <h3 className="font-semibold text-sm text-[#f1f5f9] tracking-wide">
-                Educational WhatsApp Media Laundering Simulator
+                Image Recompression Demonstration
               </h3>
               <p className="text-[11px] text-[#64748b]">
-                Inspects metadata stripping (EXIF/ICC) and demonstrates forensic
-                survival of typographic lasers & wavelets
+                Applies a simulated JPEG recompression and compares image cues; it does not model every messaging app.
               </p>
             </div>
           </div>
@@ -84,7 +83,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
             <div className="h-80 flex flex-col items-center justify-center space-y-3 text-[#94a3b8]">
               <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
               <p className="text-xs font-mono">
-                Simulating WhatsApp 4:2:0 Chroma Subsampling & EXIF Stripping...
+                Applying demo JPEG recompression (Q77, 4:2:0)...
               </p>
             </div>
           ) : !simulationData ? (
@@ -145,7 +144,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                   <span className="text-[10px] font-mono text-[#64748b] uppercase">
                     Surviving Verdict
                   </span>
-                  <div className={`text-base font-bold font-mono mt-0.5 truncate ${simulationData.reanalysis.verdict === "INCONCLUSIVE" ? "text-emerald-400" : "text-rose-400"}`}>
+                  <div className={`text-base font-bold font-mono mt-0.5 truncate ${simulationData.reanalysis.verdict === "INCONCLUSIVE" ? "text-amber-300" : "text-rose-400"}`}>
                     {verdictLabel(simulationData.reanalysis.verdict)}
                   </div>
                   <span className="text-[10px] text-rose-400/80 font-mono">
@@ -222,20 +221,12 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div className="space-y-1 text-[#94a3b8]">
                   <span className="font-semibold text-emerald-300">
-                    Why does VeriSight still catch forgeries after WhatsApp
-                    laundering?
+                    What does this recompression example show?
                   </span>
                   <p className="leading-relaxed">
-                    Social media platforms strip EXIF metadata and quantize DCT
-                    high frequencies, which often defeats basic camera PRNU
-                    checks. However,{" "}
-                    <strong>Layer 2 Sub-Pixel Typographic Baselines</strong> and{" "}
-                    <strong>
-                      Layer 1 Daubechies db4 Wavelet Noise Boundaries
-                    </strong>{" "}
-                    are structurally geometric: the pixel shifts and off-color
-                    card halos survive 4:2:0 subsampling, allowing VeriSight to
-                    confidently detect manipulation even on forwarded images.
+                    The simulator re-encodes one image and reruns the same heuristic scanner. A changed result
+                    shows sensitivity to this transform only; it does not prove the image was forged, show that
+                    all messaging-app transforms are covered, or establish that the scanner will catch an edit.
                   </p>
                 </div>
               </div>

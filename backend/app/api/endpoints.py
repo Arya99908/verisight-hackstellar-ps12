@@ -235,7 +235,7 @@ async def get_demo_samples():
 
 @router.post("/analyze", response_model=ForensicAnalysisReport)
 async def analyze_upload(file: UploadFile = File(...)):
-    """Upload and run full 4-layer forensic investigation on any screenshot."""
+    """Upload an image and return heuristic review cues; this does not verify payment status."""
     content = await file.read()
     if len(content) > settings.MAX_FILE_SIZE_BYTES:
         raise HTTPException(status_code=400, detail="File size exceeds 20MB limit.")

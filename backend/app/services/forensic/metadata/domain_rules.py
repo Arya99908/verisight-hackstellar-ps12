@@ -58,9 +58,9 @@ def validate_temporal_and_upi_rules(
     png_chunks: list[str] = None
 ) -> tuple[bool, str | None, str | None, bool | None, str | None, list[BoundingBox], dict[str, Any]]:
     """
-    Inspects Clock Temporal Paradox and 12-Digit UPI UTR format rules.
-    - Status Bar Clock Paradox: Checks top OS status bar clock (y < 0.07H) against receipt timestamp.
-    - 12-Digit UTR Validator: Checks UPI reference numbers for standard 12-digit numeric length and entropy.
+    Applies simple time/reference-format rules to supplied tokens or PNG text chunks.
+    The deployed pipeline's tokens are geometric component IDs, not OCR text, so visible
+    screenshot text is not recognized or checked by these rules.
     """
     clock_paradox = False
     status_bar_clock = None

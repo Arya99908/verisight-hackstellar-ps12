@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   AlertTriangle,
-  CheckCircle2,
   Copy,
   Layers,
   Sparkles,
@@ -111,7 +110,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   const strokeDashoffset =
     circumference - (overall_tamper_score / 100) * circumference;
 
-  const gaugeColor = isReviewRequired ? "#f43f5e" : "#10b981";
+  const gaugeColor = isReviewRequired ? "#f43f5e" : "#f59e0b";
 
   const copyText = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -144,9 +143,9 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-xs font-bold shadow-sm ${
               isReviewRequired
                 ? "border-rose-500/60 bg-rose-950/80 text-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.3)]"
-                : "border-emerald-500/60 bg-emerald-950/80 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
+              : "border-amber-500/60 bg-amber-950/80 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.25)]"
             }`}
-            title={`Tamper Score: ${overall_tamper_score.toFixed(1)} / 100`}
+            title={`Heuristic points: ${overall_tamper_score.toFixed(1)} (not a probability)`}
           >
             {Math.round(overall_tamper_score)}
           </div>
@@ -177,7 +176,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded bg-white/[0.08] px-1.5 py-0.5 font-mono text-[9px] text-slate-400">
-            CHAIN-OF-CUSTODY
+            FILE HASH
           </span>
           {onToggleCollapse && (
             <button
@@ -230,7 +229,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 {displayScore.toFixed(1)}
               </span>
               <span className="font-mono text-[8px] uppercase tracking-wider text-slate-400">
-                Risk Score
+                Heuristic points
               </span>
             </div>
           </div>
@@ -242,25 +241,31 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                 className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-semibold text-[11px] tracking-wide ${
                   isReviewRequired
                     ? "border border-rose-500/50 bg-rose-500/15 text-rose-300"
-                    : "border border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
+                    : "border border-amber-500/50 bg-amber-500/15 text-amber-200"
                 }`}
               >
                 {isReviewRequired ? (
                   <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
                 ) : (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
                 )}
                 <span>{verdictLabel(verdict)}</span>
               </div>
             </div>
 
             <p className="mt-2 text-[11px] leading-relaxed text-slate-300 font-sans">
-              {isReviewRequired
-                ? "Multiple high-confidence forgery signals detected across font geometry and pixel compression."
-                : "Signals consistent with native screenshot capture; no digital splicing identified."}
+              {isCorroborated
+                ? "Anomaly candidates overlap across heuristic layers. This is not proof of editing."
+                : isReviewRequired
+                  ? "One or more heuristic cues warrant inspection; they can also arise from normal capture, resizing, or recompression."
+                  : "No configured strong manipulation cues were found. This does not establish authenticity or payment settlement."}
             </p>
           </div>
         </motion.div>
+
+        <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
+          Text recognition is not run: the scanner finds text-like regions but does not read amounts, names, timestamps, or UTRs from visible pixels. No payment provider or bank is queried.
+        </div>
 
         {/* Stage 2 (60ms): Syndicate Entity Resolution Card */}
         {report.syndicate_intelligence && (
@@ -604,7 +609,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
               <div className="p-2.5 space-y-2 text-[11px] bg-[#0A0F1D]/50">
                 <p className="text-slate-300 leading-snug">
                   {synergy.synergy_multiplier_applied
-                    ? "Spatial intersection detected between independent forensic layers."
+                    ? "Candidate regions from the image-feature and text-like geometry checks overlap. This can occur without editing."
                     : "No cross-layer geometric spatial overlap detected."}
                 </p>
               </div>
