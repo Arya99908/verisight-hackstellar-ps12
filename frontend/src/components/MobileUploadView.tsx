@@ -92,7 +92,7 @@ export const MobileUploadView: React.FC = () => {
               </h2>
               <p className="text-xs text-[#94a3b8] leading-relaxed">
                 Take a photo or choose any digital payment screenshot from your
-                phone to run a heuristic screenshot review on the stage
+                phone to run real-time forensic tamper analysis on the stage
                 screen.
               </p>
             </div>

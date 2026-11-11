@@ -5,7 +5,7 @@ export interface BoundingBox {
   height: number;
   points?: number[][];
   label: string;
-  confidence: number | null;
+  confidence: number;
   layer: number;
   anomaly_type: string;
   details?: Record<string, any>;
@@ -17,8 +17,8 @@ export interface BaselineLaser {
   slope: number;
   tokens_count: number;
   delta_y_max: number;
-  is_alignment_outlier: boolean;
-  status: "BASELINE_REFERENCE" | "REVIEW_CUE";
+  is_tampered: boolean;
+  status: "ALIGNED_CYAN" | "CRITICAL_RED";
   callout_text?: string;
   token_indices: number[];
   x_start?: number;
@@ -80,8 +80,9 @@ export interface Layer4SemanticResult {
 }
 
 export interface CrossLayerSynergy {
-  region_overlap_found: boolean;
-  primary_review_locus?: BoundingBox;
+  synergy_multiplier_applied: boolean;
+  multiplier_factor: number;
+  primary_forgery_locus?: BoundingBox;
   synergy_explanation: string;
 }
 
@@ -96,6 +97,24 @@ export interface ForensicFinding {
   bounding_box?: BoundingBox;
 }
 
+export interface SyndicateIntelligence {
+  syndicate_risk_level: "CRITICAL_SYNDICATE_THREAT" | "MODERATE_REVIEW_REQUIRED" | "LOW" | string;
+  threat_indicators: string[];
+  entity_summary: {
+    payee_vpa?: string | null;
+    payee_name?: string | null;
+    utr_number?: string | null;
+    amount?: string | null;
+    qr_linked?: boolean;
+    qr_intent?: {
+      vpa?: string | null;
+      payee?: string | null;
+      amount?: string | null;
+    } | null;
+  };
+  recommended_action: string;
+}
+
 export interface ForensicAnalysisReport {
   file_sha256: string;
   filename?: string;
@@ -103,7 +122,7 @@ export interface ForensicAnalysisReport {
   image_width: number;
   image_height: number;
   overall_tamper_score: number;
-  confidence_score: null;
+  confidence_score: number | null;
   verdict:
     | "INCONCLUSIVE"
     | "REVIEW_REQUIRED"
@@ -118,6 +137,38 @@ export interface ForensicAnalysisReport {
   findings: ForensicFinding[];
   all_bounding_boxes: BoundingBox[];
   original_image_b64: string;
+  syndicate_intelligence?: SyndicateIntelligence;
+  section91_notice?: string;
+  assessment_dimensions?: AssessmentDimensions;
+  model_metadata?: ModelInferenceMetadata;
+}
+
+export interface AssessmentDimensions {
+  image_integrity_score: number;
+  image_integrity_status: "INTACT" | "COMPRESSION_NOISE" | "TAMPER_DETECTED" | string;
+  text_consistency_score: number;
+  text_consistency_status: "CONSISTENT" | "SUBPIXEL_DRIFT" | "GEOMETRIC_ANOMALY" | string;
+  payment_verification_status: "INDEPENDENT_SOURCE_QUERY_REQUIRED" | string;
+  payment_verification_details: string;
+  forensic_uncertainty_status: "HIGH_CONFIDENCE" | "MODERATE_UNCERTAINTY" | "INCONCLUSIVE" | string;
+  forensic_uncertainty_score: number;
+  uncertainty_explanation: string;
+}
+
+export interface ModelInferenceMetadata {
+  model_id: string;
+  model_version: string;
+  architecture: string;
+  calibration_status: string;
+  promotion_status: "EXPERIMENTAL" | "VALIDATED" | "VALIDATED_FALLBACK" | string;
+  feature_schema_version: string;
+  inference_status: "EXECUTED" | "FALLBACK_HEURISTIC" | "INCONCLUSIVE" | "FAILED" | string;
+  calibrated_probability: number | null;
+  raw_model_score?: number | null;
+  missing_evidence: string[];
+  is_operational_triage_alert: boolean;
+  is_synthetic_benchmark: boolean;
+  disclaimer: string;
 }
 
 export interface DemoSampleMeta {

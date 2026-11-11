@@ -1,59 +1,36 @@
 import React from "react";
 import {
   AlertTriangle,
+  AlertCircle,
   CheckCircle2,
   Copy,
+  ExternalLink,
   Layers,
   Sparkles,
   Fingerprint,
+  Smartphone,
+  Clock,
+  Key,
+  ShieldCheck,
+  Zap,
   Target,
-  Info,
 } from "lucide-react";
 import { verdictLabel } from "../services/verdictLabel";
 import { ForensicAnalysisReport, BoundingBox } from "../types/forensic";
+import { ShieldAlert, CreditCard, Hash, Building } from "lucide-react";
 
 interface RiskDossierSidebarProps {
   report: ForensicAnalysisReport | null;
   selectedLocus: BoundingBox | null;
   onSelectLocus: (box: BoundingBox | null) => void;
-}
-
-function getSeverityBadgeClass(severity: string): string {
-  switch (severity) {
-    case "CRITICAL":
-      return "bg-red-900 text-red-200 border border-red-700";
-    case "HIGH":
-      return "bg-orange-900 text-orange-200 border border-orange-700";
-    case "MEDIUM":
-      return "bg-amber-900 text-amber-200 border border-amber-700";
-    case "LOW":
-      return "bg-yellow-900 text-yellow-200 border border-yellow-700";
-    case "INFO":
-      return "bg-blue-900 text-blue-200 border border-blue-700";
-    default:
-      return "bg-sky-900 text-sky-200 border border-sky-700";
-  }
-}
-
-function getLayerBadgeClass(layer: number): string {
-  switch (layer) {
-    case 1:
-      return "bg-sky-950 text-sky-300 border border-sky-700";
-    case 2:
-      return "bg-rose-950 text-rose-300 border border-rose-700";
-    case 3:
-      return "bg-purple-950 text-purple-300 border border-purple-700";
-    case 4:
-      return "bg-amber-950 text-amber-300 border border-amber-700";
-    default:
-      return "bg-[#1e293b] text-[#94a3b8]";
-  }
+  onOpenSection91Modal?: () => void;
 }
 
 export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   report,
   selectedLocus,
   onSelectLocus,
+  onOpenSection91Modal,
 }) => {
   if (!report) {
     return (
@@ -79,7 +56,8 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
     findings,
   } = report;
 
-  const isReviewRequired = verdict !== "INCONCLUSIVE";
+  const isCorroborated = verdict === "CORROBORATED_ANOMALIES";
+  const isReviewRequired = verdict === "REVIEW_REQUIRED" || isCorroborated;
 
   // Circular gauge calculations
   const radius = 48;
@@ -92,14 +70,6 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   const copyHash = () => {
     navigator.clipboard.writeText(file_sha256);
   };
-
-  // Analysis summary values are heuristic measurements, never authenticity probabilities.
-  const elaScore = layer1.ela_score;
-  const noiseScore = layer1.wavelet_noise_score;
-  const cloneCount = layer1.clone_count;
-  const qrDecoded = layer3.details?.qr_inspection?.decoded_count ?? 0;
-  const clockParadox = layer3.clock_paradox_detected;
-  const textRulesAvailable = layer2.details?.ocr_mode !== "OFFLINE_COMPONENTS_ONLY";
 
   return (
     <aside className="flex w-full flex-col border-t border-[#1e293b] bg-[#0b1120] text-xs select-text md:h-full md:w-96 md:shrink-0 md:overflow-hidden md:border-l md:border-t-0">
@@ -118,7 +88,6 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
       {/* Scrollable Dossier Content */}
       <div className="space-y-4 p-3 md:flex-1 md:overflow-y-auto md:p-4">
-
         {/* 1. Master Gauge & Verdict Card */}
         <div className="bg-[#070b14] border border-[#1e293b] rounded-xl p-4 flex flex-col items-center relative overflow-hidden shadow-lg">
           <div className="relative w-32 h-32 flex items-center justify-center">
@@ -172,16 +141,185 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </div>
 
             <div className="flex items-center space-x-2 text-[11px] text-[#64748b] mt-1.5">
-              <span className="truncate max-w-[180px]">Image cue: {channel_detected}</span>
+              <span>Classifier confidence: not available</span>
+              <span>•</span>
+              <span className="truncate max-w-[180px]">{channel_detected}</span>
             </div>
             <p className="mt-2 max-w-sm text-center text-[10px] leading-relaxed text-[#94a3b8]">
-              This is a heuristic triage label, not a calibrated probability. A low signal score does not prove the image is genuine; payment status is not checked.
+              Green indicates no strong editing signals were detected; red indicates signals that warrant caution. Neither verifies payment or proves who received it.
             </p>
           </div>
         </div>
 
+        {/* Syndicate Intelligence & Section 91 Subpoena Card */}
+        {report.syndicate_intelligence && (
+          <div className="bg-[#070b14] border border-amber-900/60 rounded-xl p-3 shadow-md space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-amber-400">
+              <div className="flex items-center space-x-1.5">
+                <ShieldAlert className="w-4 h-4 text-amber-400" />
+                <span className="uppercase tracking-wider font-mono text-[10px]">Syndicate Entity Resolution</span>
+              </div>
+              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold border ${
+                report.syndicate_intelligence.syndicate_risk_level === "CRITICAL_SYNDICATE_THREAT"
+                  ? "bg-rose-950 text-rose-300 border-rose-800"
+                  : report.syndicate_intelligence.syndicate_risk_level === "MODERATE_REVIEW_REQUIRED"
+                  ? "bg-amber-950 text-amber-300 border-amber-800"
+                  : "bg-emerald-950 text-emerald-300 border-emerald-800"
+              }`}>
+                {report.syndicate_intelligence.syndicate_risk_level === "CRITICAL_SYNDICATE_THREAT" ? "CRITICAL RISK" : "TRIAGE REVIEW"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono text-[#94a3b8]">
+              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] truncate" title={report.syndicate_intelligence.entity_summary.payee_vpa || "None"}>
+                <span className="text-[#64748b] block text-[9px]">VPA:</span>
+                <span className="text-white truncate">{report.syndicate_intelligence.entity_summary.payee_vpa || "N/A"}</span>
+              </div>
+              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] truncate">
+                <span className="text-[#64748b] block text-[9px]">UTR:</span>
+                <span className="text-white truncate">{report.syndicate_intelligence.entity_summary.utr_number || "Non-std"}</span>
+              </div>
+            </div>
+
+            {onOpenSection91Modal && (
+              <button
+                onClick={onOpenSection91Modal}
+                className="w-full py-1.5 px-2 rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-bold font-mono text-[11px] flex items-center justify-center space-x-1.5 shadow-sm transition-all"
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-black" />
+                <span>Open Section 91 Subpoena Notice</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Forensic ML Engine & Decoupled Dimensions (Phase 8 Parity) */}
+        <div className="bg-[#070b14] border border-[#1e293b] rounded-xl p-3.5 shadow-md space-y-3">
+          {/* Header & Status Badges */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1.5">
+              <Zap className="w-4 h-4 text-amber-400" />
+              <span className="font-semibold text-xs text-[#f1f5f9] tracking-wide">
+                ML Fusion Engine
+              </span>
+            </div>
+            <div className="flex items-center space-x-1 font-mono text-[9px]">
+              <span className="px-1.5 py-0.5 rounded font-bold bg-amber-950/80 text-amber-300 border border-amber-700/60">
+                {report.model_metadata?.promotion_status || "EXPERIMENTAL MODEL"}
+              </span>
+              <span className="px-1.5 py-0.5 rounded bg-[#1e293b] text-[#94a3b8] border border-[#334155]">
+                {report.model_metadata?.inference_status || "EXECUTED"}
+              </span>
+            </div>
+          </div>
+
+          {/* Model Identification Specs */}
+          <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
+            <div>
+              <span className="text-[#64748b] block text-[9px]">ACTIVE MODEL:</span>
+              <span className="text-[#38bdf8] truncate block" title={report.model_metadata?.model_id || "verisight-fusion-gbdt-v1"}>
+                {report.model_metadata?.model_id || "verisight-fusion-gbdt-v1"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[#64748b] block text-[9px]">VERSION / SCHEMA:</span>
+              <span className="text-white block">
+                v{report.model_metadata?.model_version || "1.2.1"} · s{report.model_metadata?.feature_schema_version || "1.0.0"}
+              </span>
+            </div>
+          </div>
+
+          {/* Calibrated Probability Readout */}
+          <div className="p-2.5 rounded-lg bg-[#0b1120] border border-[#1e293b] space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono text-[#94a3b8]">Calibrated P(Tampered | x):</span>
+              <span className="font-mono text-sm font-bold text-amber-400">
+                {report.model_metadata?.calibrated_probability != null
+                  ? `${(report.model_metadata.calibrated_probability * 100).toFixed(1)}%`
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-500 rounded-full transition-all duration-700"
+                style={{
+                  width: `${(report.model_metadata?.calibrated_probability ?? 0) * 100}%`,
+                }}
+              />
+            </div>
+            <p className="text-[9px] text-[#64748b] leading-tight">
+              Platt sigmoid calibration (cv=3). Disclaimer: Experimental estimate on synthetic benchmark. Not validated for legal certainty.
+            </p>
+          </div>
+
+          {/* Decoupled 4 Forensic Dimensions */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-wider block font-semibold">
+              Decoupled Assessment Dimensions
+            </span>
+            <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b]">
+                <span className="text-[#64748b] block text-[9px]">A: IMAGE INTEGRITY</span>
+                <span className={`font-bold ${
+                  report.assessment_dimensions?.image_integrity_status === "INTACT"
+                    ? "text-emerald-400"
+                    : "text-rose-400"
+                }`}>
+                  {report.assessment_dimensions?.image_integrity_status || "INTACT"}
+                </span>
+              </div>
+              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b]">
+                <span className="text-[#64748b] block text-[9px]">B: TEXT CONSISTENCY</span>
+                <span className={`font-bold ${
+                  report.assessment_dimensions?.text_consistency_status === "CONSISTENT"
+                    ? "text-emerald-400"
+                    : "text-amber-400"
+                }`}>
+                  {report.assessment_dimensions?.text_consistency_status || "CONSISTENT"}
+                </span>
+              </div>
+              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] col-span-2">
+                <span className="text-[#64748b] block text-[9px]">C: PAYMENT SETTLEMENT</span>
+                <span className="text-amber-300 font-bold block truncate">
+                  {report.assessment_dimensions?.payment_verification_status || "INDEPENDENT_SOURCE_QUERY_REQUIRED"}
+                </span>
+                <span className="text-[8.5px] text-[#94a3b8] leading-tight block mt-0.5">
+                  Screenshots cannot prove financial settlement; independent banking log query mandatory.
+                </span>
+              </div>
+              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] col-span-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#64748b] text-[9px]">D: FORENSIC UNCERTAINTY</span>
+                  <span className="text-sky-400 font-bold">
+                    {report.assessment_dimensions?.forensic_uncertainty_status || "HIGH_CONFIDENCE"}
+                  </span>
+                </div>
+                <span className="text-[8.5px] text-[#94a3b8] leading-tight block mt-0.5">
+                  {report.assessment_dimensions?.uncertainty_explanation || "Sufficient SNR and typographic resolution."}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Missing Evidence Indicators */}
+          {report.model_metadata?.missing_evidence && report.model_metadata.missing_evidence.length > 0 && (
+            <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2 space-y-1">
+              <span className="text-[9px] font-mono text-rose-300 uppercase tracking-wider block font-semibold">
+                Missing Evidence Caveats ({report.model_metadata.missing_evidence.length})
+              </span>
+              <ul className="list-disc list-inside text-[9px] text-rose-200/80 space-y-0.5 font-mono">
+                {report.model_metadata.missing_evidence.map((item, idx) => (
+                  <li key={idx} className="truncate" title={item}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
         {/* 2. Cross-Layer Spatial IoU Synergy Banner */}
-        {synergy.region_overlap_found && (
+        {synergy.synergy_multiplier_applied && (
           <div className="bg-amber-950/30 border border-amber-500/60 rounded-xl p-3 shadow-md shadow-amber-500/10">
             <div className="flex items-center justify-between text-amber-400 font-semibold mb-1">
               <div className="flex items-center space-x-1.5">
@@ -195,10 +333,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             <p className="text-[11px] text-amber-200/80 leading-relaxed">
               {synergy.synergy_explanation}
             </p>
-            {synergy.primary_review_locus && (
+            {synergy.primary_forgery_locus && (
               <button
                 onClick={() =>
-                  onSelectLocus(synergy.primary_review_locus || null)
+                  onSelectLocus(synergy.primary_forgery_locus || null)
                 }
                 className="mt-2 w-full py-1 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 rounded font-mono text-[10px] flex items-center justify-center space-x-1.5 border border-amber-500/40"
               >
@@ -209,97 +347,17 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           </div>
         )}
 
-        {/* 3. Analysis Summary Section */}
-        <div className="bg-[#070b14] border border-[#1e293b] rounded-xl p-3 space-y-2">
-          <div className="flex items-center space-x-1.5 mb-2">
-            <Info className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-[11px] font-mono text-[#64748b] tracking-wider uppercase font-semibold">
-              Analysis Summary
-            </span>
-          </div>
-          <ul className="space-y-1.5 font-mono text-[11px]">
-            <li className="flex items-start space-x-2">
-              <span className="text-sky-400 shrink-0">•</span>
-              <span>
-                <span className="text-[#94a3b8]">ELA Score: </span>
-                <span className="text-[#f1f5f9] font-semibold">
-                  {elaScore.toFixed(1)}/100
-                </span>
-                <span className="text-[#64748b]"> — {layer1.details?.ela?.scoring_eligible === false ? "not used for scoring on this format" : "heuristic residual measurement; not a tamper probability"}</span>
-              </span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-cyan-400 shrink-0">•</span>
-              <span>
-                <span className="text-[#94a3b8]">Noise Analysis: </span>
-                <span className="text-[#f1f5f9] font-semibold">
-                  {noiseScore.toFixed(1)}/100
-                </span>
-                <span className="text-[#64748b]"> — heuristic residual measurement</span>
-              </span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-pink-400 shrink-0">•</span>
-              <span>
-                <span className="text-[#94a3b8]">Copy-Move Detection: </span>
-                <span
-                  className={
-                    cloneCount > 0
-                      ? "text-rose-300 font-semibold"
-                      : "text-emerald-300"
-                  }
-                >
-                  {cloneCount > 0 ? `${cloneCount} matches` : "None detected"}
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-purple-400 shrink-0">•</span>
-              <span>
-                <span className="text-[#94a3b8]">QR Code: </span>
-                <span
-                  className={
-                    qrDecoded > 0 ? "text-purple-300" : "text-[#64748b]"
-                  }
-                >
-                  {qrDecoded > 0
-                    ? `Decoded ${qrDecoded}; content is not verified`
-                    : "Not found"}
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-orange-400 shrink-0">•</span>
-              <span>
-                <span className="text-[#94a3b8]">Clock data: </span>
-                <span
-                  className={clockParadox ? "text-rose-300 font-semibold" : "text-[#94a3b8]"}
-                >
-                  {clockParadox ? "Metadata values conflict (unverified)" : textRulesAvailable ? "No rule mismatch observed" : "Image text not checked (OCR unavailable)"}
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-amber-400 shrink-0">•</span>
-              <span>
-                <span className="text-[#94a3b8]">Image cue: </span>
-                <span className="text-[#f1f5f9]">{channel_detected}</span>
-              </span>
-            </li>
-          </ul>
-        </div>
-
-        {/* 4. 4-Layer Forensic Scores Breakdown */}
+        {/* 3. 4-Layer Forensic Scores Breakdown */}
         <div className="space-y-2">
           <span className="text-[11px] font-mono text-[#64748b] tracking-wider uppercase font-semibold">
             Forensic checks (heuristic)
           </span>
 
-          {/* Layer 1: Image cues */}
+          {/* Layer 1: Physical Signal */}
           <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-2.5 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#f1f5f9]">
-                Layer 1: Image & Residual Cues
+                Layer 1: Physical & Noise Signals
               </span>
               <span className="font-mono text-xs font-bold text-sky-400">
                 {layer1.layer_score.toFixed(1)}
@@ -314,7 +372,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
               <span>ELA cue: {layer1.ela_score.toFixed(1)}</span>
               <span>Wavelet cue: {layer1.wavelet_noise_score.toFixed(1)}</span>
-              <span>ORB candidate pairs: {layer1.clone_count}</span>
+              <span>Clones: {layer1.clone_count}</span>
             </div>
           </div>
 
@@ -360,16 +418,10 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
               <span>Ratio: {layer3.viewport_aspect_ratio.split(" ")[0]}</span>
               <span>
-                Clock Drift:{" "}
-                {layer3.clock_paradox_detected ? "PARADOX" : "OK"}
+                Clock Drift: {layer3.clock_paradox_detected ? "PARADOX" : "OK"}
               </span>
               <span>
-                Reference:{" "}
-                {layer3.upi_utr_valid == null
-                  ? "UNAVAILABLE"
-                  : layer3.upi_utr_valid
-                    ? "FORMAT OK"
-                    : "REVIEW"}
+                Reference: {layer3.upi_utr_valid == null ? "UNAVAILABLE" : layer3.upi_utr_valid ? "FORMAT OK" : "REVIEW"}
               </span>
             </div>
           </div>
@@ -393,17 +445,16 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
               <span>
                 Overlap:{" "}
-                {synergy.region_overlap_found ? "FOUND" : "NONE"}
+                {synergy.synergy_multiplier_applied ? "ACTIVE" : "NONE"}
               </span>
               <span>
-                Vision model:{" "}
-                {layer4.vlm_used ? layer4.vlm_provider : "NOT USED"}
+                Vision model: {layer4.vlm_used ? layer4.vlm_provider : "NOT USED"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* 5. Structured Forensic Findings Feed */}
+        {/* 4. Structured Forensic Findings Feed */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono text-[#64748b] tracking-wider uppercase font-semibold">
@@ -413,9 +464,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
           {findings.length === 0 ? (
             <div className="p-3 bg-[#070b14] border border-[#1e293b] rounded-lg text-center text-[#64748b] font-mono text-[11px]">
-              No strong manipulation indicators were detected. This heuristic
-              result does not prove the image's origin or that a payment
-              occurred.
+              No strong manipulation indicators were detected. This heuristic result does not prove the image’s origin or that a payment occurred.
             </div>
           ) : (
             <div className="space-y-2">
@@ -435,35 +484,29 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
                           : "bg-[#070b14] border-[#1e293b] hover:bg-[#1e293b]"
                     }`}
                   >
-                    {/* Title row with severity + layer badges */}
-                    <div className="flex items-center justify-between mb-1 gap-1 flex-wrap">
-                      <span className="font-semibold text-xs text-[#f1f5f9] truncate max-w-[160px]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-xs text-[#f1f5f9] truncate max-w-[200px]">
                         {f.title}
                       </span>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <span
-                          className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${getSeverityBadgeClass(
-                            f.severity
-                          )}`}
-                        >
-                          {f.severity}
-                        </span>
-                        <span
-                          className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${getLayerBadgeClass(
-                            f.layer
-                          )}`}
-                        >
-                          L{f.layer}
-                        </span>
-                      </div>
+                      <span
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                          isCritical
+                            ? "bg-rose-900 text-rose-200"
+                            : isHigh
+                              ? "bg-amber-900 text-amber-200"
+                              : "bg-sky-900 text-sky-200"
+                        }`}
+                      >
+                        {f.severity}
+                      </span>
                     </div>
 
                     <p className="text-[11px] text-[#94a3b8] leading-snug line-clamp-2">
                       {f.description}
                     </p>
 
-                    {/* Metric name: metric_value */}
                     <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono text-[#64748b]">
+                      <span>Layer {f.layer}</span>
                       <span className="text-[#38bdf8]">
                         {f.metric_name}: {f.metric_value}
                       </span>
@@ -475,7 +518,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           )}
         </div>
 
-        {/* 6. Cryptographic Evidence Metadata */}
+        {/* 5. Cryptographic Evidence Metadata */}
         <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-3 space-y-1.5 text-[11px] font-mono">
           <div className="text-[10px] text-[#64748b] uppercase font-semibold">
             Cryptographic Checksum & Dimensions

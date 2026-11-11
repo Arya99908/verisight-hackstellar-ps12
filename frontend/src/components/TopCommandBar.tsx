@@ -21,6 +21,7 @@ interface TopCommandBarProps {
   onOpenWhatsAppModal: () => void;
   onOpenMobileModal: () => void;
   onOpenReportModal: () => void;
+  onOpenSection91Modal?: () => void;
   isLoading: boolean;
 }
 
@@ -33,6 +34,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
   onOpenWhatsAppModal,
   onOpenMobileModal,
   onOpenReportModal,
+  onOpenSection91Modal,
   isLoading,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,6 +72,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
       <div className="flex w-full max-w-full items-center space-x-1.5 overflow-x-auto rounded-lg border border-[#1e293b] bg-[#0b1120] p-1 md:max-w-[580px] md:flex-1">
         {demoSamples.map((sample, idx) => {
           const isSelected = selectedSampleId === sample.id;
+          const isAuthentic = sample.id === "sample_1";
           return (
             <button
               key={sample.id}
@@ -78,17 +81,19 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
               title={`${sample.title}: ${sample.scenario}`}
               className={`px-2.5 py-1 rounded text-xs font-medium transition-all whitespace-nowrap flex items-center space-x-1.5 ${
                 isSelected
-                  ? "bg-sky-950 text-sky-300 border border-sky-600 shadow-sm shadow-sky-500/20"
+                  ? isAuthentic
+                    ? "bg-emerald-950 text-emerald-300 border border-emerald-600 shadow-sm shadow-emerald-500/20"
+                    : "bg-rose-950 text-rose-300 border border-rose-600 shadow-sm shadow-rose-500/20"
                   : "text-[#94a3b8] hover:text-[#f1f5f9] hover:bg-[#1e293b]"
               }`}
             >
               <span>{`S${idx + 1}`}</span>
               <span className="hidden sm:inline font-mono">
                 {sample.id === "sample_1" && "Clean Synthetic"}
-                {sample.id === "sample_2" && "Synthetic edit"}
-                {sample.id === "sample_3" && "Metadata Conflict"}
-                {sample.id === "sample_4" && "JPEG re-encode"}
-                {sample.id === "sample_5" && "Repeated regions"}
+                {sample.id === "sample_2" && "Spliced ₹95k"}
+                {sample.id === "sample_3" && "Clock Paradox"}
+                {sample.id === "sample_4" && "WhatsApp Recomp"}
+                {sample.id === "sample_5" && "ORB Clones"}
               </span>
             </button>
           );
@@ -140,6 +145,19 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
           <QrCode className="w-3.5 h-3.5" />
           <span className="hidden xl:inline">Judge Mobile QR</span>
         </button>
+
+        {/* Section 91 Cyber Subpoena Button */}
+        {onOpenSection91Modal && (
+          <button
+            onClick={onOpenSection91Modal}
+            disabled={isLoading}
+            className="shrink-0 whitespace-nowrap rounded-md border border-amber-800/80 bg-amber-950/40 px-3 py-2 text-xs font-medium text-amber-300 transition-all hover:bg-amber-900/50 hover:text-amber-200 flex items-center space-x-1.5"
+            title="Generate Section 91 Statutory Cyber Subpoena (1930 Cyber-Cell Ready)"
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+            <span>Section 91 Notice</span>
+          </button>
+        )}
 
         {/* Export Printable Dossier Button */}
         <button

@@ -6,6 +6,7 @@ import { WhatsAppSimulatorModal } from "./components/WhatsAppSimulatorModal";
 import { MobileUploadModal } from "./components/MobileUploadModal";
 import { MobileUploadView } from "./components/MobileUploadView";
 import { ForensicReportModal } from "./components/ForensicReportModal";
+import { Section91NoticeModal } from "./components/Section91NoticeModal";
 import {
   ForensicAnalysisReport,
   DemoSampleMeta,
@@ -49,6 +50,7 @@ const DesktopWorkbench: React.FC = () => {
 
   const [isMobileModalOpen, setIsMobileModalOpen] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
+  const [isSection91ModalOpen, setIsSection91ModalOpen] = useState<boolean>(false);
 
   // Keep the normal Sample 1 startup view, but request the catalog and analysis
   // in parallel so the catalog request does not add a serial round trip.
@@ -161,6 +163,7 @@ const DesktopWorkbench: React.FC = () => {
         onOpenWhatsAppModal={handleTriggerWhatsAppSimulation}
         onOpenMobileModal={() => setIsMobileModalOpen(true)}
         onOpenReportModal={() => setIsReportModalOpen(true)}
+        onOpenSection91Modal={() => setIsSection91ModalOpen(true)}
         isLoading={isLoading}
       />
       {appError && (
@@ -180,6 +183,7 @@ const DesktopWorkbench: React.FC = () => {
           report={report}
           selectedLocus={selectedLocus}
           onSelectLocus={(box) => setSelectedLocus(box)}
+          onOpenSection91Modal={() => setIsSection91ModalOpen(true)}
         />
       </div>
 
@@ -203,6 +207,13 @@ const DesktopWorkbench: React.FC = () => {
         onClose={() => setIsReportModalOpen(false)}
         report={report}
       />
+
+      {isSection91ModalOpen && report && (
+        <Section91NoticeModal
+          report={report}
+          onClose={() => setIsSection91ModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

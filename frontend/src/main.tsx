@@ -1,6 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import ReactDOM from "react-dom/client";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import { App } from "./App";
 import "./styles/index.css";
 
@@ -45,7 +44,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <StartupErrorBoundary>
       <App />
-      <SpeedInsights />
     </StartupErrorBoundary>
   </React.StrictMode>,
 );
