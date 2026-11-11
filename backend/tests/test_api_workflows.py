@@ -23,6 +23,25 @@ def test_unknown_demo_sample_is_a_404():
     assert response.status_code == 404
 
 
+def test_model_status_does_not_claim_a_trained_classifier():
+    response = client.get("/api/model/status")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "HEURISTIC_ONLY"
+    assert data["active_model_id"] is None
+    assert data["calibration_status"] == "NOT_CALIBRATED"
+
+
+def test_model_evaluation_reports_missing_validation_data():
+    response = client.get("/api/model/evaluation")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "NOT_EVALUATED"
+    assert data["dataset_summary"]["synthetic_fixtures"] == 5
+    assert data["dataset_summary"]["held_out_test_samples"] == 0
+    assert data["metrics"] is None
+
+
 def test_upload_analysis_endpoint_accepts_an_image():
     image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     response = client.post(

@@ -98,6 +98,39 @@ async def health_check():
         "active_layers": ["L1_Signal_Heuristics", "L2_Geometry_Heuristics", "L3_Metadata_QR", "L4_Evidence_Review"]
     }
 
+
+@router.get("/model/status")
+async def model_status():
+    """Describe the deployed analyzer without implying a trained model is active."""
+    return {
+        "status": "HEURISTIC_ONLY",
+        "active_model_id": None,
+        "active_model_version": None,
+        "architecture": "Deterministic four-layer forensic heuristics",
+        "calibration_status": "NOT_CALIBRATED",
+        "promotion_status": "NO_TRAINED_MODEL",
+        "available_models": [],
+        "ml_environment_ready": False,
+        "message": "No trained or calibrated classifier is deployed. Results are review cues, not authenticity probabilities.",
+    }
+
+
+@router.get("/model/evaluation")
+async def model_evaluation():
+    """Return only evaluation facts supported by the bundled synthetic fixtures."""
+    return {
+        "status": "NOT_EVALUATED",
+        "dataset_summary": {
+            "total_samples": 5,
+            "synthetic_fixtures": 5,
+            "independent_authentic_references": 0,
+            "independent_manipulated_references": 0,
+            "held_out_test_samples": 0,
+        },
+        "metrics": None,
+        "message": "No representative labeled dataset or held-out evaluation is configured. Accuracy, ROC-AUC, and calibrated confidence are unavailable.",
+    }
+
 @router.get("/network-info")
 async def get_network_info(request: Request):
     """

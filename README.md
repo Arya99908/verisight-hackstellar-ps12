@@ -175,6 +175,10 @@ The Vercel project uses Fluid Compute and the `VERCEL_SUPPORT_LARGE_FUNCTIONS=1`
 
 All endpoints are served under `/api`.
 
+### `GET /api/model/status` and `GET /api/model/evaluation`
+
+These power the Evaluation dashboard. The status endpoint reports that the deployed system is heuristic-only and uncalibrated. The evaluation endpoint reports the five bundled synthetic fixtures and returns `metrics: null`; there is no representative labeled dataset or held-out evaluation from which to claim model accuracy.
+
 ### `GET /api/health`
 
 Returns service readiness and database connectivity.

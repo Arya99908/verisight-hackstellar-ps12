@@ -164,32 +164,28 @@ export async function uploadMobile(
 }
 
 export interface ModelStatus {
-  active_model_id: string;
-  active_model_version: string;
+  status: string;
+  active_model_id: string | null;
+  active_model_version: string | null;
   architecture: string;
   calibration_status: string;
   promotion_status: string;
   available_models: any[];
   ml_environment_ready: boolean;
+  message: string;
 }
 
 export interface ModelEvaluationReport {
   dataset_summary: {
     total_samples: number;
-    dev_samples: number;
+    synthetic_fixtures: number;
+    independent_authentic_references: number;
+    independent_manipulated_references: number;
     held_out_test_samples: number;
-    authentic_reference: number;
-    manipulated_reference: number;
-    features_extracted: number;
-    feature_schema_version: string;
-    feature_names: string[];
-    held_out_test_ids: string[];
   };
-  models: Record<string, any>;
-  data_leakage_audit?: Record<string, any>;
-  scientific_assessment?: Record<string, any>;
   status?: string;
   message?: string;
+  metrics: null;
 }
 
 export async function fetchModelStatus(): Promise<ModelStatus> {
