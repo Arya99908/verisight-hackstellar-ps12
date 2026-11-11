@@ -1,5 +1,6 @@
 import socket
 import os
+import logging
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -25,6 +26,7 @@ from app.services.mobile_upload_store import (
 )
 
 router = APIRouter()
+log = logging.getLogger(__name__)
 
 # In-memory storage for latest mobile upload (for stage judge real-time sync)
 _LATEST_MOBILE_UPLOAD: dict[str, Any] | None = None
@@ -37,10 +39,24 @@ class UploadSessionRequest(BaseModel):
     session_id: UUID | None = None
 
 
+def validate_image_upload(file: UploadFile, content: bytes) -> None:
+    if not content:
+        raise HTTPException(status_code=422, detail="The uploaded image is empty.")
+    if len(content) > settings.MAX_FILE_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="File size exceeds 20MB limit.")
+    content_type = (file.content_type or "").split(";", 1)[0].strip().lower()
+    if content_type == "image/jpg":
+        content_type = "image/jpeg"
+    if content_type and content_type not in ALLOWED_UPLOAD_TYPES and content_type != "application/octet-stream":
+        raise HTTPException(status_code=415, detail="Use a PNG, JPG, WebP, or BMP image.")
+
+
 @router.post("/upload-session")
 async def create_upload_session(payload: UploadSessionRequest):
     """Issue a one-file, signed Storage upload so large phone files avoid function body limits."""
-    if payload.size < 1 or payload.size > settings.MAX_FILE_SIZE_BYTES:
+    if payload.size < 1:
+        raise HTTPException(status_code=422, detail="The uploaded image is empty.")
+    if payload.size > settings.MAX_FILE_SIZE_BYTES:
         raise HTTPException(status_code=413, detail="Choose an image smaller than 20 MB.")
     content_type = payload.content_type.split(";", 1)[0].strip().lower()
     if content_type not in ALLOWED_UPLOAD_TYPES:
@@ -237,16 +253,21 @@ async def get_demo_samples():
 async def analyze_upload(file: UploadFile = File(...)):
     """Upload an image and return heuristic review cues; this does not verify payment status."""
     content = await file.read()
-    if len(content) > settings.MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=400, detail="File size exceeds 20MB limit.")
+    validate_image_upload(file, content)
     
     try:
         from app.services.forensic.pipeline import analyze_screenshot
         report = analyze_screenshot(content, filename=file.filename or "upload.png")
         await save_case(report, "upload")
         return report
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Forensic investigation failed: {e!s}")
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="The image could not be decoded. Choose a valid PNG, JPG, WebP, or BMP file.",
+        ) from exc
+    except Exception as exc:
+        log.exception("Screenshot analysis failed")
+        raise HTTPException(status_code=500, detail="Screenshot analysis failed. Please try again.") from exc
 
 @router.post("/analyze-sample", response_model=ForensicAnalysisReport)
 async def analyze_sample(background_tasks: BackgroundTasks, sample_id: str = Form(...)):
@@ -298,12 +319,19 @@ def _cached_demo_analysis(filename: str, modified_ns: int, path: str) -> Forensi
 async def simulate_whatsapp(file: UploadFile = File(...)):
     """Simulates WhatsApp laundering on an uploaded image and returns before vs after comparison."""
     content = await file.read()
+    validate_image_upload(file, content)
     try:
         from app.simulation.whatsapp_pipeline import run_whatsapp_simulation
         sim_response = run_whatsapp_simulation(content, filename=file.filename or "image.png")
         return sim_response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Simulation failed: {e!s}")
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="The image could not be decoded. Choose a valid PNG, JPG, WebP, or BMP file.",
+        ) from exc
+    except Exception as exc:
+        log.exception("Screenshot recompression simulation failed")
+        raise HTTPException(status_code=500, detail="Image simulation failed. Please try again.") from exc
 
 @router.post("/mobile-upload")
 async def mobile_upload(request: Request, file: UploadFile = File(...)):
@@ -314,8 +342,7 @@ async def mobile_upload(request: Request, file: UploadFile = File(...)):
     """
     global _LATEST_MOBILE_UPLOAD
     content = await file.read()
-    if len(content) > settings.MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=400, detail="File size exceeds 20MB limit.")
+    validate_image_upload(file, content)
     session_text = request.query_params.get("session_id")
     session_id: UUID | None = None
     if session_text:

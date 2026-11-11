@@ -216,7 +216,7 @@ curl -X POST https://verisight-ps12.vercel.app/api/analyze \
   -F "file=@receipt.png" | jq .verdict
 ```
 
-> On Vercel, large files should use the signed upload flow (`POST /api/upload-session` → PUT to Storage URL → `POST /api/analyze-upload-session/{session_id}`) to avoid function body size limits.
+> The browser automatically routes images larger than 3 MiB through the signed upload flow (`POST /api/upload-session` → PUT to the private Storage URL → `POST /api/analyze-upload-session/{session_id}`) to avoid Vercel function body limits. Direct API clients should use this flow for large files too.
 
 ---
 

@@ -6,6 +6,27 @@ import {
 } from "../types/forensic";
 
 const API_BASE = "/api";
+const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
+const DIRECT_UPLOAD_LIMIT_BYTES = 3 * 1024 * 1024;
+const IMAGE_TYPES_BY_EXTENSION: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+  bmp: "image/bmp",
+};
+const ALLOWED_IMAGE_TYPES = new Set(Object.values(IMAGE_TYPES_BY_EXTENSION));
+
+function getSupportedImageType(file: File): string {
+  const mimeType = file.type.split(";", 1)[0].trim().toLowerCase();
+  if (ALLOWED_IMAGE_TYPES.has(mimeType)) return mimeType;
+  if (!mimeType || mimeType === "application/octet-stream") {
+    const extension = file.name.split(".").pop()?.toLowerCase() || "";
+    const inferredType = IMAGE_TYPES_BY_EXTENSION[extension];
+    if (inferredType) return inferredType;
+  }
+  throw new Error("Choose a PNG, JPG, WebP, or BMP image.");
+}
 
 async function fetchStartupData(path: string): Promise<Response> {
   const controller = new AbortController();
@@ -20,6 +41,12 @@ async function fetchStartupData(path: string): Promise<Response> {
 async function responseError(res: Response, fallback: string): Promise<Error> {
   if (res.status === 413) {
     return new Error("This screenshot is too large to upload. Choose an image under 20 MB.");
+  }
+  if (res.status === 415) {
+    return new Error("Choose a PNG, JPG, WebP, or BMP image.");
+  }
+  if (res.status === 422) {
+    return new Error("The image could not be read. Choose a valid PNG, JPG, WebP, or BMP file.");
   }
   const data = await res.json().catch(() => null);
   const detail = typeof data?.detail === "string" ? data.detail : fallback;
@@ -58,31 +85,42 @@ export async function analyzeDemoSample(
 export async function analyzeUpload(
   file: File,
 ): Promise<ForensicAnalysisReport> {
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("This screenshot is too large to upload. Choose an image under 20 MB.");
+  }
+  const contentType = getSupportedImageType(file);
+
+  // Vercel functions have a smaller request-body limit than the app's 20 MB
+  // image limit. Large browser uploads use the same one-use private Storage
+  // flow as paired mobile uploads, then invoke analysis by session ID.
+  if (file.size > DIRECT_UPLOAD_LIMIT_BYTES) {
+    const { session_id } = await uploadFileToPrivateStorage(file);
+    const res = await fetch(`${API_BASE}/analyze-upload-session/${encodeURIComponent(session_id)}`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      throw await responseError(res, "Screenshot analysis failed. Please try again.");
+    }
+    return res.json();
+  }
+
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", new Blob([file], { type: contentType }), file.name || "screenshot.png");
   const res = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
     body: formData,
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: "Analysis failed" }));
-    throw new Error(err.detail || "Screenshot analysis failed. Choose a PNG, JPG, WebP, or BMP image.");
+    throw await responseError(res, "Screenshot analysis failed. Please try again.");
   }
   return res.json();
 }
 
 async function uploadFileToPrivateStorage(file: File, sessionId?: string) {
-  if (file.size > 20 * 1024 * 1024) {
+  if (file.size > MAX_UPLOAD_BYTES) {
     throw new Error("Choose an image smaller than 20 MB.");
   }
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  const contentType = file.type || ({
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    webp: "image/webp",
-    bmp: "image/bmp",
-  } as Record<string, string>)[extension || ""] || "application/octet-stream";
+  const contentType = getSupportedImageType(file);
   const sessionRes = await fetch(`${API_BASE}/upload-session`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

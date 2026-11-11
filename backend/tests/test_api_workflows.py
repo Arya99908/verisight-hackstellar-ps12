@@ -59,6 +59,44 @@ def test_upload_analysis_endpoint_accepts_an_image():
     assert response.json()["filename"] == "capture.png"
 
 
+def test_upload_analysis_rejects_unsupported_media_type():
+    response = client.post(
+        "/api/analyze",
+        files={"file": ("animated.gif", b"not an allowed image", "image/gif")},
+    )
+    assert response.status_code == 415
+
+
+def test_upload_analysis_returns_client_error_for_empty_or_corrupt_images():
+    for payload in (b"", b"not an image"):
+        response = client.post(
+            "/api/analyze",
+            files={"file": ("broken.png", payload, "image/png")},
+        )
+        assert response.status_code == 422
+
+
+def test_whatsapp_simulation_rejects_unsupported_media_type():
+    response = client.post(
+        "/api/simulate-whatsapp",
+        files={"file": ("animated.gif", b"not an allowed image", "image/gif")},
+    )
+    assert response.status_code == 415
+
+
+def test_signed_upload_session_rejects_empty_and_oversized_files():
+    empty = client.post(
+        "/api/upload-session",
+        json={"filename": "empty.png", "content_type": "image/png", "size": 0},
+    )
+    oversized = client.post(
+        "/api/upload-session",
+        json={"filename": "large.png", "content_type": "image/png", "size": 20 * 1024 * 1024 + 1},
+    )
+    assert empty.status_code == 422
+    assert oversized.status_code == 413
+
+
 def test_whatsapp_simulation_endpoint_returns_comparison():
     image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     response = client.post(
