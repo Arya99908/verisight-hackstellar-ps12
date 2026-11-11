@@ -1,16 +1,19 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
-  ShieldAlert,
   ShieldCheck,
   Upload,
+  ChevronDown,
+  Check,
   Share2,
   QrCode,
   FileText,
   Loader2,
-  RefreshCw,
-  Cpu,
+  ShieldAlert,
+  Keyboard,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { DemoSampleMeta } from "../types/forensic";
+import { toast } from "sonner";
 
 interface TopCommandBarProps {
   databaseStatus: "CHECKING" | "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED";
@@ -22,8 +25,47 @@ interface TopCommandBarProps {
   onOpenMobileModal: () => void;
   onOpenReportModal: () => void;
   onOpenSection91Modal?: () => void;
+  onOpenShortcutsModal?: () => void;
+  isAdvancedMode: boolean;
+  onToggleAdvancedMode: () => void;
   isLoading: boolean;
 }
+
+const SAMPLE_DETAILS: Record<
+  string,
+  { label: string; badge: string; color: string; desc: string }
+> = {
+  sample_1: {
+    label: "Clean Synthetic UPI",
+    badge: "Authentic",
+    color: "emerald",
+    desc: "Clean baseline reference receipt",
+  },
+  sample_2: {
+    label: "Spliced ₹95,000 Payout",
+    badge: "Amount Edit",
+    color: "rose",
+    desc: "Digital text insertion & font drift",
+  },
+  sample_3: {
+    label: "Clock Paradox UPI",
+    badge: "Time Drift",
+    color: "amber",
+    desc: "Status bar vs transaction mismatch",
+  },
+  sample_4: {
+    label: "WhatsApp Recompressed",
+    badge: "Recompressed",
+    color: "amber",
+    desc: "Compression laundering artifact",
+  },
+  sample_5: {
+    label: "ORB Cloned Icons",
+    badge: "Copy-Move",
+    color: "rose",
+    desc: "Duplicated bank badge keypoints",
+  },
+};
 
 export const TopCommandBar: React.FC<TopCommandBarProps> = ({
   databaseStatus,
@@ -35,73 +77,168 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
   onOpenMobileModal,
   onOpenReportModal,
   onOpenSection91Modal,
+  onOpenShortcutsModal,
+  isAdvancedMode,
+  onToggleAdvancedMode,
   isLoading,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (file) onFileUpload(file);
+    if (file) {
+      toast.info(`Uploading evidence: ${file.name}`);
+      onFileUpload(file);
+    }
   };
 
+  const currentMeta = selectedSampleId
+    ? SAMPLE_DETAILS[selectedSampleId] || {
+        label: selectedSampleId,
+        badge: "Case",
+        color: "sky",
+        desc: "Custom uploaded screenshot",
+      }
+    : {
+        label: "Custom Screenshot",
+        badge: "Custom Upload",
+        color: "sky",
+        desc: "Active forensic artifact",
+      };
+
   return (
-    <header className="relative z-20 flex w-full flex-col gap-2 border-b border-[#1e293b] bg-[#070b14]/95 px-2 py-2 backdrop-blur sm:px-4 md:h-16 md:flex-row md:items-center md:justify-between md:gap-3 md:py-0">
-      {/* Brand & System Indicator */}
-      <div className="flex min-w-0 items-center space-x-2 md:min-w-[230px] md:space-x-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 shadow-lg shadow-sky-500/20">
-          <ShieldAlert className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="font-bold tracking-wider text-base bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-              VERISIGHT
-            </span>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 font-semibold tracking-wider">
-              PRO-v1.0
-            </span>
-          </div>
-          <div className="flex items-center space-x-1.5 text-[11px] text-[#64748b]">
-            <span className={`w-1.5 h-1.5 rounded-full ${databaseStatus === "HEALTHY" ? "bg-emerald-500 animate-pulse" : databaseStatus === "CHECKING" ? "bg-amber-400 animate-pulse" : "bg-rose-500"}`} />
-            <span className="font-mono">4-LAYER CORE · DB {databaseStatus}</span>
-          </div>
+    <header className="relative z-30 flex h-14 w-full shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#090D16]/95 px-2 sm:px-4 backdrop-blur-md select-none overflow-x-auto no-scrollbar gap-2">
+      {/* 1. Left Zone: Workbench Session Indicator */}
+      <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 rounded-lg border border-sky-500/20 bg-sky-950/40 px-2.5 py-1 text-xs">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="font-mono text-[11px] font-semibold text-sky-300">
+            WORKBENCH
+          </span>
         </div>
       </div>
 
-      {/* Golden Demo Sample Selector Pills */}
-      <div className="flex w-full max-w-full items-center space-x-1.5 overflow-x-auto rounded-lg border border-[#1e293b] bg-[#0b1120] p-1 md:max-w-[580px] md:flex-1">
-        {demoSamples.map((sample, idx) => {
-          const isSelected = selectedSampleId === sample.id;
-          const isAuthentic = sample.id === "sample_1";
-          return (
-            <button
-              key={sample.id}
-              onClick={() => onSelectSample(sample.id)}
-              disabled={isLoading}
-              title={`${sample.title}: ${sample.scenario}`}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-all whitespace-nowrap flex items-center space-x-1.5 ${
-                isSelected
-                  ? isAuthentic
-                    ? "bg-emerald-950 text-emerald-300 border border-emerald-600 shadow-sm shadow-emerald-500/20"
-                    : "bg-rose-950 text-rose-300 border border-rose-600 shadow-sm shadow-rose-500/20"
-                  : "text-[#94a3b8] hover:text-[#f1f5f9] hover:bg-[#1e293b]"
+      {/* 2. Center Zone: Sleek Case Selector Combobox Dropdown */}
+      <div className="relative shrink-0" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setIsDropdownOpen((prev) => !prev)}
+          disabled={isLoading}
+          className="group flex w-[200px] sm:w-[310px] items-center justify-between rounded-lg border border-white/[0.08] bg-[#0D1424] px-2.5 sm:px-3 py-1.5 text-xs text-slate-200 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-all hover:border-white/20 active:scale-[0.98]"
+          title="Select investigation case (Shortcuts: 1-5)"
+        >
+          <div className="flex items-center gap-2 truncate">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+              CASE:
+            </span>
+            <span className="truncate font-medium text-slate-100">
+              {currentMeta.label}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span
+              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold ${
+                currentMeta.color === "emerald"
+                  ? "bg-emerald-950/80 text-emerald-300 border border-emerald-800/50"
+                  : currentMeta.color === "amber"
+                  ? "bg-amber-950/80 text-amber-300 border border-amber-800/50"
+                  : "bg-rose-950/80 text-rose-300 border border-rose-800/50"
               }`}
             >
-              <span>{`S${idx + 1}`}</span>
-              <span className="hidden sm:inline font-mono">
-                {sample.id === "sample_1" && "Clean Synthetic"}
-                {sample.id === "sample_2" && "Spliced ₹95k"}
-                {sample.id === "sample_3" && "Clock Paradox"}
-                {sample.id === "sample_4" && "WhatsApp Recomp"}
-                {sample.id === "sample_5" && "ORB Clones"}
-              </span>
-            </button>
-          );
-        })}
+              {currentMeta.badge}
+            </span>
+            <ChevronDown
+              className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-150 ${
+                isDropdownOpen ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+        </button>
+
+        {/* Dropdown Menu */}
+        {isDropdownOpen && (
+          <div className="absolute left-0 top-full mt-1.5 w-[310px] z-50 rounded-xl border border-white/10 bg-[#0C1222]/98 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
+            <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-500">
+              Preset Evidence Samples (1–5)
+            </div>
+            <div className="space-y-1 mt-1">
+              {demoSamples.map((sample, idx) => {
+                const meta = SAMPLE_DETAILS[sample.id] || {
+                  label: sample.title,
+                  badge: `S${idx + 1}`,
+                  color: "sky",
+                  desc: sample.scenario,
+                };
+                const isSelected = selectedSampleId === sample.id;
+
+                return (
+                  <button
+                    key={sample.id}
+                    onClick={() => {
+                      onSelectSample(sample.id);
+                      setIsDropdownOpen(false);
+                      toast.success(`Loaded case: ${meta.label}`);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
+                      isSelected
+                        ? "bg-sky-500/15 text-sky-200 border border-sky-500/30"
+                        : "hover:bg-white/[0.06] text-slate-300"
+                    }`}
+                  >
+                    <div className="truncate pr-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-[10px] font-bold text-slate-400">
+                          S{idx + 1}
+                        </span>
+                        <span className="font-medium truncate">{meta.label}</span>
+                      </div>
+                      <span className="block text-[10px] text-slate-500 truncate">
+                        {meta.desc}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span
+                        className={`rounded px-1.5 py-0.5 font-mono text-[9px] ${
+                          meta.color === "emerald"
+                            ? "bg-emerald-950 text-emerald-300 border border-emerald-800/40"
+                            : meta.color === "amber"
+                            ? "bg-amber-950 text-amber-300 border border-amber-800/40"
+                            : "bg-rose-950 text-rose-300 border border-rose-800/40"
+                        }`}
+                      >
+                        {meta.badge}
+                      </span>
+                      {isSelected && <Check className="h-3.5 w-3.5 text-sky-400" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Action Commands */}
-      <div className="flex w-full items-center gap-1.5 overflow-x-auto md:w-auto md:justify-end md:gap-2">
+      {/* 3. Right Zone: Sliding Segmented Mode Toggle + Fixed Action Cluster (ZERO SCROLLBARS) */}
+      <div className="flex items-center gap-2.5 shrink-0">
         <input
           type="file"
           ref={fileInputRef}
@@ -110,64 +247,118 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
           className="hidden"
         />
 
+        {/* Sliding Segmented Toggle: Simple | Forensic (motion-primitives layoutId) */}
+        <div className="relative flex items-center rounded-lg border border-white/[0.08] bg-[#0A0F1D] p-0.5 text-xs font-mono">
+          <button
+            type="button"
+            onClick={() => {
+              if (isAdvancedMode) {
+                onToggleAdvancedMode();
+                toast("Switched to Simple Mode");
+              }
+            }}
+            className={`relative z-10 px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              !isAdvancedMode ? "text-sky-300" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Simple
+            {!isAdvancedMode && (
+              <motion.div
+                layoutId="activeViewModePill"
+                className="absolute inset-0 z-[-1] rounded-md bg-sky-500/20 border border-sky-500/40 shadow-sm"
+                transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!isAdvancedMode) {
+                onToggleAdvancedMode();
+                toast("Switched to Forensic Advanced Mode");
+              }
+            }}
+            className={`relative z-10 px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              isAdvancedMode ? "text-sky-300" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Forensic
+            {isAdvancedMode && (
+              <motion.div
+                layoutId="activeViewModePill"
+                className="absolute inset-0 z-[-1] rounded-md bg-sky-500/20 border border-sky-500/40 shadow-sm"
+                transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              />
+            )}
+          </button>
+        </div>
+
         {/* Upload Button */}
         <button
+          type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
-          className="shrink-0 whitespace-nowrap rounded-md border border-[#334155] bg-[#1e293b] px-3 py-2 text-xs font-medium text-[#f1f5f9] transition-all hover:bg-[#334155] flex items-center space-x-1.5"
+          className="flex items-center gap-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)] transition-all hover:bg-sky-500/20 active:scale-[0.97]"
+          title="Upload image evidence"
         >
           {isLoading ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-sky-400" />
           ) : (
-            <Upload className="w-3.5 h-3.5 text-sky-400" />
+            <Upload className="h-3.5 w-3.5 text-sky-400" />
           )}
-          <span>Upload Screenshot</span>
+          <span>Upload Evidence</span>
         </button>
 
-        {/* Simulate WhatsApp Button */}
+        {/* WhatsApp Simulation */}
         <button
+          type="button"
           onClick={onOpenWhatsAppModal}
           disabled={isLoading}
-          className="shrink-0 whitespace-nowrap rounded-md border border-emerald-900/60 bg-[#0f172a] px-3 py-2 text-xs font-medium text-emerald-400 transition-all hover:bg-[#1e293b] hover:text-emerald-300 flex items-center space-x-1.5"
+          className="flex items-center gap-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-all hover:bg-emerald-500/20 active:scale-[0.97]"
           title="Simulate WhatsApp compression laundering"
         >
-          <Share2 className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline">Simulate WhatsApp</span>
+          <Share2 className="h-3.5 w-3.5 text-emerald-400" />
+          <span className="hidden xl:inline">WhatsApp</span>
         </button>
 
-        {/* Stage Judge Mobile QR Sync Button */}
-        <button
-          onClick={onOpenMobileModal}
-          disabled={isLoading}
-          className="shrink-0 whitespace-nowrap rounded-md border border-amber-900/60 bg-[#0f172a] px-3 py-2 text-xs font-medium text-amber-400 transition-all hover:bg-[#1e293b] hover:text-amber-300 flex items-center space-x-1.5"
-          title="Scan QR to live-upload from phone camera"
-        >
-          <QrCode className="w-3.5 h-3.5" />
-          <span className="hidden xl:inline">Judge Mobile QR</span>
-        </button>
-
-        {/* Section 91 Cyber Subpoena Button */}
+        {/* Section 91 Subpoena */}
         {onOpenSection91Modal && (
           <button
+            type="button"
             onClick={onOpenSection91Modal}
             disabled={isLoading}
-            className="shrink-0 whitespace-nowrap rounded-md border border-amber-800/80 bg-amber-950/40 px-3 py-2 text-xs font-medium text-amber-300 transition-all hover:bg-amber-900/50 hover:text-amber-200 flex items-center space-x-1.5"
-            title="Generate Section 91 Statutory Cyber Subpoena (1930 Cyber-Cell Ready)"
+            className="flex items-center gap-1.5 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-xs font-medium text-amber-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-all hover:bg-amber-500/20 active:scale-[0.97]"
+            title="Open Section 91 Subpoena Notice"
           >
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-            <span>Section 91 Notice</span>
+            <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Section 91</span>
           </button>
         )}
 
-        {/* Export Printable Dossier Button */}
+        {/* Export Dossier */}
         <button
+          type="button"
           onClick={onOpenReportModal}
           disabled={isLoading}
-          className="shrink-0 whitespace-nowrap rounded-md bg-gradient-to-r from-sky-600 to-indigo-600 px-3 py-2 text-xs font-medium text-white shadow-md shadow-sky-600/20 transition-all hover:from-sky-500 hover:to-indigo-500 flex items-center space-x-1.5"
+          className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#162035] px-3 py-1.5 text-xs font-medium text-slate-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] transition-all hover:bg-[#1E2B47] active:scale-[0.97]"
         >
-          <FileText className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Print Dossier</span>
+          <FileText className="h-3.5 w-3.5 text-slate-300" />
+          <span className="hidden md:inline">Export</span>
         </button>
+
+        {/* Keyboard Shortcuts (?) */}
+        {onOpenShortcutsModal && (
+          <button
+            type="button"
+            onClick={onOpenShortcutsModal}
+            className="rounded-lg border border-white/[0.08] bg-[#0A0F1D] p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-slate-200 active:scale-[0.95]"
+            title="Keyboard shortcuts (?)"
+            aria-label="Keyboard shortcuts"
+          >
+            <Keyboard className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     </header>
   );

@@ -58,14 +58,17 @@ export async function analyzeDemoSample(
 export async function analyzeUpload(
   file: File,
 ): Promise<ForensicAnalysisReport> {
-  const session = await uploadFileToPrivateStorage(file);
-  const analyzeRes = await fetch(`${API_BASE}/analyze-upload-session/${session.session_id}`, {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
+    body: formData,
   });
-  if (!analyzeRes.ok) {
-    throw await responseError(analyzeRes, "Screenshot analysis failed. Choose a PNG, JPG, WebP, or BMP image.");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Analysis failed" }));
+    throw new Error(err.detail || "Screenshot analysis failed. Choose a PNG, JPG, WebP, or BMP image.");
   }
-  return analyzeRes.json();
+  return res.json();
 }
 
 async function uploadFileToPrivateStorage(file: File, sessionId?: string) {
@@ -158,4 +161,45 @@ export async function uploadMobile(
   sessionId: string,
 ): Promise<void> {
   await uploadFileToPrivateStorage(file, sessionId);
+}
+
+export interface ModelStatus {
+  active_model_id: string;
+  active_model_version: string;
+  architecture: string;
+  calibration_status: string;
+  promotion_status: string;
+  available_models: any[];
+  ml_environment_ready: boolean;
+}
+
+export interface ModelEvaluationReport {
+  dataset_summary: {
+    total_samples: number;
+    dev_samples: number;
+    held_out_test_samples: number;
+    authentic_reference: number;
+    manipulated_reference: number;
+    features_extracted: number;
+    feature_schema_version: string;
+    feature_names: string[];
+    held_out_test_ids: string[];
+  };
+  models: Record<string, any>;
+  data_leakage_audit?: Record<string, any>;
+  scientific_assessment?: Record<string, any>;
+  status?: string;
+  message?: string;
+}
+
+export async function fetchModelStatus(): Promise<ModelStatus> {
+  const res = await fetchStartupData("/model/status");
+  if (!res.ok) throw new Error("Failed to fetch model status");
+  return res.json();
+}
+
+export async function fetchModelEvaluation(): Promise<ModelEvaluationReport> {
+  const res = await fetchStartupData("/model/evaluation");
+  if (!res.ok) throw new Error("Failed to fetch model evaluation");
+  return res.json();
 }

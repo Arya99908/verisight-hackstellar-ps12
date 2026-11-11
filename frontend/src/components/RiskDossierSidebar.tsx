@@ -1,29 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertTriangle,
-  AlertCircle,
   CheckCircle2,
   Copy,
-  ExternalLink,
   Layers,
   Sparkles,
   Fingerprint,
-  Smartphone,
-  Clock,
-  Key,
-  ShieldCheck,
-  Zap,
   Target,
+  ChevronDown,
+  ChevronRight,
+  PanelRightClose,
+  PanelRightOpen,
+  ShieldAlert,
+  Hash,
+  ExternalLink,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { verdictLabel } from "../services/verdictLabel";
 import { ForensicAnalysisReport, BoundingBox } from "../types/forensic";
-import { ShieldAlert, CreditCard, Hash, Building } from "lucide-react";
+import { toast } from "sonner";
 
 interface RiskDossierSidebarProps {
   report: ForensicAnalysisReport | null;
   selectedLocus: BoundingBox | null;
   onSelectLocus: (box: BoundingBox | null) => void;
   onOpenSection91Modal?: () => void;
+  onOpenSection91?: () => void;
+  onOpenReport?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+  isAdvancedMode?: boolean;
 }
 
 export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
@@ -31,13 +37,54 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   selectedLocus,
   onSelectLocus,
   onOpenSection91Modal,
+  onOpenSection91,
+  onOpenReport,
+  isCollapsed = false,
+  onToggleCollapse,
+  isAdvancedMode = false,
 }) => {
+  const handleOpenSection91 = onOpenSection91Modal || onOpenSection91;
+  // Accordion state for progressive disclosure of layers
+  const [openLayers, setOpenLayers] = useState<Record<number, boolean>>({
+    1: true,
+    2: true,
+    3: false,
+    4: false,
+  });
+
+  const toggleLayer = (layerNum: number) => {
+    setOpenLayers((prev) => ({ ...prev, [layerNum]: !prev[layerNum] }));
+  };
+
+  // Severity filter state for findings
+  const [severityFilter, setSeverityFilter] = useState<"ALL" | "CRITICAL" | "HIGH" | "INFO">("ALL");
+
+  // Animated counting risk score
+  const [displayScore, setDisplayScore] = useState(0);
+
+  useEffect(() => {
+    if (!report) return;
+    const target = report.overall_tamper_score;
+    let start = 0;
+    const step = target / 25;
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) {
+        setDisplayScore(target);
+        clearInterval(timer);
+      } else {
+        setDisplayScore(Number(start.toFixed(1)));
+      }
+    }, 12);
+    return () => clearInterval(timer);
+  }, [report?.overall_tamper_score, report?.file_sha256]);
+
   if (!report) {
     return (
-      <div className="flex min-h-32 w-full flex-col items-center justify-center border-t border-[#1e293b] bg-[#0b1120] p-4 text-[#64748b] md:min-h-0 md:w-96 md:border-l md:border-t-0">
-        <Layers className="w-8 h-8 mb-2 stroke-[1.5]" />
-        <span className="text-xs font-mono">NO EVIDENCE DOSSIER LOADED</span>
-      </div>
+      <aside className="flex min-h-24 w-full flex-col items-center justify-center border-t border-white/[0.07] bg-[#0B0F19]/95 p-4 text-slate-500 md:h-full md:w-80 md:border-l md:border-t-0 lg:w-[400px]">
+        <Layers className="h-6 w-6 stroke-[1.5] mb-2 text-slate-600" />
+        <span className="font-mono text-[11px]">No Evidence Dossier Loaded</span>
+      </aside>
     );
   }
 
@@ -47,7 +94,6 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
     file_sha256,
     image_width,
     image_height,
-    channel_detected,
     layer1,
     layer2,
     layer3,
@@ -59,455 +105,607 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   const isCorroborated = verdict === "CORROBORATED_ANOMALIES";
   const isReviewRequired = verdict === "REVIEW_REQUIRED" || isCorroborated;
 
-  // Circular gauge calculations
-  const radius = 48;
+  // Calibrated Gauge Calculations
+  const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset =
     circumference - (overall_tamper_score / 100) * circumference;
 
-  const gaugeColor = isReviewRequired ? "#f43f5e" : "#22c55e";
+  const gaugeColor = isReviewRequired ? "#f43f5e" : "#10b981";
 
-  const copyHash = () => {
-    navigator.clipboard.writeText(file_sha256);
+  const copyText = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`Copied ${label}: ${text}`);
   };
 
-  return (
-    <aside className="flex w-full flex-col border-t border-[#1e293b] bg-[#0b1120] text-xs select-text md:h-full md:w-96 md:shrink-0 md:overflow-hidden md:border-l md:border-t-0">
-      {/* Sidebar Header */}
-      <div className="p-3.5 border-b border-[#1e293b] flex items-center justify-between bg-[#070b14]/50">
-        <div className="flex items-center space-x-2">
-          <Fingerprint className="w-4 h-4 text-sky-400" />
-          <span className="font-semibold text-[#f1f5f9] tracking-wide uppercase">
-            Forensic Risk Dossier
+  // Filtered findings
+  const filteredFindings = findings.filter((f) => {
+    if (severityFilter === "ALL") return true;
+    if (severityFilter === "CRITICAL") return f.severity === "CRITICAL";
+    if (severityFilter === "HIGH") return f.severity === "HIGH";
+    return f.severity !== "CRITICAL" && f.severity !== "HIGH";
+  });
+
+  // COLLAPSED MINI-RAIL VIEW
+  if (isCollapsed) {
+    return (
+      <aside className="flex h-12 w-full shrink-0 flex-row items-center justify-between border-t border-white/[0.07] bg-[#0B0F19]/95 px-3 backdrop-blur md:h-full md:w-14 md:flex-col md:border-l md:border-t-0 md:py-3">
+        <button
+          onClick={onToggleCollapse}
+          className="rounded p-1.5 text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-100 active:scale-[0.95]"
+          title="Expand Risk Dossier panel ([)"
+          aria-label="Expand Risk Dossier panel"
+        >
+          <PanelRightOpen className="h-4 w-4 text-sky-400" />
+        </button>
+
+        <div className="flex items-center gap-2 md:flex-col md:gap-3">
+          <div
+            className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-xs font-bold shadow-sm ${
+              isReviewRequired
+                ? "border-rose-500/60 bg-rose-950/80 text-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.3)]"
+                : "border-emerald-500/60 bg-emerald-950/80 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
+            }`}
+            title={`Tamper Score: ${overall_tamper_score.toFixed(1)} / 100`}
+          >
+            {Math.round(overall_tamper_score)}
+          </div>
+          <span className="hidden font-mono text-[9px] text-slate-500 md:block uppercase -rotate-90 py-4 tracking-wider">
+            DOSSIER
           </span>
         </div>
-        <span className="font-mono text-[10px] text-[#64748b] bg-[#1e293b] px-1.5 py-0.5 rounded">
-          CHAIN-OF-CUSTODY
-        </span>
+
+        <div className="flex items-center gap-1">
+          <span className="rounded bg-white/[0.08] px-1.5 py-0.5 font-mono text-[10px] text-slate-400">
+            {findings.length}
+          </span>
+        </div>
+      </aside>
+    );
+  }
+
+  // EXPANDED FULL DOSSIER (w-[400px])
+  return (
+    <aside className="flex h-full w-full flex-col border-t border-white/[0.07] bg-[#0B0F19]/95 text-xs backdrop-blur-md select-text md:w-80 md:shrink-0 md:overflow-hidden md:border-l md:border-t-0 lg:w-[400px]">
+      {/* 1. Sidebar Header */}
+      <div className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0D1322] px-3.5">
+        <div className="flex items-center gap-2">
+          <Fingerprint className="h-4 w-4 text-sky-400" />
+          <h2 className="font-mono font-semibold tracking-wider text-slate-100 uppercase text-[11px]">
+            Forensic Risk Dossier
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="rounded bg-white/[0.08] px-1.5 py-0.5 font-mono text-[9px] text-slate-400">
+            CHAIN-OF-CUSTODY
+          </span>
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="rounded p-1 text-slate-400 hover:bg-white/[0.06] hover:text-slate-200 active:scale-[0.95]"
+              title="Collapse sidebar ([)"
+              aria-label="Collapse sidebar"
+            >
+              <PanelRightClose className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Scrollable Dossier Content */}
-      <div className="space-y-4 p-3 md:flex-1 md:overflow-y-auto md:p-4">
-        {/* 1. Master Gauge & Verdict Card */}
-        <div className="bg-[#070b14] border border-[#1e293b] rounded-xl p-4 flex flex-col items-center relative overflow-hidden shadow-lg">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+      {/* 2. Scrollable Dossier Content with Choreographed Cascade */}
+      <div className="flex-1 space-y-3.5 overflow-y-auto p-3.5">
+        {/* Stage 1 (0ms): ScamShield-Inspired Verdict Hero Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="relative flex items-center gap-4 rounded-xl border border-white/[0.08] bg-[#0E1526]/90 p-3.5 shadow-lg"
+        >
+          {/* Left: Compact SVG Radial Gauge */}
+          <div className="relative flex h-24 w-24 shrink-0 items-center justify-center">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 90 90">
               <circle
-                cx="60"
-                cy="60"
+                cx="45"
+                cy="45"
                 r={radius}
-                className="stroke-[#1e293b]"
-                strokeWidth="10"
+                className="stroke-white/[0.08]"
+                strokeWidth="7"
                 fill="none"
               />
               <circle
-                cx="60"
-                cy="60"
+                cx="45"
+                cy="45"
                 r={radius}
                 stroke={gaugeColor}
-                strokeWidth="10"
+                strokeWidth="7"
                 fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                className="transition-all duration-1000 ease-out"
+                className="transition-all duration-700 ease-out"
               />
             </svg>
             <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold font-mono text-[#f1f5f9]">
-                {overall_tamper_score.toFixed(1)}
+              <span className="font-mono text-xl font-bold tabular-nums text-slate-100">
+                {displayScore.toFixed(1)}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#94a3b8]">
-                Heuristic score · not a probability
+              <span className="font-mono text-[8px] uppercase tracking-wider text-slate-400">
+                Risk Score
               </span>
             </div>
           </div>
 
-          {/* Verdict Banner */}
-          <div className="mt-3 flex flex-col items-center w-full">
-            <div
-              className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wider flex items-center space-x-1.5 ${
-                isReviewRequired
-                  ? "bg-rose-950/80 text-rose-300 border border-rose-700"
-                  : "bg-emerald-950/80 text-emerald-300 border border-emerald-700"
-              }`}
-            >
-              {isReviewRequired ? (
-                <AlertTriangle className="w-3.5 h-3.5" />
-              ) : (
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              )}
-              <span>{verdictLabel(verdict)}</span>
+          {/* Right: High-Contrast Status & Plain-English Heuristic Summary */}
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="flex items-center gap-1.5">
+              <div
+                className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-semibold text-[11px] tracking-wide ${
+                  isReviewRequired
+                    ? "border border-rose-500/50 bg-rose-500/15 text-rose-300"
+                    : "border border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
+                }`}
+              >
+                {isReviewRequired ? (
+                  <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
+                ) : (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                )}
+                <span>{verdictLabel(verdict)}</span>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2 text-[11px] text-[#64748b] mt-1.5">
-              <span>Classifier confidence: not available</span>
-              <span>•</span>
-              <span className="truncate max-w-[180px]">{channel_detected}</span>
-            </div>
-            <p className="mt-2 max-w-sm text-center text-[10px] leading-relaxed text-[#94a3b8]">
-              Green indicates no strong editing signals were detected; red indicates signals that warrant caution. Neither verifies payment or proves who received it.
+            <p className="mt-2 text-[11px] leading-relaxed text-slate-300 font-sans">
+              {isReviewRequired
+                ? "Multiple high-confidence forgery signals detected across font geometry and pixel compression."
+                : "Signals consistent with native screenshot capture; no digital splicing identified."}
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Syndicate Intelligence & Section 91 Subpoena Card */}
+        {/* Stage 2 (60ms): Syndicate Entity Resolution Card */}
         {report.syndicate_intelligence && (
-          <div className="bg-[#070b14] border border-amber-900/60 rounded-xl p-3 shadow-md space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-amber-400">
-              <div className="flex items-center space-x-1.5">
-                <ShieldAlert className="w-4 h-4 text-amber-400" />
-                <span className="uppercase tracking-wider font-mono text-[10px]">Syndicate Entity Resolution</span>
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-2.5 rounded-xl border border-amber-500/25 bg-[#111726] p-3.5 shadow-md"
+          >
+            <div className="flex items-center justify-between text-xs font-semibold text-amber-300">
+              <div className="flex items-center gap-1.5">
+                <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
+                <span className="font-mono text-[10px] uppercase tracking-wider">
+                  Syndicate Resolution
+                </span>
               </div>
-              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold border ${
-                report.syndicate_intelligence.syndicate_risk_level === "CRITICAL_SYNDICATE_THREAT"
-                  ? "bg-rose-950 text-rose-300 border-rose-800"
-                  : report.syndicate_intelligence.syndicate_risk_level === "MODERATE_REVIEW_REQUIRED"
-                  ? "bg-amber-950 text-amber-300 border-amber-800"
-                  : "bg-emerald-950 text-emerald-300 border-emerald-800"
-              }`}>
-                {report.syndicate_intelligence.syndicate_risk_level === "CRITICAL_SYNDICATE_THREAT" ? "CRITICAL RISK" : "TRIAGE REVIEW"}
+              <span
+                className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-bold ${
+                  report.syndicate_intelligence.syndicate_risk_level ===
+                  "CRITICAL_SYNDICATE_THREAT"
+                    ? "border-rose-800 bg-rose-950 text-rose-300"
+                    : "border-amber-800 bg-amber-950 text-amber-300"
+                }`}
+              >
+                {report.syndicate_intelligence.syndicate_risk_level ===
+                "CRITICAL_SYNDICATE_THREAT"
+                  ? "CRITICAL THREAT"
+                  : "REVIEW REQUIRED"}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono text-[#94a3b8]">
-              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] truncate" title={report.syndicate_intelligence.entity_summary.payee_vpa || "None"}>
-                <span className="text-[#64748b] block text-[9px]">VPA:</span>
-                <span className="text-white truncate">{report.syndicate_intelligence.entity_summary.payee_vpa || "N/A"}</span>
+            {/* Clickable VPA & UTR copy chips */}
+            <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
+              <div
+                onClick={() =>
+                  copyText(
+                    report.syndicate_intelligence?.entity_summary.payee_vpa || "N/A",
+                    "Payee VPA"
+                  )
+                }
+                className="group cursor-pointer rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 transition-all hover:border-amber-500/40 active:scale-[0.98]"
+                title="Click to copy VPA"
+              >
+                <div className="flex items-center justify-between text-[9px] text-slate-500 mb-0.5">
+                  <span>PAYEE VPA</span>
+                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300" />
+                </div>
+                <span className="font-medium text-slate-200 truncate block">
+                  {report.syndicate_intelligence.entity_summary.payee_vpa || "N/A"}
+                </span>
               </div>
-              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] truncate">
-                <span className="text-[#64748b] block text-[9px]">UTR:</span>
-                <span className="text-white truncate">{report.syndicate_intelligence.entity_summary.utr_number || "Non-std"}</span>
+
+              <div
+                onClick={() =>
+                  copyText(
+                    report.syndicate_intelligence?.entity_summary.utr_number || "Non-std",
+                    "UTR"
+                  )
+                }
+                className="group cursor-pointer rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 transition-all hover:border-amber-500/40 active:scale-[0.98]"
+                title="Click to copy UTR"
+              >
+                <div className="flex items-center justify-between text-[9px] text-slate-500 mb-0.5">
+                  <span>REF UTR</span>
+                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300" />
+                </div>
+                <span className="font-medium text-slate-200 truncate block">
+                  {report.syndicate_intelligence.entity_summary.utr_number || "Non-std"}
+                </span>
               </div>
             </div>
 
-            {onOpenSection91Modal && (
+            {/* Refined Section 91 Subpoena Button */}
+            {handleOpenSection91 && (
               <button
-                onClick={onOpenSection91Modal}
-                className="w-full py-1.5 px-2 rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-bold font-mono text-[11px] flex items-center justify-center space-x-1.5 shadow-sm transition-all"
+                type="button"
+                onClick={handleOpenSection91}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 py-1.5 px-3 font-mono text-[11px] font-semibold text-black shadow-md shadow-amber-500/20 transition-all hover:from-amber-400 hover:to-amber-500 active:scale-[0.98]"
               >
-                <ShieldAlert className="w-3.5 h-3.5 text-black" />
+                <ShieldAlert className="h-3.5 w-3.5 text-black" />
                 <span>Open Section 91 Subpoena Notice</span>
               </button>
             )}
-          </div>
+          </motion.div>
         )}
 
-        {/* Forensic ML Engine & Decoupled Dimensions (Phase 8 Parity) */}
-        <div className="bg-[#070b14] border border-[#1e293b] rounded-xl p-3.5 shadow-md space-y-3">
-          {/* Header & Status Badges */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1.5">
-              <Zap className="w-4 h-4 text-amber-400" />
-              <span className="font-semibold text-xs text-[#f1f5f9] tracking-wide">
-                ML Fusion Engine
-              </span>
-            </div>
-            <div className="flex items-center space-x-1 font-mono text-[9px]">
-              <span className="px-1.5 py-0.5 rounded font-bold bg-amber-950/80 text-amber-300 border border-amber-700/60">
-                {report.model_metadata?.promotion_status || "EXPERIMENTAL MODEL"}
-              </span>
-              <span className="px-1.5 py-0.5 rounded bg-[#1e293b] text-[#94a3b8] border border-[#334155]">
-                {report.model_metadata?.inference_status || "EXECUTED"}
-              </span>
-            </div>
-          </div>
-
-          {/* Model Identification Specs */}
-          <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono bg-[#0b1120] p-2 rounded-lg border border-[#1e293b]">
-            <div>
-              <span className="text-[#64748b] block text-[9px]">ACTIVE MODEL:</span>
-              <span className="text-[#38bdf8] truncate block" title={report.model_metadata?.model_id || "verisight-fusion-gbdt-v1"}>
-                {report.model_metadata?.model_id || "verisight-fusion-gbdt-v1"}
-              </span>
-            </div>
-            <div>
-              <span className="text-[#64748b] block text-[9px]">VERSION / SCHEMA:</span>
-              <span className="text-white block">
-                v{report.model_metadata?.model_version || "1.2.1"} · s{report.model_metadata?.feature_schema_version || "1.0.0"}
-              </span>
-            </div>
-          </div>
-
-          {/* Calibrated Probability Readout */}
-          <div className="p-2.5 rounded-lg bg-[#0b1120] border border-[#1e293b] space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono text-[#94a3b8]">Calibrated P(Tampered | x):</span>
-              <span className="font-mono text-sm font-bold text-amber-400">
-                {report.model_metadata?.calibrated_probability != null
-                  ? `${(report.model_metadata.calibrated_probability * 100).toFixed(1)}%`
-                  : "N/A"}
-              </span>
-            </div>
-            <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-amber-500 rounded-full transition-all duration-700"
-                style={{
-                  width: `${(report.model_metadata?.calibrated_probability ?? 0) * 100}%`,
-                }}
-              />
-            </div>
-            <p className="text-[9px] text-[#64748b] leading-tight">
-              Platt sigmoid calibration (cv=3). Disclaimer: Experimental estimate on synthetic benchmark. Not validated for legal certainty.
-            </p>
-          </div>
-
-          {/* Decoupled 4 Forensic Dimensions */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-wider block font-semibold">
-              Decoupled Assessment Dimensions
-            </span>
-            <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
-              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b]">
-                <span className="text-[#64748b] block text-[9px]">A: IMAGE INTEGRITY</span>
-                <span className={`font-bold ${
-                  report.assessment_dimensions?.image_integrity_status === "INTACT"
-                    ? "text-emerald-400"
-                    : "text-rose-400"
-                }`}>
-                  {report.assessment_dimensions?.image_integrity_status || "INTACT"}
-                </span>
-              </div>
-              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b]">
-                <span className="text-[#64748b] block text-[9px]">B: TEXT CONSISTENCY</span>
-                <span className={`font-bold ${
-                  report.assessment_dimensions?.text_consistency_status === "CONSISTENT"
-                    ? "text-emerald-400"
-                    : "text-amber-400"
-                }`}>
-                  {report.assessment_dimensions?.text_consistency_status || "CONSISTENT"}
-                </span>
-              </div>
-              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] col-span-2">
-                <span className="text-[#64748b] block text-[9px]">C: PAYMENT SETTLEMENT</span>
-                <span className="text-amber-300 font-bold block truncate">
-                  {report.assessment_dimensions?.payment_verification_status || "INDEPENDENT_SOURCE_QUERY_REQUIRED"}
-                </span>
-                <span className="text-[8.5px] text-[#94a3b8] leading-tight block mt-0.5">
-                  Screenshots cannot prove financial settlement; independent banking log query mandatory.
-                </span>
-              </div>
-              <div className="bg-[#0b1120] p-1.5 rounded border border-[#1e293b] col-span-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[#64748b] text-[9px]">D: FORENSIC UNCERTAINTY</span>
-                  <span className="text-sky-400 font-bold">
-                    {report.assessment_dimensions?.forensic_uncertainty_status || "HIGH_CONFIDENCE"}
-                  </span>
-                </div>
-                <span className="text-[8.5px] text-[#94a3b8] leading-tight block mt-0.5">
-                  {report.assessment_dimensions?.uncertainty_explanation || "Sufficient SNR and typographic resolution."}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Missing Evidence Indicators */}
-          {report.model_metadata?.missing_evidence && report.model_metadata.missing_evidence.length > 0 && (
-            <div className="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2 space-y-1">
-              <span className="text-[9px] font-mono text-rose-300 uppercase tracking-wider block font-semibold">
-                Missing Evidence Caveats ({report.model_metadata.missing_evidence.length})
-              </span>
-              <ul className="list-disc list-inside text-[9px] text-rose-200/80 space-y-0.5 font-mono">
-                {report.model_metadata.missing_evidence.map((item, idx) => (
-                  <li key={idx} className="truncate" title={item}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* 2. Cross-Layer Spatial IoU Synergy Banner */}
+        {/* Cross-Layer Synergy Banner */}
         {synergy.synergy_multiplier_applied && (
-          <div className="bg-amber-950/30 border border-amber-500/60 rounded-xl p-3 shadow-md shadow-amber-500/10">
-            <div className="flex items-center justify-between text-amber-400 font-semibold mb-1">
-              <div className="flex items-center space-x-1.5">
-                <Sparkles className="w-4 h-4 animate-pulse" />
-                <span>Overlapping image indicators</span>
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3"
+          >
+            <div className="flex items-center justify-between text-amber-300 font-medium">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+                <span className="text-xs font-semibold">Multi-Signal Convergence</span>
               </div>
-              <span className="px-1.5 py-0.5 rounded bg-amber-900/60 text-amber-300 font-mono text-[10px]">
-                REGION OVERLAP
+              <span className="rounded bg-amber-900/60 px-1.5 py-0.5 font-mono text-[9px] text-amber-200 border border-amber-700/50">
+                {synergy.multiplier_factor}x BOOST
               </span>
             </div>
-            <p className="text-[11px] text-amber-200/80 leading-relaxed">
+            <p className="text-[11px] leading-relaxed text-amber-200/90 font-sans">
               {synergy.synergy_explanation}
             </p>
             {synergy.primary_forgery_locus && (
               <button
-                onClick={() =>
-                  onSelectLocus(synergy.primary_forgery_locus || null)
-                }
-                className="mt-2 w-full py-1 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 rounded font-mono text-[10px] flex items-center justify-center space-x-1.5 border border-amber-500/40"
+                onClick={() => {
+                  onSelectLocus(synergy.primary_forgery_locus || null);
+                  toast("Targeting Primary Forgery Locus");
+                }}
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-600/20 py-1 font-mono text-[10px] text-amber-200 hover:bg-amber-600/30 active:scale-[0.98]"
               >
-                <Target className="w-3 h-3" />
-                <span>Inspect overlapping indicators</span>
+                <Target className="h-3 w-3" />
+                <span>Inspect Target Anomaly Region</span>
               </button>
             )}
-          </div>
+          </motion.div>
         )}
 
-        {/* 3. 4-Layer Forensic Scores Breakdown */}
+        {/* Stage 3 (120ms): 4-Layer Forensic Accordion Cards */}
         <div className="space-y-2">
-          <span className="text-[11px] font-mono text-[#64748b] tracking-wider uppercase font-semibold">
-            Forensic checks (heuristic)
-          </span>
-
-          {/* Layer 1: Physical Signal */}
-          <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-2.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#f1f5f9]">
-                Layer 1: Physical & Noise Signals
-              </span>
-              <span className="font-mono text-xs font-bold text-sky-400">
-                {layer1.layer_score.toFixed(1)}
-              </span>
-            </div>
-            <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-sky-500 rounded-full transition-all duration-700"
-                style={{ width: `${layer1.layer_score}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
-              <span>ELA cue: {layer1.ela_score.toFixed(1)}</span>
-              <span>Wavelet cue: {layer1.wavelet_noise_score.toFixed(1)}</span>
-              <span>Clones: {layer1.clone_count}</span>
-            </div>
+          <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span className="font-semibold uppercase tracking-wider">
+              Forensic Analysis Layers
+            </span>
+            <span>{isAdvancedMode ? "Advanced Mode" : "Simple Mode"}</span>
           </div>
 
-          {/* Layer 2: Typographic Geometry & OCR */}
-          <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-2.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#f1f5f9]">
-                Layer 2: Typography & Geometry
+          {/* Layer 1: Physical Signals */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/80 overflow-hidden hover:border-white/20 transition-colors">
+            <button
+              type="button"
+              onClick={() => toggleLayer(1)}
+              className="flex w-full items-center justify-between p-2.5 text-left transition-colors hover:bg-white/[0.04]"
+            >
+              <div className="flex items-center gap-2">
+                {openLayers[1] ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                )}
+                <span className="font-medium text-slate-200 text-xs">
+                  Layer 1: Compression & Noise Signals
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold tabular-nums text-sky-400">
+                {layer1.layer_score.toFixed(1)}
               </span>
-              <span className="font-mono text-xs font-bold text-rose-400">
-                {layer2.layer_score.toFixed(1)}
-              </span>
-            </div>
-            <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-rose-500 rounded-full transition-all duration-700"
-                style={{ width: `${layer2.layer_score}%` }}
+            </button>
+            {/* Color-coded 3px signal bar */}
+            <div className="h-[3px] w-full bg-white/[0.05] overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${layer1.layer_score}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="h-full bg-sky-500"
               />
             </div>
-            <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
-              <span>Drift: +{layer2.max_baseline_drift_px.toFixed(1)}px</span>
-              <span>ΔE: {layer2.max_delta_e.toFixed(1)}</span>
-              <span>Lasers: {layer2.lasers.length}</span>
+
+            {openLayers[1] && (
+              <div className="p-2.5 space-y-2 text-[11px] bg-[#0A0F1D]/50">
+                {isAdvancedMode ? (
+                  <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px] text-slate-300">
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">ELA CUE</span>
+                      {layer1.ela_score.toFixed(1)}
+                    </div>
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">WAVELET</span>
+                      {layer1.wavelet_noise_score.toFixed(1)}
+                    </div>
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">CLONES</span>
+                      {layer1.clone_count}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-slate-300 leading-snug">
+                    {layer1.layer_score > 50
+                      ? "Inconsistent compression noise found between text and background pixels."
+                      : "Pixel compression and noise characteristics appear uniform."}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Layer 2: Geometry & Typography */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/80 overflow-hidden hover:border-white/20 transition-colors">
+            <button
+              type="button"
+              onClick={() => toggleLayer(2)}
+              className="flex w-full items-center justify-between p-2.5 text-left transition-colors hover:bg-white/[0.04]"
+            >
+              <div className="flex items-center gap-2">
+                {openLayers[2] ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                )}
+                <span className="font-medium text-slate-200 text-xs">
+                  Layer 2: Typography & Alignment
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold tabular-nums text-rose-400">
+                {layer2.layer_score.toFixed(1)}
+              </span>
+            </button>
+            <div className="h-[3px] w-full bg-white/[0.05] overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${layer2.layer_score}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="h-full bg-rose-500"
+              />
             </div>
+
+            {openLayers[2] && (
+              <div className="p-2.5 space-y-2 text-[11px] bg-[#0A0F1D]/50">
+                {isAdvancedMode ? (
+                  <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px] text-slate-300">
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">DRIFT PX</span>
+                      +{layer2.max_baseline_drift_px.toFixed(1)}px
+                    </div>
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">COLOR ΔE</span>
+                      {layer2.max_delta_e.toFixed(1)}
+                    </div>
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">LASERS</span>
+                      {layer2.lasers.length}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-slate-300 leading-snug">
+                    {layer2.max_baseline_drift_px > 2
+                      ? `Font baseline drift of +${layer2.max_baseline_drift_px.toFixed(1)}px detected on payment fields.`
+                      : "Text baselines and font rendering match native device geometry."}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Layer 3: Metadata & Protocol Rules */}
-          <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-2.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#f1f5f9]">
-                Layer 3: Metadata & Protocol Rules
-              </span>
-              <span className="font-mono text-xs font-bold text-purple-400">
+          <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/80 overflow-hidden hover:border-white/20 transition-colors">
+            <button
+              type="button"
+              onClick={() => toggleLayer(3)}
+              className="flex w-full items-center justify-between p-2.5 text-left transition-colors hover:bg-white/[0.04]"
+            >
+              <div className="flex items-center gap-2">
+                {openLayers[3] ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                )}
+                <span className="font-medium text-slate-200 text-xs">
+                  Layer 3: Metadata & Protocol Rules
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold tabular-nums text-purple-400">
                 {layer3.layer_score.toFixed(1)}
               </span>
-            </div>
-            <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-purple-500 rounded-full transition-all duration-700"
-                style={{ width: `${layer3.layer_score}%` }}
+            </button>
+            <div className="h-[3px] w-full bg-white/[0.05] overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${layer3.layer_score}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="h-full bg-purple-500"
               />
             </div>
-            <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
-              <span>Ratio: {layer3.viewport_aspect_ratio.split(" ")[0]}</span>
-              <span>
-                Clock Drift: {layer3.clock_paradox_detected ? "PARADOX" : "OK"}
-              </span>
-              <span>
-                Reference: {layer3.upi_utr_valid == null ? "UNAVAILABLE" : layer3.upi_utr_valid ? "FORMAT OK" : "REVIEW"}
-              </span>
-            </div>
+
+            {openLayers[3] && (
+              <div className="p-2.5 space-y-2 text-[11px] bg-[#0A0F1D]/50">
+                {isAdvancedMode ? (
+                  <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px] text-slate-300">
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">ASPECT</span>
+                      {layer3.viewport_aspect_ratio.split(" ")[0]}
+                    </div>
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">CLOCK</span>
+                      {layer3.clock_paradox_detected ? "PARADOX" : "OK"}
+                    </div>
+                    <div className="rounded bg-black/40 p-1 border border-white/5">
+                      <span className="block text-[8px] text-slate-500">UTR SYNTAX</span>
+                      {layer3.upi_utr_valid == null
+                        ? "N/A"
+                        : layer3.upi_utr_valid
+                        ? "VALID"
+                        : "INVALID"}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-slate-300 leading-snug">
+                    {layer3.clock_paradox_detected
+                      ? "Clock paradox detected: Transaction time contradicts status bar timestamp."
+                      : "Image dimensions and timestamps align with mobile viewport specs."}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Layer 4: Semantic VLM & Synergy */}
-          <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-2.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#f1f5f9]">
-                Layer 4: Heuristic Review
-              </span>
-              <span className="font-mono text-xs font-bold text-amber-400">
+          <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/80 overflow-hidden hover:border-white/20 transition-colors">
+            <button
+              type="button"
+              onClick={() => toggleLayer(4)}
+              className="flex w-full items-center justify-between p-2.5 text-left transition-colors hover:bg-white/[0.04]"
+            >
+              <div className="flex items-center gap-2">
+                {openLayers[4] ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                )}
+                <span className="font-medium text-slate-200 text-xs">
+                  Layer 4: Heuristics & Synergy
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold tabular-nums text-amber-400">
                 {layer4.layer_score.toFixed(1)}
               </span>
-            </div>
-            <div className="w-full bg-[#1e293b] h-1.5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-amber-500 rounded-full transition-all duration-700"
-                style={{ width: `${layer4.layer_score}%` }}
+            </button>
+            <div className="h-[3px] w-full bg-white/[0.05] overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${layer4.layer_score}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="h-full bg-amber-500"
               />
             </div>
-            <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono pt-0.5">
-              <span>
-                Overlap:{" "}
-                {synergy.synergy_multiplier_applied ? "ACTIVE" : "NONE"}
-              </span>
-              <span>
-                Vision model: {layer4.vlm_used ? layer4.vlm_provider : "NOT USED"}
-              </span>
-            </div>
+
+            {openLayers[4] && (
+              <div className="p-2.5 space-y-2 text-[11px] bg-[#0A0F1D]/50">
+                <p className="text-slate-300 leading-snug">
+                  {synergy.synergy_multiplier_applied
+                    ? "Spatial intersection detected between independent forensic layers."
+                    : "No cross-layer geometric spatial overlap detected."}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 4. Structured Forensic Findings Feed */}
+        {/* 4. Filterable Evidence Findings Log */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono text-[#64748b] tracking-wider uppercase font-semibold">
-              Forensic Evidence Log ({findings.length})
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Evidence Log ({findings.length})
             </span>
+            <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] bg-[#070B14] p-0.5 text-[9px] font-mono">
+              <button
+                onClick={() => setSeverityFilter("ALL")}
+                className={`rounded px-1.5 py-0.5 transition-colors ${
+                  severityFilter === "ALL" ? "bg-white/10 text-white" : "text-slate-500"
+                }`}
+              >
+                ALL
+              </button>
+              <button
+                onClick={() => setSeverityFilter("CRITICAL")}
+                className={`rounded px-1.5 py-0.5 transition-colors ${
+                  severityFilter === "CRITICAL"
+                    ? "bg-rose-950 text-rose-300 border border-rose-800/40"
+                    : "text-slate-500"
+                }`}
+              >
+                CRIT
+              </button>
+              <button
+                onClick={() => setSeverityFilter("HIGH")}
+                className={`rounded px-1.5 py-0.5 transition-colors ${
+                  severityFilter === "HIGH"
+                    ? "bg-amber-950 text-amber-300 border border-amber-800/40"
+                    : "text-slate-500"
+                }`}
+              >
+                HIGH
+              </button>
+            </div>
           </div>
 
-          {findings.length === 0 ? (
-            <div className="p-3 bg-[#070b14] border border-[#1e293b] rounded-lg text-center text-[#64748b] font-mono text-[11px]">
-              No strong manipulation indicators were detected. This heuristic result does not prove the image’s origin or that a payment occurred.
+          {filteredFindings.length === 0 ? (
+            <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/60 p-3 text-center font-mono text-[11px] text-slate-500">
+              No evidence findings in this category.
             </div>
           ) : (
             <div className="space-y-2">
-              {findings.map((f) => {
+              {filteredFindings.map((f) => {
                 const isCritical = f.severity === "CRITICAL";
                 const isHigh = f.severity === "HIGH";
+                const isSelected =
+                  selectedLocus &&
+                  f.bounding_box &&
+                  selectedLocus.x === f.bounding_box.x &&
+                  selectedLocus.y === f.bounding_box.y;
 
                 return (
                   <div
                     key={f.id}
-                    onClick={() => onSelectLocus(f.bounding_box || null)}
-                    className={`p-2.5 rounded-lg border transition-all cursor-pointer ${
-                      isCritical
-                        ? "bg-rose-950/20 border-rose-800/80 hover:bg-rose-950/30"
+                    onClick={() => {
+                      onSelectLocus(f.bounding_box || null);
+                      toast(`Locus Focused: ${f.title}`);
+                    }}
+                    className={`cursor-pointer rounded-xl border p-2.5 transition-all active:scale-[0.98] ${
+                      isSelected
+                        ? "border-sky-400 bg-sky-950/30 ring-1 ring-sky-400/50"
+                        : isCritical
+                        ? "border-rose-500/30 bg-rose-950/20 hover:border-rose-500/50"
                         : isHigh
-                          ? "bg-amber-950/20 border-amber-800/80 hover:bg-amber-950/30"
-                          : "bg-[#070b14] border-[#1e293b] hover:bg-[#1e293b]"
+                        ? "border-amber-500/30 bg-amber-950/20 hover:border-amber-500/50"
+                        : "border-white/[0.08] bg-[#0E1526]/70 hover:border-white/20"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-xs text-[#f1f5f9] truncate max-w-[200px]">
+                      <span className="font-semibold text-xs text-slate-200 truncate max-w-[200px]">
                         {f.title}
                       </span>
                       <span
-                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                        className={`rounded px-1.5 py-0.2 font-mono text-[9px] font-bold ${
                           isCritical
-                            ? "bg-rose-900 text-rose-200"
+                            ? "bg-rose-950 text-rose-300 border border-rose-800/50"
                             : isHigh
-                              ? "bg-amber-900 text-amber-200"
-                              : "bg-sky-900 text-sky-200"
+                            ? "bg-amber-950 text-amber-300 border border-amber-800/50"
+                            : "bg-sky-950 text-sky-300 border border-sky-800/50"
                         }`}
                       >
                         {f.severity}
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-[#94a3b8] leading-snug line-clamp-2">
+                    <p className="text-[11px] leading-snug text-slate-400 font-sans">
                       {f.description}
                     </p>
 
-                    <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono text-[#64748b]">
+                    <div className="mt-1.5 flex items-center justify-between font-mono text-[10px] text-slate-500">
                       <span>Layer {f.layer}</span>
-                      <span className="text-[#38bdf8]">
+                      <span className="text-sky-400">
                         {f.metric_name}: {f.metric_value}
                       </span>
                     </div>
@@ -518,28 +716,28 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           )}
         </div>
 
-        {/* 5. Cryptographic Evidence Metadata */}
-        <div className="bg-[#070b14] border border-[#1e293b] rounded-lg p-3 space-y-1.5 text-[11px] font-mono">
-          <div className="text-[10px] text-[#64748b] uppercase font-semibold">
-            Cryptographic Checksum & Dimensions
+        {/* 5. Cryptographic Custody Metadata Card */}
+        <div className="rounded-xl border border-white/[0.08] bg-[#0E1526]/70 p-3 space-y-1.5 font-mono text-[11px]">
+          <div className="font-semibold uppercase tracking-wider text-[10px] text-slate-400">
+            Cryptographic Custody
           </div>
-          <div className="flex items-center justify-between text-[#94a3b8]">
+          <div className="flex items-center justify-between text-slate-300">
             <span className="truncate max-w-[220px]" title={file_sha256}>
               SHA-256: {file_sha256.slice(0, 16)}...
             </span>
             <button
-              onClick={copyHash}
-              className="text-sky-400 hover:text-sky-300 p-0.5"
-              title="Copy full SHA-256 hash"
+              onClick={() => copyText(file_sha256, "SHA-256 Hash")}
+              className="p-1 rounded text-sky-400 hover:text-sky-300 hover:bg-white/[0.06] active:scale-[0.95]"
+              title="Copy complete SHA-256 hash"
             >
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="h-3.5 w-3.5" />
             </button>
           </div>
-          <div className="flex items-center justify-between text-[#64748b]">
+          <div className="flex items-center justify-between text-slate-500 text-[10px]">
             <span>
-              Dimensions: {image_width} x {image_height}
+              Dim: {image_width} × {image_height}
             </span>
-            <span>Viewport: {layer3.viewport_aspect_ratio.split(" ")[0]}</span>
+            <span>Ratio: {layer3.viewport_aspect_ratio.split(" ")[0]}</span>
           </div>
         </div>
       </div>

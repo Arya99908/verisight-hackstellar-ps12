@@ -139,36 +139,6 @@ export interface ForensicAnalysisReport {
   original_image_b64: string;
   syndicate_intelligence?: SyndicateIntelligence;
   section91_notice?: string;
-  assessment_dimensions?: AssessmentDimensions;
-  model_metadata?: ModelInferenceMetadata;
-}
-
-export interface AssessmentDimensions {
-  image_integrity_score: number;
-  image_integrity_status: "INTACT" | "COMPRESSION_NOISE" | "TAMPER_DETECTED" | string;
-  text_consistency_score: number;
-  text_consistency_status: "CONSISTENT" | "SUBPIXEL_DRIFT" | "GEOMETRIC_ANOMALY" | string;
-  payment_verification_status: "INDEPENDENT_SOURCE_QUERY_REQUIRED" | string;
-  payment_verification_details: string;
-  forensic_uncertainty_status: "HIGH_CONFIDENCE" | "MODERATE_UNCERTAINTY" | "INCONCLUSIVE" | string;
-  forensic_uncertainty_score: number;
-  uncertainty_explanation: string;
-}
-
-export interface ModelInferenceMetadata {
-  model_id: string;
-  model_version: string;
-  architecture: string;
-  calibration_status: string;
-  promotion_status: "EXPERIMENTAL" | "VALIDATED" | "VALIDATED_FALLBACK" | string;
-  feature_schema_version: string;
-  inference_status: "EXECUTED" | "FALLBACK_HEURISTIC" | "INCONCLUSIVE" | "FAILED" | string;
-  calibrated_probability: number | null;
-  raw_model_score?: number | null;
-  missing_evidence: string[];
-  is_operational_triage_alert: boolean;
-  is_synthetic_benchmark: boolean;
-  disclaimer: string;
 }
 
 export interface DemoSampleMeta {
