@@ -42,6 +42,13 @@ def test_model_evaluation_reports_missing_validation_data():
     assert data["metrics"] is None
 
 
+def test_client_side_routes_serve_the_spa_entrypoint():
+    for path in ("/workbench", "/evaluation"):
+        response = client.get(path)
+        assert response.status_code == 200
+        assert 'id="root"' in response.text
+
+
 def test_upload_analysis_endpoint_accepts_an_image():
     image = (SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").read_bytes()
     response = client.post(

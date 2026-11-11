@@ -13,6 +13,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
@@ -65,4 +66,12 @@ if __name__ == "__main__":
 # Serve the built Vite SPA from the same FastAPI origin in production.
 frontend_dist = ROOT_DIR / "frontend" / "dist"
 if frontend_dist.exists():
+    @app.get("/workbench", include_in_schema=False)
+    async def workbench_page():
+        return FileResponse(frontend_dist / "index.html")
+
+    @app.get("/evaluation", include_in_schema=False)
+    async def evaluation_page():
+        return FileResponse(frontend_dist / "index.html")
+
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
