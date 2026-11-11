@@ -103,8 +103,7 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
                 Stage Judge Live Mobile Upload
               </h3>
               <p className="text-[11px] text-[#64748b]">
-                Real-time zero-cable screenshot analysis direct from smartphone
-                camera
+                Paired phone upload for heuristic image review on the workbench
               </p>
             </div>
           </div>
@@ -159,8 +158,8 @@ export const MobileUploadModal: React.FC<MobileUploadModalProps> = ({
             <p>1. Scan this link on your phone. For a local session, use the same Wi-Fi network.</p>
             <p>2. Scan QR with iOS Camera or Android Google Lens.</p>
             <p>
-              3. Snap any UPI payment screenshot on your phone to trigger
-              instant 4-layer audit on this screen.
+              3. Choose an image to send it to the workbench for review of
+              heuristic image cues. This does not verify payment settlement.
             </p>
           </div>
         </div>

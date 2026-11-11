@@ -422,12 +422,12 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             {/* Step 4 */}
             <div className="relative rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
               <div className="font-mono text-3xl font-extrabold text-sky-400/30 mb-2">04</div>
-              <h3 className="text-base font-bold text-white">Report & Draft Notice</h3>
+              <h3 className="text-base font-bold text-white">Report & Internal Review Memo</h3>
               <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Export a screenshot review summary or a draft notice template. Neither is a certified
-                forensic report or a legally reviewed summons.
+                Export a screenshot review summary or an internal memo draft. Neither is a certified
+                forensic report or a legal notice.
               </p>
-              <div className="mt-3 font-mono text-[10px] text-amber-300">Review legal text before use</div>
+              <div className="mt-3 font-mono text-[10px] text-amber-300">Internal draft only</div>
             </div>
           </div>
         </div>
@@ -706,7 +706,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
         </div>
 
         {/* =========================================================================
-            SECTION G: DATA HANDLING & DRAFT NOTICE
+            SECTION G: DATA HANDLING & INTERNAL DRAFT
         ========================================================================= */}
         <div className="py-16 border-t border-white/[0.08]">
           <div className="text-center max-w-3xl mx-auto mb-12">
@@ -751,7 +751,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               <h3 className="text-base font-bold text-white">Hash & draft report</h3>
               <p className="mt-2 text-xs text-slate-400 leading-relaxed">
                 SHA-256 identifies the uploaded bytes. It does not establish chain of custody or prove content
-                authenticity. Exported reports and notice text are drafts, not certified or legally reviewed documents.
+                authenticity. Exported reports and internal review memos are drafts, not certified documents.
               </p>
             </div>
           </div>
@@ -797,11 +797,11 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
-                <span>Is the included Section 94 notice legally approved?</span>
+                <span>Is the internal review memo a legal notice?</span>
               </h3>
               <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                No. VeriSight provides editable draft text only. It does not confirm statutory compliance or
-                legal validity; have qualified counsel review it before any use.
+                No. It is an internal summary of heuristic image cues, not a request to an institution and
+                not a legally reviewed document. It does not verify image authenticity or payment settlement.
               </p>
             </div>
 

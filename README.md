@@ -19,6 +19,8 @@
 
 VeriSight accepts common image formats and computes pixel, layout, metadata, and QR review cues. The current build cannot determine that every screenshot is authentic or edited: it has no trained image classifier, and it does not verify payments. Analysis runs server-side. Case summaries are persisted; original image bytes are not stored in the case table. A short-lived private storage object is used by the signed-upload flow and deleted after analysis.
 
+In the workbench, the Risk Dossier shows decoded QR payload strings when OpenCV can read a code. Use **Copy** to copy a payload, or **Open Internal Review Memo** to copy, download, or print a draft summary of the heuristic findings. The memo is not a legal notice or a certified forensic report. Decoded QR fields are unverified strings; they do not establish a recipient's identity or payment settlement.
+
 **Layer 1 — Pixel & Frequency Signal Forensics**
 - **Error Level Analysis (ELA):** Re-encodes the decoded pixels as JPEG and compares residuals. The residual heatmap is exploratory; score-based localization is disabled for non-JPEG sources. ELA residuals alone do not show splicing.
 - **Wavelet Noise Analysis:** Computes high-frequency residual variation and flags large low-variation areas. Flat UI regions, resizing, and recompression can produce similar cues.
@@ -363,6 +365,10 @@ PostgreSQL via **Supabase** (project reference `ytxfhmdzlelcpjsnlndh`).
 ## Accuracy & Limitations
 
 VeriSight is a **heuristic triage tool**, not a validated forensic classifier.
+
+Dataset permissions, training-readiness decision, collection plan, and model release gates are documented in [docs/MODEL_TRAINING_READINESS.md](docs/MODEL_TRAINING_READINESS.md). No restricted datasets or model weights are included in this repository.
+
+An offline pixel-mask training scaffold is available under `backend/app/services/forensic/learned/`. It is not connected to the production analyzer. It rejects manifests without explicit commercial-use/source-image permissions, real authentic screenshots, controlled edits, and disjoint app/template, device, contributor, original-image, and editing-session splits. See the readiness document before using it. The included model smoke test uses temporary random test weights only; it does not measure detection quality.
 
 | Limitation | Detail |
 |---|---|

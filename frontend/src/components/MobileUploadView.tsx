@@ -53,7 +53,7 @@ export const MobileUploadView: React.FC = () => {
           </div>
         </div>
         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-          CONNECTED
+          PAIRED SESSION
         </span>
       </div>
 
@@ -69,8 +69,9 @@ export const MobileUploadView: React.FC = () => {
                 Evidence Transmitted!
               </h2>
               <p className="text-xs text-[#94a3b8] max-w-xs mx-auto">
-                Your screenshot was securely queued for the paired desktop
-                workbench. Switch back there to view its 4-layer investigation.
+                Your screenshot was queued for the paired desktop workbench.
+                Switch back to review its heuristic image cues. This does not
+                verify image authenticity or payment settlement.
               </p>
             </div>
             <button
@@ -91,9 +92,9 @@ export const MobileUploadView: React.FC = () => {
                 Live Stage Judge Capture
               </h2>
               <p className="text-xs text-[#94a3b8] leading-relaxed">
-                Take a photo or choose any digital payment screenshot from your
-                phone to run real-time forensic tamper analysis on the stage
-                screen.
+                Take a photo or choose an image from your phone for a quick
+                heuristic review of visual and metadata cues. It cannot prove
+                whether an image was edited or whether a payment settled.
               </p>
             </div>
 

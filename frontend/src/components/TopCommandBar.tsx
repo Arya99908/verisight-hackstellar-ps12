@@ -24,7 +24,7 @@ interface TopCommandBarProps {
   onOpenWhatsAppModal: () => void;
   onOpenMobileModal: () => void;
   onOpenReportModal: () => void;
-  onOpenSection91Modal?: () => void;
+  onOpenReviewMemo?: () => void;
   onOpenShortcutsModal?: () => void;
   isAdvancedMode: boolean;
   onToggleAdvancedMode: () => void;
@@ -76,7 +76,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
   onOpenWhatsAppModal,
   onOpenMobileModal,
   onOpenReportModal,
-  onOpenSection91Modal,
+  onOpenReviewMemo,
   onOpenShortcutsModal,
   isAdvancedMode,
   onToggleAdvancedMode,
@@ -322,17 +322,17 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
           <span className="hidden xl:inline">WhatsApp</span>
         </button>
 
-        {/* Section 91 Subpoena */}
-        {onOpenSection91Modal && (
+        {/* Internal review memo */}
+        {onOpenReviewMemo && (
           <button
             type="button"
-            onClick={onOpenSection91Modal}
+            onClick={onOpenReviewMemo}
             disabled={isLoading}
             className="flex items-center gap-1.5 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-xs font-medium text-amber-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-all hover:bg-amber-500/20 active:scale-[0.97]"
-            title="Open Section 91 Subpoena Notice"
+            title="Open internal review memo draft"
           >
             <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Section 91</span>
+            <span className="hidden sm:inline">Review Memo</span>
           </button>
         )}
 

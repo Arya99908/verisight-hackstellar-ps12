@@ -10,7 +10,7 @@ import { WhatsAppSimulatorModal } from "./components/WhatsAppSimulatorModal";
 import { MobileUploadModal } from "./components/MobileUploadModal";
 import { MobileUploadView } from "./components/MobileUploadView";
 import { ForensicReportModal } from "./components/ForensicReportModal";
-import { Section91NoticeModal } from "./components/Section91NoticeModal";
+import { InternalReviewMemoModal } from "./components/InternalReviewMemoModal";
 import { KeyboardShortcutsModal } from "./components/KeyboardShortcutsModal";
 import { Toaster, toast } from "sonner";
 import { UploadCloud } from "lucide-react";
@@ -81,7 +81,7 @@ const MainProductApplication: React.FC = () => {
   const [whatsAppData, setWhatsAppDat] = useState<WhatsAppSimulationResponse | null>(null);
   const [isMobileModalOpen, setIsMobileModalOpen] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
-  const [isSection91ModalOpen, setIsSection91ModalOpen] = useState<boolean>(false);
+  const [isReviewMemoOpen, setIsReviewMemoOpen] = useState<boolean>(false);
 
   // Handle selecting a golden demo sample
   const handleSelectSample = useCallback(async (sampleId: string) => {
@@ -394,7 +394,7 @@ const MainProductApplication: React.FC = () => {
               onOpenWhatsAppModal={handleTriggerWhatsAppSimulation}
               onOpenMobileModal={() => setIsMobileModalOpen(true)}
               onOpenReportModal={() => setIsReportModalOpen(true)}
-              onOpenSection91Modal={() => setIsSection91ModalOpen(true)}
+              onOpenReviewMemo={() => setIsReviewMemoOpen(true)}
               onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
               isAdvancedMode={isAdvancedMode}
               onToggleAdvancedMode={() => setIsAdvancedMode((prev) => !prev)}
@@ -447,7 +447,7 @@ const MainProductApplication: React.FC = () => {
                 onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
                 isAdvancedMode={isAdvancedMode}
                 onOpenReport={() => setIsReportModalOpen(true)}
-                onOpenSection91={() => setIsSection91ModalOpen(true)}
+                onOpenReviewMemo={() => setIsReviewMemoOpen(true)}
               />
             </main>
           </AmbientThreatBackground>
@@ -497,10 +497,10 @@ const MainProductApplication: React.FC = () => {
         report={report}
       />
 
-      {isSection91ModalOpen && report && (
-        <Section91NoticeModal
+      {isReviewMemoOpen && report && (
+        <InternalReviewMemoModal
           report={report}
-          onClose={() => setIsSection91ModalOpen(false)}
+          onClose={() => setIsReviewMemoOpen(false)}
         />
       )}
 

@@ -1,0 +1,6 @@
+# Install this only in a separate local/offline training environment.
+# Do not add these packages or checkpoints to the Vercel runtime without new gates.
+torch>=2.3,<3
+numpy>=1.26,<3
+Pillow>=10.2
+pytest>=8

@@ -97,24 +97,6 @@ export interface ForensicFinding {
   bounding_box?: BoundingBox;
 }
 
-export interface SyndicateIntelligence {
-  syndicate_risk_level: "CRITICAL_SYNDICATE_THREAT" | "MODERATE_REVIEW_REQUIRED" | "LOW" | string;
-  threat_indicators: string[];
-  entity_summary: {
-    payee_vpa?: string | null;
-    payee_name?: string | null;
-    utr_number?: string | null;
-    amount?: string | null;
-    qr_linked?: boolean;
-    qr_intent?: {
-      vpa?: string | null;
-      payee?: string | null;
-      amount?: string | null;
-    } | null;
-  };
-  recommended_action: string;
-}
-
 export interface ForensicAnalysisReport {
   file_sha256: string;
   filename?: string;
@@ -137,8 +119,6 @@ export interface ForensicAnalysisReport {
   findings: ForensicFinding[];
   all_bounding_boxes: BoundingBox[];
   original_image_b64: string;
-  syndicate_intelligence?: SyndicateIntelligence;
-  section91_notice?: string;
 }
 
 export interface DemoSampleMeta {

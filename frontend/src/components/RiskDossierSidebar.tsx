@@ -11,8 +11,6 @@ import {
   PanelRightClose,
   PanelRightOpen,
   ShieldAlert,
-  Hash,
-  ExternalLink,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { verdictLabel } from "../services/verdictLabel";
@@ -23,8 +21,7 @@ interface RiskDossierSidebarProps {
   report: ForensicAnalysisReport | null;
   selectedLocus: BoundingBox | null;
   onSelectLocus: (box: BoundingBox | null) => void;
-  onOpenSection91Modal?: () => void;
-  onOpenSection91?: () => void;
+  onOpenReviewMemo?: () => void;
   onOpenReport?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -35,14 +32,13 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   report,
   selectedLocus,
   onSelectLocus,
-  onOpenSection91Modal,
-  onOpenSection91,
+  onOpenReviewMemo,
   onOpenReport,
   isCollapsed = false,
   onToggleCollapse,
   isAdvancedMode = false,
 }) => {
-  const handleOpenSection91 = onOpenSection91Modal || onOpenSection91;
+  const handleOpenReviewMemo = onOpenReviewMemo;
   // Accordion state for progressive disclosure of layers
   const [openLayers, setOpenLayers] = useState<Record<number, boolean>>({
     1: true,
@@ -103,6 +99,21 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
   const isCorroborated = verdict === "CORROBORATED_ANOMALIES";
   const isReviewRequired = verdict === "REVIEW_REQUIRED" || isCorroborated;
+  const qrInspection = (layer3.details?.qr_inspection || {}) as {
+    decoded_count?: number;
+    note?: string;
+    results?: Array<{
+      payload?: string;
+      kind?: string;
+      payee_vpa?: string;
+      payee_name?: string;
+      amount?: string;
+      currency?: string;
+      reference?: string;
+      review_cue?: string | null;
+    }>;
+  };
+  const qrResults = Array.isArray(qrInspection.results) ? qrInspection.results : [];
 
   // Calibrated Gauge Calculations
   const radius = 38;
@@ -112,9 +123,13 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
 
   const gaugeColor = isReviewRequired ? "#f43f5e" : "#f59e0b";
 
-  const copyText = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`Copied ${label}: ${text}`);
+  const copyText = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`Copied ${label}`);
+    } catch {
+      toast.error("Clipboard access is unavailable. Select the text to copy it.");
+    }
   };
 
   // Filtered findings
@@ -267,90 +282,64 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
           Text recognition is not run: the scanner finds text-like regions but does not read amounts, names, timestamps, or UTRs from visible pixels. No payment provider or bank is queried.
         </div>
 
-        {/* Stage 2 (60ms): Syndicate Entity Resolution Card */}
-        {report.syndicate_intelligence && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-2.5 rounded-xl border border-amber-500/25 bg-[#111726] p-3.5 shadow-md"
-          >
-            <div className="flex items-center justify-between text-xs font-semibold text-amber-300">
-              <div className="flex items-center gap-1.5">
-                <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
-                <span className="font-mono text-[10px] uppercase tracking-wider">
-                  Syndicate Resolution
-                </span>
-              </div>
-              <span
-                className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-bold ${
-                  report.syndicate_intelligence.syndicate_risk_level ===
-                  "CRITICAL_SYNDICATE_THREAT"
-                    ? "border-rose-800 bg-rose-950 text-rose-300"
-                    : "border-amber-800 bg-amber-950 text-amber-300"
-                }`}
-              >
-                {report.syndicate_intelligence.syndicate_risk_level ===
-                "CRITICAL_SYNDICATE_THREAT"
-                  ? "CRITICAL THREAT"
-                  : "REVIEW REQUIRED"}
-              </span>
+        {/* QR payload inspection uses only strings decoded from the image. */}
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+          className="space-y-2.5 rounded-xl border border-amber-500/25 bg-[#111726] p-3.5 shadow-md"
+        >
+          <div className="flex items-center justify-between text-xs font-semibold text-amber-300">
+            <div className="flex items-center gap-1.5">
+              <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
+              <span className="font-mono text-[10px] uppercase tracking-wider">QR Payload Inspection</span>
             </div>
+            <span className="rounded border border-amber-800 bg-amber-950 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-300">
+              {qrInspection.decoded_count ?? qrResults.length} decoded
+            </span>
+          </div>
 
-            {/* Clickable VPA & UTR copy chips */}
-            <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
-              <div
-                onClick={() =>
-                  copyText(
-                    report.syndicate_intelligence?.entity_summary.payee_vpa || "N/A",
-                    "Payee VPA"
-                  )
-                }
-                className="group cursor-pointer rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 transition-all hover:border-amber-500/40 active:scale-[0.98]"
-                title="Click to copy VPA"
-              >
-                <div className="flex items-center justify-between text-[9px] text-slate-500 mb-0.5">
-                  <span>PAYEE VPA</span>
-                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300" />
-                </div>
-                <span className="font-medium text-slate-200 truncate block">
-                  {report.syndicate_intelligence.entity_summary.payee_vpa || "N/A"}
-                </span>
+          {qrResults.length === 0 ? (
+            <p className="text-[10px] leading-relaxed text-slate-400">
+              No readable QR payload was found. This does not indicate whether the image or any payment is authentic.
+            </p>
+          ) : qrResults.map((result, index) => (
+            <div key={`${result.payload || "qr"}-${index}`} className="space-y-1.5 rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 font-mono text-[10px]">
+              <div className="flex items-center justify-between text-slate-400">
+                <span>{result.kind || "QR payload"}</span>
+                {result.payload && (
+                  <button
+                    type="button"
+                    onClick={() => copyText(result.payload!, "QR payload")}
+                    className="inline-flex items-center gap-1 rounded px-1.5 py-1 hover:bg-white/[0.08]"
+                    aria-label={`Copy QR payload ${index + 1}`}
+                  >
+                    <Copy className="h-3 w-3" /> Copy
+                  </button>
+                )}
               </div>
-
-              <div
-                onClick={() =>
-                  copyText(
-                    report.syndicate_intelligence?.entity_summary.utr_number || "Non-std",
-                    "UTR"
-                  )
-                }
-                className="group cursor-pointer rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 transition-all hover:border-amber-500/40 active:scale-[0.98]"
-                title="Click to copy UTR"
-              >
-                <div className="flex items-center justify-between text-[9px] text-slate-500 mb-0.5">
-                  <span>REF UTR</span>
-                  <Copy className="h-3 w-3 text-slate-500 group-hover:text-amber-300" />
-                </div>
-                <span className="font-medium text-slate-200 truncate block">
-                  {report.syndicate_intelligence.entity_summary.utr_number || "Non-std"}
-                </span>
-              </div>
+              {result.payee_vpa && <p className="break-all text-slate-200">VPA string: {result.payee_vpa}</p>}
+              {result.payee_name && <p className="break-all text-slate-200">Name string: {result.payee_name}</p>}
+              {result.amount && <p className="break-all text-slate-200">Amount string: {result.amount} {result.currency || ""}</p>}
+              {result.reference && <p className="break-all text-slate-200">Reference string: {result.reference}</p>}
+              {result.payload && <p className="break-all text-slate-400">Payload: {result.payload}</p>}
+              {result.review_cue && <p className="text-amber-200">{result.review_cue}</p>}
             </div>
-
-            {/* Refined Section 91 Subpoena Button */}
-            {handleOpenSection91 && (
-              <button
-                type="button"
-                onClick={handleOpenSection91}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 py-1.5 px-3 font-mono text-[11px] font-semibold text-black shadow-md shadow-amber-500/20 transition-all hover:from-amber-400 hover:to-amber-500 active:scale-[0.98]"
-              >
-                <ShieldAlert className="h-3.5 w-3.5 text-black" />
-                <span>Open Section 91 Subpoena Notice</span>
-              </button>
-            )}
-          </motion.div>
-        )}
+          ))}
+          <p className="text-[10px] leading-relaxed text-slate-400">
+            Decoding does not verify the recipient, URL destination, image authenticity, or payment settlement.
+          </p>
+          {handleOpenReviewMemo && (
+            <button
+              type="button"
+              onClick={handleOpenReviewMemo}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 py-1.5 px-3 font-mono text-[11px] font-semibold text-black shadow-md shadow-amber-500/20 transition-all hover:from-amber-400 hover:to-amber-500 active:scale-[0.98]"
+            >
+              <ShieldAlert className="h-3.5 w-3.5 text-black" />
+              <span>Open Internal Review Memo</span>
+            </button>
+          )}
+        </motion.div>
 
         {/* Cross-Layer Synergy Banner */}
         {synergy.synergy_multiplier_applied && (
