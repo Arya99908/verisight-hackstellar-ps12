@@ -1,19 +1,8 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { lazy, Suspense, useEffect, useState, useCallback, useRef } from "react";
 import { NavigationHeader, AppRoute } from "./components/NavigationHeader";
-import { ProductOverview } from "./components/ProductOverview";
-import { EvaluationDashboard } from "./components/EvaluationDashboard";
-import { TopCommandBar } from "./components/TopCommandBar";
-import { ForensicViewer, ViewMode } from "./components/ForensicViewer";
-import { RiskDossierSidebar } from "./components/RiskDossierSidebar";
-import { AmbientThreatBackground } from "./components/AmbientThreatBackground";
-import { WhatsAppSimulatorModal } from "./components/WhatsAppSimulatorModal";
-import { MobileUploadModal } from "./components/MobileUploadModal";
-import { MobileUploadView } from "./components/MobileUploadView";
-import { ForensicReportModal } from "./components/ForensicReportModal";
-import { InternalReviewMemoModal } from "./components/InternalReviewMemoModal";
-import { KeyboardShortcutsModal } from "./components/KeyboardShortcutsModal";
 import { Toaster, toast } from "sonner";
 import { UploadCloud } from "lucide-react";
+import type { ViewMode } from "./components/ForensicViewer";
 import {
   ForensicAnalysisReport,
   DemoSampleMeta,
@@ -28,6 +17,25 @@ import {
   fetchHealth,
 } from "./services/api";
 
+const ProductOverview = lazy(() => import("./components/ProductOverview").then((m) => ({ default: m.ProductOverview })));
+const EvaluationDashboard = lazy(() => import("./components/EvaluationDashboard").then((m) => ({ default: m.EvaluationDashboard })));
+const TopCommandBar = lazy(() => import("./components/TopCommandBar").then((m) => ({ default: m.TopCommandBar })));
+const ForensicViewer = lazy(() => import("./components/ForensicViewer").then((m) => ({ default: m.ForensicViewer })));
+const RiskDossierSidebar = lazy(() => import("./components/RiskDossierSidebar").then((m) => ({ default: m.RiskDossierSidebar })));
+const AmbientThreatBackground = lazy(() => import("./components/AmbientThreatBackground").then((m) => ({ default: m.AmbientThreatBackground })));
+const WhatsAppSimulatorModal = lazy(() => import("./components/WhatsAppSimulatorModal").then((m) => ({ default: m.WhatsAppSimulatorModal })));
+const MobileUploadModal = lazy(() => import("./components/MobileUploadModal").then((m) => ({ default: m.MobileUploadModal })));
+const MobileUploadView = lazy(() => import("./components/MobileUploadView").then((m) => ({ default: m.MobileUploadView })));
+const ForensicReportModal = lazy(() => import("./components/ForensicReportModal").then((m) => ({ default: m.ForensicReportModal })));
+const InternalReviewMemoModal = lazy(() => import("./components/InternalReviewMemoModal").then((m) => ({ default: m.InternalReviewMemoModal })));
+const KeyboardShortcutsModal = lazy(() => import("./components/KeyboardShortcutsModal").then((m) => ({ default: m.KeyboardShortcutsModal })));
+
+const RouteLoadingFallback = () => (
+  <div role="status" className="grid min-h-48 flex-1 place-items-center bg-[#070b14] text-sm text-slate-300">
+    Loading VeriSight…
+  </div>
+);
+
 const getRouteFromLocation = (): AppRoute => {
   const path = window.location.pathname;
   if (path === "/workbench") return "/workbench";
@@ -40,7 +48,11 @@ export const App: React.FC = () => {
     new URLSearchParams(window.location.search).get("mode") === "mobile";
 
   if (isMobileMode) {
-    return <MobileUploadView />;
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <MobileUploadView />
+      </Suspense>
+    );
   }
 
   return <MainProductApplication />;
@@ -49,6 +61,7 @@ export const App: React.FC = () => {
 const MainProductApplication: React.FC = () => {
   // Routing State
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(getRouteFromLocation);
+  const initialRoute = useRef(currentRoute);
 
   // Shared Data State
   const [demoSamples, setDemoSamples] = useState<DemoSampleMeta[]>([]);
@@ -116,9 +129,11 @@ const MainProductApplication: React.FC = () => {
 
       if (query?.case) {
         void handleSelectSample(query.case);
+      } else if (route === "/workbench" && currentRoute !== "/workbench" && !report) {
+        void handleSelectSample(selectedSampleId || "sample_1");
       }
     },
-    [handleSelectSample]
+    [currentRoute, handleSelectSample, report, selectedSampleId]
   );
 
   // Listen to browser Back/Forward buttons
@@ -161,9 +176,12 @@ const MainProductApplication: React.FC = () => {
       });
     void catalogRequest;
 
-    // Load initial sample
-    const initCase = new URLSearchParams(window.location.search).get("case") || "sample_1";
-    void handleSelectSample(initCase);
+    // Load an initial report only for a direct workbench link. The overview
+    // must not start a costly analysis the visitor has not requested.
+    if (initialRoute.current === "/workbench") {
+      const initCase = new URLSearchParams(window.location.search).get("case") || "sample_1";
+      void handleSelectSample(initCase);
+    }
 
     return () => {
       active = false;
@@ -373,17 +391,18 @@ const MainProductApplication: React.FC = () => {
 
       {/* 2. Main Routed View Area */}
       <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
-        {/* Experience A: Product Overview */}
-        {currentRoute === "/" && (
-          <ProductOverview
-            onNavigate={handleNavigate}
-            demoSamples={demoSamples}
-          />
-        )}
+        <Suspense fallback={<RouteLoadingFallback />}>
+          {/* Experience A: Product Overview */}
+          {currentRoute === "/" && (
+            <ProductOverview
+              onNavigate={handleNavigate}
+              demoSamples={demoSamples}
+            />
+          )}
 
-        {/* Experience B: Forensic Workbench */}
-        {currentRoute === "/workbench" && (
-          <AmbientThreatBackground threatScore={report?.overall_tamper_score || 0}>
+          {/* Experience B: Forensic Workbench */}
+          {currentRoute === "/workbench" && (
+            <AmbientThreatBackground threatScore={report?.overall_tamper_score || 0}>
             {/* Top Workbench Command Bar */}
             <TopCommandBar
               databaseStatus={databaseStatus}
@@ -450,15 +469,16 @@ const MainProductApplication: React.FC = () => {
                 onOpenReviewMemo={() => setIsReviewMemoOpen(true)}
               />
             </main>
-          </AmbientThreatBackground>
-        )}
+            </AmbientThreatBackground>
+          )}
 
-        {/* Experience C: Research & Evaluation Dashboard */}
-        {currentRoute === "/evaluation" && (
-          <EvaluationDashboard
-            onNavigateWorkbench={() => handleNavigate("/workbench")}
-          />
-        )}
+          {/* Experience C: Research & Evaluation Dashboard */}
+          {currentRoute === "/evaluation" && (
+            <EvaluationDashboard
+              onNavigateWorkbench={() => handleNavigate("/workbench")}
+            />
+          )}
+        </Suspense>
       </div>
 
       {/* Drag & Drop Overlay */}
@@ -477,37 +497,55 @@ const MainProductApplication: React.FC = () => {
       )}
 
       {/* Modals */}
-      <WhatsAppSimulatorModal
-        isOpen={isWhatsAppModalOpen}
-        onClose={() => setIsWhatsAppModalOpen(false)}
-        simulationData={whatsAppData}
-        isLoading={isWhatsAppLoading}
-        onApplyLaunderedImage={(newReport) => setReport(newReport)}
-      />
-
-      <MobileUploadModal
-        isOpen={isMobileModalOpen}
-        onClose={() => setIsMobileModalOpen(false)}
-        onMobileUploadReceived={handleMobileUploadReceived}
-      />
-
-      <ForensicReportModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        report={report}
-      />
-
-      {isReviewMemoOpen && report && (
-        <InternalReviewMemoModal
-          report={report}
-          onClose={() => setIsReviewMemoOpen(false)}
-        />
+      {isWhatsAppModalOpen && (
+        <Suspense fallback={null}>
+          <WhatsAppSimulatorModal
+            isOpen={isWhatsAppModalOpen}
+            onClose={() => setIsWhatsAppModalOpen(false)}
+            simulationData={whatsAppData}
+            isLoading={isWhatsAppLoading}
+            onApplyLaunderedImage={(newReport) => setReport(newReport)}
+          />
+        </Suspense>
       )}
 
-      <KeyboardShortcutsModal
-        isOpen={isShortcutsModalOpen}
-        onClose={() => setIsShortcutsModalOpen(false)}
-      />
+      {isMobileModalOpen && (
+        <Suspense fallback={null}>
+          <MobileUploadModal
+            isOpen={isMobileModalOpen}
+            onClose={() => setIsMobileModalOpen(false)}
+            onMobileUploadReceived={handleMobileUploadReceived}
+          />
+        </Suspense>
+      )}
+
+      {isReportModalOpen && (
+        <Suspense fallback={null}>
+          <ForensicReportModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
+            report={report}
+          />
+        </Suspense>
+      )}
+
+      {isReviewMemoOpen && report && (
+        <Suspense fallback={null}>
+          <InternalReviewMemoModal
+            report={report}
+            onClose={() => setIsReviewMemoOpen(false)}
+          />
+        </Suspense>
+      )}
+
+      {isShortcutsModalOpen && (
+        <Suspense fallback={null}>
+          <KeyboardShortcutsModal
+            isOpen={isShortcutsModalOpen}
+            onClose={() => setIsShortcutsModalOpen(false)}
+          />
+        </Suspense>
+      )}
 
       {/* Tactile Toaster (`ask-sonner` forensic theme) */}
       <Toaster
