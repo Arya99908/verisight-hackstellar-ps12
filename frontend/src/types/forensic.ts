@@ -79,6 +79,27 @@ export interface Layer4SemanticResult {
   details: Record<string, any>;
 }
 
+export type AIOriginSignalStatus =
+  | "DETECTED"
+  | "NOT_DETECTED"
+  | "UNVERIFIED"
+  | "NOT_CHECKED"
+  | "NOT_AVAILABLE";
+
+export interface AIOriginSignal {
+  id: string;
+  label: string;
+  status: AIOriginSignalStatus;
+  evidence: string;
+  limitation: string;
+}
+
+export interface AIOriginSignals {
+  classifier_available: boolean;
+  summary: string;
+  signals: AIOriginSignal[];
+}
+
 export interface CrossLayerSynergy {
   synergy_multiplier_applied: boolean;
   multiplier_factor: number;
@@ -115,6 +136,7 @@ export interface ForensicAnalysisReport {
   layer2: Layer2GeometryResult;
   layer3: Layer3MetadataResult;
   layer4: Layer4SemanticResult;
+  ai_origin: AIOriginSignals;
   synergy: CrossLayerSynergy;
   findings: ForensicFinding[];
   all_bounding_boxes: BoundingBox[];

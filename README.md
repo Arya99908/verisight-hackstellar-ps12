@@ -21,6 +21,8 @@ VeriSight accepts common image formats and computes pixel, layout, metadata, and
 
 In the workbench, the Risk Dossier shows decoded QR payload strings when OpenCV can read a code. Use **Copy** to copy a payload, or **Open Internal Review Memo** to copy, download, or print a draft summary of the heuristic findings. The memo is not a legal notice or a certified forensic report. Decoded QR fields are unverified strings; they do not establish a recipient's identity or payment settlement.
 
+The Risk Dossier also includes an **AI Origin Indicators** panel. It reports known generator names present in readable metadata, whether a C2PA-related marker was found (currently unverified), generic image-forensics cues, and which checks are unavailable. Metadata can be altered or removed; pixel/noise cues are not specific to AI; and this deployment has no visible-logo, SynthID, or calibrated AI-origin classifier. A missing indicator does not imply human creation. This section does not affect the existing image-review verdict or verify payment settlement.
+
 **Layer 1 — Pixel & Frequency Signal Forensics**
 - **Error Level Analysis (ELA):** Re-encodes the decoded pixels as JPEG and compares residuals. The residual heatmap is exploratory; score-based localization is disabled for non-JPEG sources. ELA residuals alone do not show splicing.
 - **Wavelet Noise Analysis:** Computes high-frequency residual variation and flags large low-variation areas. Flat UI regions, resizing, and recompression can produce similar cues.

@@ -81,6 +81,18 @@ class Layer4SemanticResult(BaseModel):
     findings: list[str] = Field(default_factory=list)
     details: dict[str, Any] = Field(default_factory=dict)
 
+class AIOriginSignal(BaseModel):
+    id: str
+    label: str
+    status: str
+    evidence: str
+    limitation: str
+
+class AIOriginSignals(BaseModel):
+    classifier_available: bool = False
+    summary: str
+    signals: list[AIOriginSignal] = Field(default_factory=list)
+
 class CrossLayerSynergy(BaseModel):
     region_overlap_found: bool = False
     primary_review_locus: BoundingBox | None = None
@@ -110,6 +122,11 @@ class ForensicAnalysisReport(BaseModel):
     layer2: Layer2GeometryResult
     layer3: Layer3MetadataResult
     layer4: Layer4SemanticResult
+    ai_origin: AIOriginSignals = Field(
+        default_factory=lambda: AIOriginSignals(
+            summary="AI-origin indicators are unavailable for this report."
+        )
+    )
     synergy: CrossLayerSynergy
     findings: list[ForensicFinding] = Field(default_factory=list)
     all_bounding_boxes: list[BoundingBox] = Field(default_factory=list)

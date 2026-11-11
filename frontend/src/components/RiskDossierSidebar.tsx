@@ -93,6 +93,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
     layer2,
     layer3,
     layer4,
+    ai_origin,
     synergy,
     findings,
   } = report;
@@ -277,6 +278,67 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </p>
           </div>
         </motion.div>
+
+        {/* Independent AI-origin clues; deliberately separate from the verdict. */}
+        <section
+          aria-labelledby="ai-origin-heading"
+          className="space-y-2.5 rounded-xl border border-violet-500/25 bg-[#111323] p-3.5 shadow-md"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-violet-300">
+              <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+              <h3 id="ai-origin-heading" className="font-mono text-[10px] font-semibold uppercase tracking-wider">
+                AI Origin Indicators
+              </h3>
+            </div>
+            <span className="rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 font-mono text-[9px] text-slate-400">
+              SIGNALS ONLY
+            </span>
+          </div>
+          <p className="text-[10px] leading-relaxed text-slate-300">
+            {ai_origin?.summary || "No calibrated AI-origin classifier is available."} A missing signal does not mean the image was made by a person.
+          </p>
+          <div className="space-y-2">
+            {(ai_origin?.signals || []).map((signal) => {
+              const detected = signal.status === "DETECTED";
+              const caution = signal.status === "UNVERIFIED";
+              const available = detected || caution;
+              const statusText = {
+                DETECTED: "DETECTED",
+                NOT_DETECTED: "NOT DETECTED",
+                UNVERIFIED: "UNVERIFIED",
+                NOT_CHECKED: "NOT CHECKED",
+                NOT_AVAILABLE: "NOT AVAILABLE",
+              }[signal.status] || signal.status;
+              return (
+                <div key={signal.id} className="rounded-lg border border-white/[0.07] bg-[#090D18] p-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[10px] font-medium leading-snug text-slate-200">{signal.label}</span>
+                    <span
+                      className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[8px] font-bold tracking-wide ${
+                        detected
+                          ? "border border-violet-700/60 bg-violet-950/70 text-violet-300"
+                          : caution
+                            ? "border border-amber-700/60 bg-amber-950/60 text-amber-300"
+                            : "border border-slate-700 bg-slate-900 text-slate-400"
+                      }`}
+                      aria-label={`${signal.label}: ${statusText.toLowerCase()}`}
+                    >
+                      {statusText}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[10px] leading-relaxed text-slate-400">{signal.evidence}</p>
+                  <p className={`mt-1 text-[9px] leading-relaxed ${available ? "text-amber-200/80" : "text-slate-500"}`}>
+                    {signal.limitation}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+          <p className="border-t border-white/[0.07] pt-2 text-[10px] leading-relaxed text-amber-100/90">
+            Pixel/noise irregularities can occur in ordinary screenshots and are not proof of AI generation. This section does not change the payment or screenshot verdict, and VeriSight does not verify payment settlement.
+          </p>
+        </section>
 
         <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
           Text recognition is not run: the scanner finds text-like regions but does not read amounts, names, timestamps, or UTRs from visible pixels. No payment provider or bank is queried.

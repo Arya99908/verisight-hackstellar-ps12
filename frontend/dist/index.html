@@ -15,8 +15,8 @@
       #boot-error { display: none; }
     </style>
     <title>VeriSight — Digital Screenshot Forensics & Authenticity Workbench</title>
-    <script type="module" crossorigin src="/assets/index-Bmnylbpv.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-C66ec3dz.css">
+    <script type="module" crossorigin src="/assets/index-DouD2xWK.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BGmWAQqN.css">
   </head>
   <body class="bg-[#070b14] text-[#f1f5f9] antialiased overflow-hidden select-none font-sans">
     <div id="root">
@@ -25,23 +25,37 @@
           <h1>Starting VeriSight…</h1>
           <p id="boot-message">Loading the forensic workbench.</p>
           <div id="boot-error">
-            <p>VeriSight could not start. Check your connection, then reload the page.</p>
+            <p>The app files have not finished loading. Keep this tab open briefly, or reload if it remains here.</p>
             <button type="button" onclick="window.location.reload()">Reload VeriSight</button>
           </div>
         </section>
       </main>
     </div>
     <script>
-      window.setTimeout(function () {
+      function showBootIssue(title, detail) {
         var fallback = document.getElementById('boot-fallback');
         if (!fallback) return;
         var heading = fallback.querySelector('h1');
         var message = document.getElementById('boot-message');
         var error = document.getElementById('boot-error');
-        if (heading) heading.textContent = 'VeriSight is taking longer than expected';
+        var detailText = error && error.querySelector('p');
+        if (heading) heading.textContent = title;
         if (message) message.hidden = true;
         if (error) error.style.display = 'block';
-      }, 12000);
+        if (detailText) detailText.textContent = detail;
+      }
+
+      window.addEventListener('error', function (event) {
+        if (event.target instanceof HTMLScriptElement) {
+          showBootIssue('VeriSight app file failed to load', 'The main app script could not be downloaded. Check access to this site, then reload VeriSight.');
+        } else if (event instanceof ErrorEvent) {
+          showBootIssue('VeriSight could not initialize', 'An app startup error occurred before the workbench loaded. Reload VeriSight to try again.');
+        }
+      }, true);
+
+      window.setTimeout(function () {
+        showBootIssue('VeriSight is still loading', 'The app script has not finished loading yet. Keep this tab open briefly, or reload if it remains here.');
+      }, 30000);
     </script>
   </body>
 </html>

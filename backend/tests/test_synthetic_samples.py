@@ -122,4 +122,12 @@ def test_api_analyze_sample_endpoint():
     assert "layer1" in data
     assert "layer2" in data
     assert "layer3" in data
+    assert data["ai_origin"]["classifier_available"] is False
+    assert {signal["id"] for signal in data["ai_origin"]["signals"]} == {
+        "generator_metadata",
+        "c2pa_provenance",
+        "visible_ai_mark",
+        "generic_pixel_cues",
+        "ai_origin_classifier",
+    }
     assert "synergy" in data

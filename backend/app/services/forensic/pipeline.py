@@ -26,6 +26,7 @@ from app.services.forensic.pixel_analysis.wavelet_noise import (
     run_wavelet_noise_analysis,
 )
 from app.services.forensic.provenance.c2pa_inspector import inspect_c2pa_provenance
+from app.services.forensic.provenance.ai_origin_signals import inspect_ai_origin_signals
 from app.services.forensic.qr_inspector import inspect_qr_codes
 from app.services.forensic.typography.baseline_laser import run_baseline_laser_audit
 from app.services.forensic.typography.cielab_patch import (
@@ -102,6 +103,16 @@ def analyze_screenshot(
             "copy_move": clone_details,
             "jpeg_ghosts": ghost_details
         }
+    )
+
+    # AI-origin indicators are independent evidence only. Generic pixel cues
+    # below are not used to infer whether an image was AI-generated.
+    ai_origin_result = inspect_ai_origin_signals(
+        image_bytes,
+        metadata_info,
+        c2pa_present=has_c2pa,
+        c2pa_status=c2pa_status,
+        generic_pixel_cue_count=len(l1_boxes),
     )
 
     # 5. Layer 2: Text-like component geometry (no OCR recognition)
@@ -227,6 +238,7 @@ def analyze_screenshot(
         layer2=layer2_result,
         layer3=layer3_result,
         layer4=layer4_result,
+        ai_origin=ai_origin_result,
         synergy=synergy,
         findings=findings,
         all_bounding_boxes=all_boxes,
