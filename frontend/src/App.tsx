@@ -29,6 +29,7 @@ const MobileUploadView = lazy(() => import("./components/MobileUploadView").then
 const ForensicReportModal = lazy(() => import("./components/ForensicReportModal").then((m) => ({ default: m.ForensicReportModal })));
 const InternalReviewMemoModal = lazy(() => import("./components/InternalReviewMemoModal").then((m) => ({ default: m.InternalReviewMemoModal })));
 const KeyboardShortcutsModal = lazy(() => import("./components/KeyboardShortcutsModal").then((m) => ({ default: m.KeyboardShortcutsModal })));
+const WhyVerisight = lazy(() => import("./components/WhyVerisight").then((m) => ({ default: m.WhyVerisight })));
 
 const RouteLoadingFallback = () => (
   <div role="status" className="grid min-h-48 flex-1 place-items-center bg-[#070b14] text-sm text-slate-300">
@@ -40,6 +41,7 @@ const getRouteFromLocation = (): AppRoute => {
   const path = window.location.pathname;
   if (path === "/workbench") return "/workbench";
   if (path === "/evaluation") return "/evaluation";
+  if (path === "/why-verisight") return "/why-verisight";
   return "/";
 };
 
@@ -501,6 +503,10 @@ const MainProductApplication: React.FC = () => {
                   : handleNavigate("/workbench")
               }
             />
+          )}
+
+          {currentRoute === "/why-verisight" && (
+            <WhyVerisight onNavigateWorkbench={() => handleNavigate("/workbench")} />
           )}
         </Suspense>
       </div>

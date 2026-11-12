@@ -74,4 +74,8 @@ if frontend_dist.exists():
     async def evaluation_page():
         return FileResponse(frontend_dist / "index.html")
 
+    @app.get("/why-verisight", include_in_schema=False)
+    async def why_verisight_page():
+        return FileResponse(frontend_dist / "index.html")
+
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")

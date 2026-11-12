@@ -7,9 +7,10 @@ import {
   ArrowRight,
   Upload,
   ExternalLink,
+  Info,
 } from "lucide-react";
 
-export type AppRoute = "/" | "/workbench" | "/evaluation";
+export type AppRoute = "/" | "/workbench" | "/evaluation" | "/why-verisight";
 
 interface NavigationHeaderProps {
   currentRoute: AppRoute;
@@ -92,6 +93,18 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         >
           <LineChart className="h-3.5 w-3.5" />
           <span>Evaluation & Research</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate("/why-verisight")}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all ${
+            currentRoute === "/why-verisight"
+              ? "bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm"
+              : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+          }`}
+        >
+          <Info className="h-3.5 w-3.5" />
+          <span>About VeriSight</span>
         </button>
       </div>
 
