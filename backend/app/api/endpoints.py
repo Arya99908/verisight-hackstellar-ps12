@@ -245,6 +245,17 @@ async def get_demo_samples():
             description="Synthetic cloned-region fixture. Copy-move matching is a review cue and can match repeated interface elements.",
             tags=["Repeated regions", "ORB candidate matches", "Unlisted aspect ratio"],
             url="/samples/sample_5_cloned_chat_receipt.jpg"
+        ),
+        DemoSampleMeta(
+            id="user_receipt_1",
+            filename="user_provided_payment_receipt_20261112.jpeg",
+            title="User-provided payment screenshot (unverified)",
+            scenario="Submitted by the user as a genuine receipt. Its origin and displayed transaction details have not been independently verified; screenshot analysis cannot confirm settlement.",
+            expected_verdict="USER_ASSERTED_AUTHENTIC",
+            target_score_range="Variable heuristic points",
+            description="User-provided example for image-cue review only. Do not treat the image or displayed completion message as proof of payment.",
+            tags=["User-provided", "User-asserted authentic", "Unverified", "Not settlement-verified"],
+            url="/samples/user_provided_payment_receipt_20261112.jpeg"
         )
     ]
     return samples
@@ -288,7 +299,8 @@ async def execute_sample_analysis(
         "sample_2": "sample_2_spliced_amount.jpg",
         "sample_3": "sample_3_fake_generator_paradox.png",
         "sample_4": "sample_4_synthetic_jpeg_reencode.jpg",
-        "sample_5": "sample_5_cloned_chat_receipt.jpg"
+        "sample_5": "sample_5_cloned_chat_receipt.jpg",
+        "user_receipt_1": "user_provided_payment_receipt_20261112.jpeg",
     }
     filename = sample_files.get(sample_id)
     if not filename:

@@ -27,6 +27,7 @@ from app.services.forensic.pixel_analysis.wavelet_noise import (
 )
 from app.services.forensic.provenance.c2pa_inspector import inspect_c2pa_provenance
 from app.services.forensic.provenance.ai_origin_signals import inspect_ai_origin_signals
+from app.services.forensic.intelligence.payment_entity_resolution import resolve_payment_entities
 from app.services.forensic.qr_inspector import inspect_qr_codes
 from app.services.forensic.typography.baseline_laser import run_baseline_laser_audit
 from app.services.forensic.typography.cielab_patch import (
@@ -70,6 +71,7 @@ def analyze_screenshot(
     viewport_name, is_cropped, viewport_details = check_viewport_geometry(w, h)
     has_c2pa, c2pa_status, c2pa_details = inspect_c2pa_provenance(image_bytes)
     qr_details = inspect_qr_codes(img_bgr)
+    payment_entity_resolution = resolve_payment_entities(qr_details)
 
     # 4. Layer 1: Pixel & Frequency Signal Forensics
     ela_score, ela_b64, ela_blocks, ela_boxes, ela_details = run_ela_analysis(
@@ -197,6 +199,7 @@ def analyze_screenshot(
             "rules": rule_details,
             "c2pa": c2pa_details,
             "qr_inspection": qr_details,
+            "payment_entity_resolution": payment_entity_resolution,
         }
     )
 

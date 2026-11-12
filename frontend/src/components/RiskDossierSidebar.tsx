@@ -115,6 +115,14 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
     }>;
   };
   const qrResults = Array.isArray(qrInspection.results) ? qrInspection.results : [];
+  const paymentEntityResolution = (layer3.details?.payment_entity_resolution || {}) as {
+    status?: string;
+    method?: string;
+    note?: string;
+    entities?: Array<Record<string, string | null>>;
+    syndicate_assessment?: string;
+    payment_status?: string;
+  };
 
   // Calibrated Gauge Calculations
   const radius = 38;
@@ -402,6 +410,22 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </button>
           )}
         </motion.div>
+
+        <section className="space-y-2 rounded-xl border border-sky-500/20 bg-[#111726] p-3.5">
+          <div className="flex items-center justify-between gap-2 text-sky-200">
+            <h3 className="font-mono text-[10px] font-semibold uppercase tracking-wider">Payment Entity / PSP Resolution</h3>
+            <span className="rounded border border-sky-900 bg-sky-950/60 px-1.5 py-0.5 font-mono text-[9px]">{paymentEntityResolution.status || "NOT_AVAILABLE"}</span>
+          </div>
+          {(paymentEntityResolution.entities || []).map((entity, index) => (
+            <div key={index} className="space-y-1 rounded-lg border border-white/[0.08] bg-[#0A0E1A] p-2 text-[10px] text-slate-300">
+              {entity.payee_vpa && <p className="break-all">VPA payload: {entity.payee_vpa}</p>}
+              {entity.payee_name && <p>Payee string: {entity.payee_name}</p>}
+              {entity.amount && <p>Amount string: {entity.amount} {entity.currency || ""}</p>}
+              {entity.psp_hint && <p>PSP hint: {entity.psp_hint}</p>}
+            </div>
+          ))}
+          <p className="text-[10px] leading-relaxed text-slate-400">{paymentEntityResolution.note || "Payment fields can only be resolved from a decoded QR payload. OCR and external syndicate lookup are not configured."} Syndicate links: {paymentEntityResolution.syndicate_assessment || "NOT_AVAILABLE"}; payment status: {paymentEntityResolution.payment_status || "NOT_CHECKED"}.</p>
+        </section>
 
         {/* Cross-Layer Synergy Banner */}
         {synergy.synergy_multiplier_applied && (

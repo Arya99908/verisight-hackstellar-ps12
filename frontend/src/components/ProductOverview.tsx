@@ -50,18 +50,18 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
       : [
           {
             id: "sample_1",
-            title: "Authentic Real Mobile Receipt",
-            scenario: "Actual real-world mobile transaction screenshot with uniform sensor noise, un-spliced background (ΔE < 1.0), and aligned typography.",
-            expected_verdict: "AUTHENTIC_VERIFIED",
-            target_score_range: "2% – 5%",
-            tags: ["Real Evidence", "UPI Receipt", "Authentic", "Zero Splice"],
+            title: "Sample 1 — Clean Synthetic Payment UI",
+            scenario: "Synthetic baseline fixture. It does not establish that a real screenshot is authentic or that a payment occurred.",
+            expected_verdict: "INCONCLUSIVE",
+            target_score_range: "Variable heuristic points",
+            tags: ["Synthetic", "Baseline", "Not payment verified"],
           },
           {
             id: "sample_2",
             title: "Pixel-Spliced Amount (₹95,250.00)",
             scenario: "Amount altered with off-color patch (ΔE=5.2), +3.5px baseline laser drop, and zero-noise wavelet void.",
             expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "91% – 97%",
+            target_score_range: "Variable heuristic points",
             tags: ["Spliced", "Forgery", "High-Risk", "Baseline Drift"],
           },
           {
@@ -69,7 +69,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             title: "Fake Generator / DOM Edit",
             scenario: "Uniform PNG with status-bar clock paradox (11:12 vs 11:45 AM) and invalid 10-digit UTR.",
             expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "86% – 93%",
+            target_score_range: "Variable heuristic points",
             tags: ["DOM Edit", "Generator", "Clock Paradox", "Fake UTR"],
           },
           {
@@ -77,7 +77,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             title: "WhatsApp-Forwarded Forgery",
             scenario: "Spliced receipt passed through WhatsApp delivery (EXIF stripped, 4:2:0 subsampling, JPEG Q=77).",
             expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "82% – 89%",
+            target_score_range: "Variable heuristic points",
             tags: ["WhatsApp", "Laundered", "Re-compressed", "Surviving Geometry"],
           },
           {
@@ -85,7 +85,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             title: "Copy-Move Cloned Digits",
             scenario: "Digit sequence cloned to inflate balance; non-native cropped viewport (680x1120).",
             expected_verdict: "MANIPULATED_FORGERY",
-            target_score_range: "85% – 92%",
+            target_score_range: "Variable heuristic points",
             tags: ["Copy-Move", "Cloned Digits", "ORB", "Cropped Viewport"],
           },
         ];
@@ -682,14 +682,14 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 Demonstration Case Catalog
               </h2>
               <p className="mt-2 text-slate-400 text-sm max-w-xl">
-                Explore real synthetic benchmark cases exhibiting common forgery vectors.
-                Each card can be directly opened inside the Forensic Workbench.
+                Synthetic fixtures and user-submitted examples are separated and labeled by provenance.
+                Open a case in the workbench to inspect its image cues.
               </p>
             </div>
             <div className="shrink-0">
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-950/40 px-3 py-1.5 text-xs font-mono text-amber-300">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
-                <span>Synthetic development samples only</span>
+                <span>Example provenance is shown per case</span>
               </span>
             </div>
           </div>
@@ -699,6 +699,13 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
               const isManipulated =
                 sample.expected_verdict?.includes("MANIPULATED") ||
                 sample.expected_verdict?.includes("FORGERY");
+              const isUserProvided = sample.tags?.includes("User-provided") ?? false;
+              const isSynthetic = sample.tags?.includes("Synthetic") ?? sample.id.startsWith("sample_");
+              const provenanceLabel = isUserProvided
+                ? "USER-PROVIDED EXAMPLE — AUTHENTICITY NOT INDEPENDENTLY VERIFIED"
+                : isSynthetic
+                  ? "SYNTHETIC DEMONSTRATION — NOT REAL PAYMENT EVIDENCE"
+                  : "EXAMPLE — PROVENANCE NOT VERIFIED";
 
               return (
                 <motion.div
@@ -706,22 +713,20 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                   whileHover={shouldReduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
                   className="flex flex-col justify-between rounded-xl border border-white/[0.1] bg-[#0A0F1E] overflow-hidden shadow-lg hover:border-sky-500/50 hover:shadow-sky-500/10 transition-all group"
                 >
-                  {/* Top Banner: Distinguish between Authentic Real Capture vs Tampered Demo */}
+                  {/* Provenance banner: never infer authenticity from a clean score. */}
                   <div
                     className={
-                      isManipulated
+                      isManipulated || isUserProvided
                         ? "bg-amber-950/80 border-b border-amber-800/50 px-3 py-1.5 text-center"
-                        : "bg-emerald-950/80 border-b border-emerald-800/50 px-3 py-1.5 text-center"
+                        : "bg-slate-900/80 border-b border-white/10 px-3 py-1.5 text-center"
                     }
                   >
                     <span
                       className={`font-mono text-[9px] font-bold tracking-wider uppercase ${
-                        isManipulated ? "text-amber-300" : "text-emerald-300"
+                        isManipulated || isUserProvided ? "text-amber-300" : "text-slate-300"
                       }`}
                     >
-                      {isManipulated
-                        ? "TAMPERED DEMONSTRATION — CONTROLLED FORGERY VECTOR"
-                        : "AUTHENTIC REAL-WORLD CAPTURE — UNTOUCHED TRANSACTION EVIDENCE"}
+                      {provenanceLabel}
                     </span>
                   </div>
 
@@ -736,16 +741,22 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                           className={`rounded px-2 py-0.5 font-mono text-[10px] font-semibold ${
                             isManipulated
                               ? "bg-rose-950/80 text-rose-300 border border-rose-800/50"
-                              : "bg-emerald-950/80 text-emerald-300 border border-emerald-800/50"
+                              : isUserProvided
+                                ? "bg-amber-950/80 text-amber-200 border border-amber-800/50"
+                                : "bg-slate-900 text-slate-300 border border-white/10"
                           }`}
                         >
-                          {isManipulated ? "MANIPULATED" : "AUTHENTIC"}
+                          {isManipulated ? "KNOWN SYNTHETIC EDIT" : isUserProvided ? "USER-ASSERTED" : "SYNTHETIC BASELINE"}
                         </span>
                       </div>
 
                       <h3 className="text-base font-bold text-white mt-2 group-hover:text-sky-300 transition-colors">
                         {sample.title}
                       </h3>
+
+                      {isUserProvided && "url" in sample && sample.url && (
+                        <img src={sample.url} alt="User-provided payment screenshot; not independently verified" className="mt-3 max-h-72 w-full rounded-lg border border-white/10 bg-black object-contain" loading="lazy" />
+                      )}
 
                       <p className="mt-2 text-xs text-slate-400 leading-relaxed">
                         {sample.scenario}

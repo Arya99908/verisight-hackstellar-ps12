@@ -66,6 +66,12 @@ const SAMPLE_DETAILS: Record<
     color: "rose",
     desc: "Repeated visual features may also occur in normal interface elements",
   },
+  user_receipt_1: {
+    label: "User-provided receipt (unverified)",
+    badge: "User-asserted",
+    color: "amber",
+    desc: "Image cues only; payment status and authenticity are not verified",
+  },
 };
 
 export const TopCommandBar: React.FC<TopCommandBarProps> = ({
@@ -234,7 +240,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
             className="z-[100] overflow-y-auto rounded-xl border border-white/10 bg-[#0C1222]/98 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100"
           >
             <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-500">
-              {isLoading ? "Analysis running · select another case" : "Preset Evidence Samples (1–5)"}
+              {isLoading ? "Analysis running · select another case" : `Evidence Examples (${demoSamples.length})`}
             </div>
             <div className="space-y-1 mt-1">
               {demoSamples.map((sample, idx) => {

@@ -23,10 +23,12 @@ def test_api_demo_samples_list():
     response = client.get("/api/demo-samples")
     assert response.status_code == 200
     samples = response.json()
-    assert len(samples) == 5
+    assert len(samples) == 6
     sample_ids = [s["id"] for s in samples]
     assert "sample_1" in sample_ids
     assert "sample_2" in sample_ids
+    assert "user_receipt_1" in sample_ids
+    assert "unverified" in next(s for s in samples if s["id"] == "user_receipt_1")["title"].lower()
 
 
 def test_sample_1_clean_synthetic_fixture():

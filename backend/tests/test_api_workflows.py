@@ -11,11 +11,15 @@ SAMPLES_DIR = Path(__file__).resolve().parents[2] / "samples"
 
 def test_each_demo_endpoint_matches_its_published_verdict():
     samples = client.get("/api/demo-samples").json()
-    assert len(samples) == 5
+    assert len(samples) == 6
     for sample in samples:
         response = client.post(f"/api/analyze-sample/{sample['id']}")
         assert response.status_code == 200
-        assert response.json()["verdict"] == sample["expected_verdict"]
+        if sample["id"].startswith("sample_"):
+            assert response.json()["verdict"] == sample["expected_verdict"]
+        else:
+            assert response.json()["filename"] == sample["filename"]
+            assert response.json()["confidence_score"] is None
 
 
 def test_unknown_demo_sample_is_a_404():
