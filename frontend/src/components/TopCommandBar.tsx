@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   ShieldCheck,
   Upload,
@@ -85,17 +86,52 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const caseButtonRef = useRef<HTMLButtonElement>(null);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ left: 8, top: 64, width: 304 });
+
+  const updateDropdownPosition = () => {
+    const rect = caseButtonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const width = Math.min(310, Math.max(220, window.innerWidth - 16));
+    setDropdownPosition({
+      left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)),
+      top: Math.min(rect.bottom + 6, window.innerHeight - 120),
+      width,
+    });
+  };
 
   // Close dropdown on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        !dropdownMenuRef.current?.contains(target)
+      ) {
         setIsDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
+
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const reposition = () => updateDropdownPosition();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsDropdownOpen(false);
+    };
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isDropdownOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,9 +174,17 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
       {/* 2. Center Zone: Sleek Case Selector Combobox Dropdown */}
       <div className="relative shrink-0" ref={dropdownRef}>
         <button
+          ref={caseButtonRef}
           type="button"
-          onClick={() => setIsDropdownOpen((prev) => !prev)}
-          disabled={isLoading}
+          onClick={() => {
+            if (!isDropdownOpen) updateDropdownPosition();
+            setIsDropdownOpen((prev) => !prev);
+          }}
+          aria-haspopup="menu"
+          aria-expanded={isDropdownOpen}
+          aria-controls="case-selector-menu"
+          aria-label={`Select investigation case. Current case: ${currentMeta.label}`}
+          aria-busy={isLoading}
           className="group flex w-[200px] sm:w-[310px] items-center justify-between rounded-lg border border-white/[0.08] bg-[#0D1424] px-2.5 sm:px-3 py-1.5 text-xs text-slate-200 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-all hover:border-white/20 active:scale-[0.98]"
           title="Select investigation case (Shortcuts: 1-5)"
         >
@@ -154,6 +198,7 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            {isLoading && <Loader2 aria-hidden="true" className="h-3 w-3 animate-spin text-sky-400" />}
             <span
               className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold ${
                 currentMeta.color === "emerald"
@@ -174,10 +219,22 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
         </button>
 
         {/* Dropdown Menu */}
-        {isDropdownOpen && (
-          <div className="absolute left-0 top-full mt-1.5 w-[310px] z-50 rounded-xl border border-white/10 bg-[#0C1222]/98 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
+        {isDropdownOpen && createPortal(
+          <div
+            ref={dropdownMenuRef}
+            id="case-selector-menu"
+            role="menu"
+            style={{
+              position: "fixed",
+              left: dropdownPosition.left,
+              top: dropdownPosition.top,
+              width: dropdownPosition.width,
+              maxHeight: `calc(100dvh - ${dropdownPosition.top + 12}px)`,
+            }}
+            className="z-[100] overflow-y-auto rounded-xl border border-white/10 bg-[#0C1222]/98 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100"
+          >
             <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-500">
-              Preset Evidence Samples (1–5)
+              {isLoading ? "Analysis running · select another case" : "Preset Evidence Samples (1–5)"}
             </div>
             <div className="space-y-1 mt-1">
               {demoSamples.map((sample, idx) => {
@@ -192,10 +249,12 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
                 return (
                   <button
                     key={sample.id}
+                    type="button"
+                    role="menuitem"
                     onClick={() => {
                       onSelectSample(sample.id);
                       setIsDropdownOpen(false);
-                      toast.success(`Loaded case: ${meta.label}`);
+                      toast.info(`Loading case: ${meta.label}`);
                     }}
                     className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
                       isSelected
@@ -233,7 +292,8 @@ export const TopCommandBar: React.FC<TopCommandBarProps> = ({
                 );
               })}
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
       </div>
 

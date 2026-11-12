@@ -72,6 +72,7 @@ const MainProductApplication: React.FC = () => {
   const [appError, setAppError] = useState<string | null>(null);
   const [selectedLocus, setSelectedLocus] = useState<BoundingBox | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const analysisRequestRef = useRef(0);
   const [databaseStatus, setDatabaseStatus] = useState<
     "CHECKING" | "HEALTHY" | "UNAVAILABLE" | "NOT_CONFIGURED"
   >("CHECKING");
@@ -98,27 +99,35 @@ const MainProductApplication: React.FC = () => {
 
   // Handle selecting a golden demo sample
   const handleSelectSample = useCallback(async (sampleId: string) => {
+    const requestId = ++analysisRequestRef.current;
     setSelectedSampleId(sampleId);
     setSelectedLocus(null);
+    setViewMode("ORIGINAL");
     setIsLoading(true);
     setAppError(null);
 
     try {
       const res = await analyzeDemoSample(sampleId);
+      if (requestId !== analysisRequestRef.current) return;
       setReport(res);
     } catch (err) {
+      if (requestId !== analysisRequestRef.current) return;
       setAppError(
         `Sample analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`
       );
       toast.error(`Analysis failed for ${sampleId}`);
     } finally {
-      setIsLoading(false);
+      if (requestId === analysisRequestRef.current) setIsLoading(false);
     }
   }, []);
 
   // Synchronized Client-Side Navigation
   const handleNavigate = useCallback(
-    (route: AppRoute, query?: Record<string, string>) => {
+    (
+      route: AppRoute,
+      query?: Record<string, string>,
+      options?: { skipWorkbenchLoad?: boolean },
+    ) => {
       let targetUrl = route;
       if (query && Object.keys(query).length > 0) {
         const params = new URLSearchParams(query);
@@ -129,7 +138,12 @@ const MainProductApplication: React.FC = () => {
 
       if (query?.case) {
         void handleSelectSample(query.case);
-      } else if (route === "/workbench" && currentRoute !== "/workbench" && !report) {
+      } else if (
+        !options?.skipWorkbenchLoad &&
+        route === "/workbench" &&
+        currentRoute !== "/workbench" &&
+        !report
+      ) {
         void handleSelectSample(selectedSampleId || "sample_1");
       }
     },
@@ -263,27 +277,31 @@ const MainProductApplication: React.FC = () => {
 
   // Handle custom screenshot upload
   const handleFileUpload = async (file: File) => {
+    const requestId = ++analysisRequestRef.current;
     setSelectedSampleId(null);
     setSelectedLocus(null);
+    setViewMode("ORIGINAL");
     setIsLoading(true);
     setAppError(null);
 
     // Switch to workbench if not already there
     if (currentRoute !== "/workbench") {
-      handleNavigate("/workbench");
+      handleNavigate("/workbench", undefined, { skipWorkbenchLoad: true });
     }
 
     try {
       const res = await analyzeUpload(file);
+      if (requestId !== analysisRequestRef.current) return;
       setReport(res);
       toast.success(`Analyzed screenshot: ${file.name}`);
     } catch (err) {
+      if (requestId !== analysisRequestRef.current) return;
       setAppError(
         `Upload analysis failed: ${err instanceof Error ? err.message : "Unknown error"}`
       );
       toast.error("Upload analysis failed");
     } finally {
-      setIsLoading(false);
+      if (requestId === analysisRequestRef.current) setIsLoading(false);
     }
   };
 
@@ -365,11 +383,13 @@ const MainProductApplication: React.FC = () => {
 
   // Handle stage judge live mobile upload arrival
   const handleMobileUploadReceived = (newReport: ForensicAnalysisReport) => {
+    analysisRequestRef.current += 1;
     setSelectedSampleId(null);
     setSelectedLocus(null);
     setReport(newReport);
+    setIsLoading(false);
     if (currentRoute !== "/workbench") {
-      handleNavigate("/workbench");
+      handleNavigate("/workbench", undefined, { skipWorkbenchLoad: true });
     }
     toast.success("Live mobile screenshot received");
   };
@@ -475,7 +495,11 @@ const MainProductApplication: React.FC = () => {
           {/* Experience C: Research & Evaluation Dashboard */}
           {currentRoute === "/evaluation" && (
             <EvaluationDashboard
-              onNavigateWorkbench={() => handleNavigate("/workbench")}
+              onNavigateWorkbench={(sampleId) =>
+                sampleId
+                  ? handleNavigate("/workbench", { case: sampleId })
+                  : handleNavigate("/workbench")
+              }
             />
           )}
         </Suspense>

@@ -1,6 +1,6 @@
-import{c as e}from"./index-DouD2xWK.js";/**
+import{c as o}from"./index-DZDKQNXo.js";/**
  * @license lucide-react v0.475.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */const o=[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]],a=e("LoaderCircle",o);export{a as L};
+ */const n=[["path",{d:"m6 9 6 6 6-6",key:"qrunsl"}]],c=o("ChevronDown",n);export{c as C};
