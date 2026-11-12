@@ -19,6 +19,8 @@
 
 VeriSight accepts common image formats and computes pixel, layout, metadata, and QR review cues. The current build cannot determine that every screenshot is authentic or edited: it has no trained image classifier, and it does not verify payments. Analysis runs server-side. Case summaries are persisted; original image bytes are not stored in the case table. A short-lived private storage object is used by the signed-upload flow and deleted after analysis.
 
+The **Response & Guidance** area adds typed or browser-assisted incident intake, rules-based field extraction, a user-editable complaint draft, a downloadable evidence summary, public reporting links, and a case-notes tracker. This is a drafting aid: it does not file a complaint, contact authorities, confirm a settlement, or retrieve an official case status. Incident narratives are sent to the VeriSight API for extraction/draft generation. Case notes are kept in `sessionStorage` for the current browser tab and are cleared when that tab closes; they are not stored in Supabase or synchronized between devices. Browser speech recognition privacy and availability depend on the browser. Avoid entering passwords, UPI PINs, or full account numbers.
+
 In the workbench, the Risk Dossier shows decoded QR payload strings when OpenCV can read a code. Use **Copy** to copy a payload, or **Open Internal Review Memo** to copy, download, or print a draft summary of the heuristic findings. The memo is not a legal notice or a certified forensic report. Decoded QR fields are unverified strings; they do not establish a recipient's identity or payment settlement.
 
 The Risk Dossier also includes an **AI Origin Indicators** panel. It reports known generator names present in readable metadata, whether a C2PA-related marker was found (currently unverified), generic image-forensics cues, and which checks are unavailable. It also states that native editing layers are not inspected because the accepted screenshot formats are flattened exports. Metadata can be altered or removed; pixel/noise cues are not specific to AI; and this deployment has no visible-logo, SynthID, or calibrated AI-origin classifier. A missing indicator does not imply human creation. This section does not affect the existing image-review verdict or verify payment settlement.
@@ -44,6 +46,12 @@ The Risk Dossier also includes an **AI Origin Indicators** panel. It reports kno
 - **Weighted risk aggregation:** Strong indicators (`text_geometry` = 35 pts, `copy_move` = 28–42 pts, `time_consistency` = 35 pts, `reference_format` = 20 pts) are combined with weak review cues (ELA macroblock count, wavelet noise, rendering variation, software metadata) capped at 12 pts. Total score is capped at 92.0.
 - **Cross-Layer Spatial IoU:** For each repeated-feature candidate box and anomalous text-like baseline box, pairwise IoU is computed. An overlapping candidate review locus is reported when IoU ≥ 0.20; it is not a confirmed forgery location.
 - **Assessment:** The API returns `INCONCLUSIVE`, `REVIEW_REQUIRED`, or `CORROBORATED_ANOMALIES` as heuristic evidence states. Error probability and calibrated confidence are unavailable.
+
+**Response & Guidance**
+- Incident Centre and typed/voice-assisted intake classify the narrative with deterministic rules and expose extracted fields for review; they do not verify the reported events.
+- Complaint Builder creates an editable draft for the user to review. Downloading a PDF or saving a case note does not submit it to a government portal.
+- Evidence Dossier exports the heuristic report, while the reporting directory links to public destinations. Check current instructions on the official site before submitting anything.
+- Case notes stay in the current browser tab. There is no case-status integration or durable incident-case database.
 
 ---
 
@@ -317,6 +325,17 @@ Desktop workbench polling endpoint. Returns the analyzed report for the given se
 
 Returns the host's LAN IP address for generating the mobile QR code URL.
 
+### Response & Guidance API
+
+- `POST /api/response/understand` — extracts candidate incident fields from typed text and returns rule-based follow-up prompts.
+- `POST /api/response/next-question` — requests the next prompt from the current extracted fields.
+- `POST /api/response/generate-complaint` — creates a user-editable complaint draft.
+- `POST /api/response/regenerate-section` — applies deterministic text formatting to a draft section.
+- `POST /api/response/export-complaint-pdf` and `POST /api/response/export-dossier-pdf` — download draft documents.
+- `GET /api/response/reporting-directory` — returns public reporting links and directory notes.
+
+Case notes are intentionally stored in browser-tab `sessionStorage`; no case list endpoint exposes one user's incident details to other visitors.
+
 ---
 
 ## ForensicAnalysisReport Schema
@@ -355,6 +374,7 @@ PostgreSQL via **Supabase** (project reference `ytxfhmdzlelcpjsnlndh`).
 - `forensic_cases` table: case UUID, timestamp, filename, SHA-256 hash, image dimensions, heuristic points, null confidence field, evidence-state verdict, channel cue, findings, layer summaries, and submission source.
 
 - Original image bytes are not stored in `forensic_cases`. The mobile handoff temporarily places an image in private Storage and deletes it after analysis. A best-effort cleanup runs when a later upload session is created; this is not a scheduled deletion guarantee.
+- Response & Guidance case notes are not written to Supabase; they remain in the current browser tab's session storage.
 - ELA / wavelet / ORB heatmap payloads are returned in-band as base64 and are not persisted in the case row.
 
 **Security:**

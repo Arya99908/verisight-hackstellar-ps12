@@ -8,9 +8,10 @@ import {
   Upload,
   ExternalLink,
   Info,
+  MessageSquareText,
 } from "lucide-react";
 
-export type AppRoute = "/" | "/workbench" | "/evaluation" | "/why-verisight";
+export type AppRoute = "/" | "/workbench" | "/evaluation" | "/response" | "/why-verisight";
 
 interface NavigationHeaderProps {
   currentRoute: AppRoute;
@@ -96,6 +97,18 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         </button>
 
         <button
+          onClick={() => onNavigate("/response")}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all ${
+            currentRoute === "/response"
+              ? "bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm"
+              : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+          }`}
+        >
+          <MessageSquareText className="h-3.5 w-3.5" />
+          <span>Response & Guidance</span>
+        </button>
+
+        <button
           onClick={() => onNavigate("/why-verisight")}
           className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all ${
             currentRoute === "/why-verisight"
@@ -110,6 +123,18 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
       {/* 3. Right: Primary Action CTA */}
       <div className="flex items-center gap-2">
+        <button
+          onClick={() => onNavigate("/response")}
+          className={`sm:hidden flex h-8 w-8 items-center justify-center rounded-lg border ${
+            currentRoute === "/response"
+              ? "border-sky-500/40 bg-sky-500/20 text-sky-300"
+              : "border-white/10 bg-[#0C1222] text-slate-300"
+          }`}
+          aria-label="Open Response and Guidance"
+          title="Response and Guidance"
+        >
+          <MessageSquareText className="h-4 w-4" />
+        </button>
         {currentRoute !== "/workbench" ? (
           <button
             onClick={() => onNavigate("/workbench")}

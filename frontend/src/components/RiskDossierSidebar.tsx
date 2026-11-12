@@ -23,6 +23,7 @@ interface RiskDossierSidebarProps {
   onSelectLocus: (box: BoundingBox | null) => void;
   onOpenReviewMemo?: () => void;
   onOpenReport?: () => void;
+  onOpenResponseGuidance?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   isAdvancedMode?: boolean;
@@ -34,6 +35,7 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
   onSelectLocus,
   onOpenReviewMemo,
   onOpenReport,
+  onOpenResponseGuidance,
   isCollapsed = false,
   onToggleCollapse,
   isAdvancedMode = false,
@@ -286,6 +288,17 @@ export const RiskDossierSidebar: React.FC<RiskDossierSidebarProps> = ({
             </p>
           </div>
         </motion.div>
+
+        {onOpenResponseGuidance && (
+          <button
+            type="button"
+            onClick={onOpenResponseGuidance}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 py-2 px-3 font-mono text-[11px] font-semibold text-sky-200 transition-colors hover:bg-sky-500/20"
+          >
+            <ShieldAlert className="h-3.5 w-3.5" />
+            <span>Open Response & Guidance</span>
+          </button>
+        )}
 
         {/* Independent AI-origin clues; deliberately separate from the verdict. */}
         <section

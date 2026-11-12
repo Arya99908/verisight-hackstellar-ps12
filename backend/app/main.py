@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
 from app.api.endpoints import router as api_router
+from app.api.response_endpoints import router as response_api_router
 from app.core.config import settings
 
 
@@ -58,6 +59,7 @@ app.mount("/samples", StaticFiles(directory=str(settings.SAMPLES_DIR)), name="sa
 
 # Mount API router
 app.include_router(api_router, prefix="/api")
+app.include_router(response_api_router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn
@@ -76,6 +78,10 @@ if frontend_dist.exists():
 
     @app.get("/why-verisight", include_in_schema=False)
     async def why_verisight_page():
+        return FileResponse(frontend_dist / "index.html")
+
+    @app.get("/response", include_in_schema=False)
+    async def response_page():
         return FileResponse(frontend_dist / "index.html")
 
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")

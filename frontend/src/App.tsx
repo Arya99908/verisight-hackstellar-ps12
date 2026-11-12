@@ -3,6 +3,7 @@ import { NavigationHeader, AppRoute } from "./components/NavigationHeader";
 import { Toaster, toast } from "sonner";
 import { UploadCloud } from "lucide-react";
 import type { ViewMode } from "./components/ForensicViewer";
+import type { AttachedForensicContext } from "./types/response";
 import {
   ForensicAnalysisReport,
   DemoSampleMeta,
@@ -30,6 +31,7 @@ const ForensicReportModal = lazy(() => import("./components/ForensicReportModal"
 const InternalReviewMemoModal = lazy(() => import("./components/InternalReviewMemoModal").then((m) => ({ default: m.InternalReviewMemoModal })));
 const KeyboardShortcutsModal = lazy(() => import("./components/KeyboardShortcutsModal").then((m) => ({ default: m.KeyboardShortcutsModal })));
 const WhyVerisight = lazy(() => import("./components/WhyVerisight").then((m) => ({ default: m.WhyVerisight })));
+const ResponseModule = lazy(() => import("./components/response/ResponseModule").then((m) => ({ default: m.ResponseModule })));
 
 const RouteLoadingFallback = () => (
   <div role="status" className="grid min-h-48 flex-1 place-items-center bg-[#070b14] text-sm text-slate-300">
@@ -41,6 +43,7 @@ const getRouteFromLocation = (): AppRoute => {
   const path = window.location.pathname;
   if (path === "/workbench") return "/workbench";
   if (path === "/evaluation") return "/evaluation";
+  if (path === "/response") return "/response";
   if (path === "/why-verisight") return "/why-verisight";
   return "/";
 };
@@ -71,6 +74,7 @@ const MainProductApplication: React.FC = () => {
     return new URLSearchParams(window.location.search).get("case") || "sample_1";
   });
   const [report, setReport] = useState<ForensicAnalysisReport | null>(null);
+  const [attachedForensicContext, setAttachedForensicContext] = useState<AttachedForensicContext | null>(null);
   const [appError, setAppError] = useState<string | null>(null);
   const [selectedLocus, setSelectedLocus] = useState<BoundingBox | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -151,6 +155,22 @@ const MainProductApplication: React.FC = () => {
     },
     [currentRoute, handleSelectSample, report, selectedSampleId]
   );
+
+  const handleOpenResponseGuidance = useCallback((targetReport: ForensicAnalysisReport) => {
+    setAttachedForensicContext({
+      case_id: `VS-CASE-${targetReport.file_sha256.slice(0, 8).toUpperCase()}`,
+      filename: targetReport.filename || "screenshot.png",
+      file_sha256: targetReport.file_sha256,
+      image_width: targetReport.image_width,
+      image_height: targetReport.image_height,
+      overall_tamper_score: targetReport.overall_tamper_score,
+      verdict: targetReport.verdict,
+      findings: targetReport.findings,
+      synergy: targetReport.synergy,
+      limitations: "These are heuristic image-review cues. They do not establish authenticity or payment settlement.",
+    });
+    handleNavigate("/response");
+  }, [handleNavigate]);
 
   // Listen to browser Back/Forward buttons
   useEffect(() => {
@@ -489,6 +509,7 @@ const MainProductApplication: React.FC = () => {
                 isAdvancedMode={isAdvancedMode}
                 onOpenReport={() => setIsReportModalOpen(true)}
                 onOpenReviewMemo={() => setIsReviewMemoOpen(true)}
+                onOpenResponseGuidance={() => report && handleOpenResponseGuidance(report)}
               />
             </main>
             </AmbientThreatBackground>
@@ -507,6 +528,14 @@ const MainProductApplication: React.FC = () => {
 
           {currentRoute === "/why-verisight" && (
             <WhyVerisight onNavigateWorkbench={() => handleNavigate("/workbench")} />
+          )}
+
+          {currentRoute === "/response" && (
+            <ResponseModule
+              onNavigateWorkbench={() => handleNavigate("/workbench")}
+              attachedForensicContext={attachedForensicContext}
+              onClearForensicContext={() => setAttachedForensicContext(null)}
+            />
           )}
         </Suspense>
       </div>

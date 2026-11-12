@@ -4,6 +4,13 @@ import {
   WhatsAppSimulationResponse,
   NetworkInfo,
 } from "../types/forensic";
+import type {
+  CaseRecord,
+  ExtractedIncidentDetails,
+  FormalComplaint,
+  ReportingAuthority,
+  UnderstandIncidentResponse,
+} from "../types/response";
 
 const API_BASE = "/api";
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
@@ -236,4 +243,135 @@ export async function fetchModelEvaluation(): Promise<ModelEvaluationReport> {
   const res = await fetchStartupData("/model/evaluation");
   if (!res.ok) throw new Error("Failed to fetch model evaluation");
   return res.json();
+}
+
+async function responseJson<T>(path: string, payload?: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}/response${path}`, {
+    method: payload === undefined ? "GET" : "POST",
+    ...(payload === undefined
+      ? {}
+      : {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(typeof data?.detail === "string" ? data.detail : "Response service request failed.");
+  }
+  return res.json();
+}
+
+export function understandIncident(payload: {
+  user_text: string;
+  language?: string;
+  existing_details?: object;
+  attached_forensic_summary?: object;
+}): Promise<UnderstandIncidentResponse> {
+  return responseJson("/understand", payload);
+}
+
+export function generateComplaint(payload: {
+  details: ExtractedIncidentDetails;
+  authority_destination?: string;
+  language?: string;
+  attached_forensic_report?: Record<string, unknown>;
+  custom_narrative_edits?: string;
+  complainant_address?: string;
+}): Promise<FormalComplaint> {
+  return responseJson("/generate-complaint", payload);
+}
+
+export function regenerateComplaintSection(payload: {
+  section_name: string;
+  current_content: string;
+  instruction: string;
+  target_language?: string;
+}): Promise<{ section_name: string; original_content: string; refined_content: string }> {
+  return responseJson("/regenerate-section", payload);
+}
+
+export function fetchReportingDirectory(category?: string, query?: string): Promise<ReportingAuthority[]> {
+  const params = new URLSearchParams();
+  if (category && category !== "ALL") params.set("category", category);
+  if (query) params.set("q", query);
+  return responseJson(`/reporting-directory?${params.toString()}`);
+}
+
+export function fetchCases(): Promise<CaseRecord[]> {
+  try {
+    const parsed: unknown = JSON.parse(sessionStorage.getItem("verisight.response.cases.v1") || "[]");
+    return Promise.resolve(Array.isArray(parsed) ? (parsed as CaseRecord[]) : []);
+  } catch {
+    return Promise.resolve([]);
+  }
+}
+
+export function fetchCase(caseId: string): Promise<CaseRecord> {
+  return fetchCases().then((cases) => {
+    const found = cases.find((record) => record.case_id === caseId);
+    if (!found) throw new Error("Case not found in this browser tab.");
+    return found;
+  });
+}
+
+export function saveCaseRecord(caseRecord: CaseRecord): Promise<CaseRecord> {
+  const updated = { ...caseRecord, updated_at: new Date().toISOString() };
+  return fetchCases().then((cases) => {
+    const next = [updated, ...cases.filter((record) => record.case_id !== updated.case_id)];
+    sessionStorage.setItem("verisight.response.cases.v1", JSON.stringify(next));
+    return updated;
+  });
+}
+
+export function createCaseRecord(payload: {
+  details: ExtractedIncidentDetails;
+  title?: string;
+  forensic_attachment?: Record<string, unknown>;
+}): Promise<CaseRecord> {
+  const now = new Date().toISOString();
+  const randomId = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().slice(0, 6).toUpperCase()
+    : Math.random().toString(36).slice(2, 8).toUpperCase();
+  const record: CaseRecord = {
+    case_id: `VS-CASE-${randomId}`,
+    created_at: now,
+    updated_at: now,
+    title: payload.title || `${payload.details.incident_category_label} (${payload.details.incident_date || "Recent"})`,
+    category: payload.details.incident_category,
+    status: "DRAFTING",
+    financial_loss: payload.details.financial_loss_amount || 0,
+    authority_destination: payload.details.recommended_pathway,
+    details: payload.details,
+    forensic_attachment: payload.forensic_attachment,
+    timeline: [{
+      timestamp: now,
+      title: "Incident response draft created",
+      description: "Draft created locally in this browser tab. No report was submitted to an authority.",
+      actor: "SYSTEM",
+    }],
+  };
+  return saveCaseRecord(record);
+}
+
+export async function downloadComplaintPdfBlob(complaint: FormalComplaint): Promise<Blob> {
+  const res = await fetch(`${API_BASE}/response/export-complaint-pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(complaint),
+  });
+  if (!res.ok) throw new Error("Could not generate the complaint PDF.");
+  return res.blob();
+}
+
+export async function downloadDossierPdfBlob(report: object, complaintRef?: string): Promise<Blob> {
+  const params = new URLSearchParams();
+  if (complaintRef) params.set("complaint_ref", complaintRef);
+  const res = await fetch(`${API_BASE}/response/export-dossier-pdf?${params.toString()}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(report),
+  });
+  if (!res.ok) throw new Error("Could not generate the evidence dossier PDF.");
+  return res.blob();
 }
