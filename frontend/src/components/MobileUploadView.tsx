@@ -3,7 +3,6 @@ import {
   Camera,
   Upload,
   CheckCircle2,
-  ShieldAlert,
   Loader2,
   ArrowRight,
 } from "lucide-react";
@@ -40,9 +39,11 @@ export const MobileUploadView: React.FC = () => {
       {/* Mobile Top Header */}
       <div className="w-full flex items-center justify-between border-b border-[#1e293b] pb-4">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center">
-            <ShieldAlert className="w-4 h-4 text-white" />
-          </div>
+          <img
+            src="/verisight-logo.jpeg"
+            alt="VeriSight logo"
+            className="w-8 h-8 rounded-lg object-contain"
+          />
           <div>
             <h1 className="font-bold text-sm tracking-wide bg-gradient-to-r from-sky-400 to-purple-400 bg-clip-text text-transparent">
               VERISIGHT

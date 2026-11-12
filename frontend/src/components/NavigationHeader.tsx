@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  ShieldCheck,
   Compass,
   Layers,
   LineChart,
@@ -33,9 +32,11 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           className="flex items-center gap-2.5 group text-left"
           title="VeriSight Pro Home"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-950/60 text-sky-400 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)] transition-transform group-hover:scale-105">
-            <ShieldCheck className="h-4 w-4" />
-          </div>
+          <img
+            src="/verisight-logo.jpeg"
+            alt="VeriSight logo"
+            className="h-9 w-9 rounded-lg object-contain transition-transform group-hover:scale-105"
+          />
           <div>
             <div className="flex items-center gap-1.5 leading-none">
               <span className="font-mono text-sm font-semibold tracking-wider text-slate-100 group-hover:text-white transition-colors">
