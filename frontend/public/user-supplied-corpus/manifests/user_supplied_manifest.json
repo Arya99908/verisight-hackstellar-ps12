@@ -1,0 +1,646 @@
+[
+  {
+    "sample_id": "user_real_01",
+    "sha256": "b205f2d3183489ed2399aae614594eb0e0aa812596f7ae41601e69702fa8f5bc",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.18 (1).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.18 (1).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_01.jpg",
+    "dimensions": [
+      475,
+      1600
+    ],
+    "aspect_ratio": 0.297,
+    "file_size_bytes": 52750,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_02",
+    "sha256": "b4baddf050fe158bc9c382592948e4c5355054f7d04aa2f1ea624cb4d87cd287",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.18 (2).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.18 (2).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_02.jpg",
+    "dimensions": [
+      475,
+      1600
+    ],
+    "aspect_ratio": 0.297,
+    "file_size_bytes": 52615,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_03",
+    "sha256": "83ec34837c9dfbb969183e2a86f4cd47d66cdd6d58f41754604bd42915c1f1a6",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.18 (3).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.18 (3).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_03.jpg",
+    "dimensions": [
+      484,
+      1600
+    ],
+    "aspect_ratio": 0.302,
+    "file_size_bytes": 52107,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_04",
+    "sha256": "c1de6e67b5c3cceba852a5424af1a21e11adfeeacc70f9316664f3497d9fd783",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.18.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.18.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_04.jpg",
+    "dimensions": [
+      475,
+      1600
+    ],
+    "aspect_ratio": 0.297,
+    "file_size_bytes": 53225,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_05",
+    "sha256": "135ee569c224ffa0455c638f8422cb23ced93b2fa12687e876d92be8ddf2d83b",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.19 (1).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.19 (1).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_05.jpg",
+    "dimensions": [
+      508,
+      1600
+    ],
+    "aspect_ratio": 0.318,
+    "file_size_bytes": 48342,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_06",
+    "sha256": "c0691ad48614a6d2d097fd1b0b290499d90181566e36e1b63fc361a0c405e8d1",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.19 (2).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.19 (2).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_06.jpg",
+    "dimensions": [
+      468,
+      1600
+    ],
+    "aspect_ratio": 0.292,
+    "file_size_bytes": 52868,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_07",
+    "sha256": "ad73ba819cac62faf5fc17ec1a52b613607209bbcb600e1c794dfeabf3e38858",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.19 (3).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.19 (3).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_07.jpg",
+    "dimensions": [
+      936,
+      1548
+    ],
+    "aspect_ratio": 0.605,
+    "file_size_bytes": 48809,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_08",
+    "sha256": "75cbadc668440fb8b730432706d418fc4b9ba5274f5748ae5930437c5a248bee",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.19.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.19.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_08.jpg",
+    "dimensions": [
+      890,
+      1600
+    ],
+    "aspect_ratio": 0.556,
+    "file_size_bytes": 36176,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_09",
+    "sha256": "893e5ef2e5cdd7d8a4067fb23ddbb5010b100bd944589eeb4aae24de5e2a5c97",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.20 (1).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.20 (1).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_09.jpg",
+    "dimensions": [
+      936,
+      1548
+    ],
+    "aspect_ratio": 0.605,
+    "file_size_bytes": 44152,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_10",
+    "sha256": "ab9bee7f00e4541a59462dd19426f85c459b482f2571a79ec58030540001ea05",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.20 (2).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.20 (2).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_10.jpg",
+    "dimensions": [
+      540,
+      1588
+    ],
+    "aspect_ratio": 0.34,
+    "file_size_bytes": 54011,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_11",
+    "sha256": "7e9d4e54ce436f1dd166bcf8a4f6a228c149d5fdf4d18156b915c4e4947f3b7a",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.20 (3).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.20 (3).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_11.jpg",
+    "dimensions": [
+      480,
+      1600
+    ],
+    "aspect_ratio": 0.3,
+    "file_size_bytes": 47500,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_12",
+    "sha256": "e59438b85e49836ca8d16847fae385fcac735723f7a2f33c9053280dac873ffb",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.20.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.20.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_12.jpg",
+    "dimensions": [
+      936,
+      1548
+    ],
+    "aspect_ratio": 0.605,
+    "file_size_bytes": 41999,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_real_13",
+    "sha256": "547ac369133d233a3e3efc731bc740744374faf35190d834186b74eb3cae6c90",
+    "original_filename": "WhatsApp Image 2026-11-11 at 18.21.21.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\real",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\real\\WhatsApp Image 2026-11-11 at 18.21.21.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_real_13.jpg",
+    "dimensions": [
+      936,
+      1548
+    ],
+    "aspect_ratio": 0.605,
+    "file_size_bytes": 36982,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_AUTHENTIC",
+    "label_provenance": "USER_PROVIDED_IN_REAL_DIRECTORY",
+    "manipulation_type": "NONE_REPORTED",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_01",
+    "sha256": "8694797109074942ee574aad7cd12e0eff6d0d2b16af76caa0a3ecb5dc77c0af",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.28 (1).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.28 (1).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_01.jpg",
+    "dimensions": [
+      309,
+      542
+    ],
+    "aspect_ratio": 0.57,
+    "file_size_bytes": 18841,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_02",
+    "sha256": "c7b2de68f53033d0982d21a920adc5523bbe096ba992e5c2f33f3a442d5b9180",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.28 (2).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.28 (2).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_02.jpg",
+    "dimensions": [
+      309,
+      542
+    ],
+    "aspect_ratio": 0.57,
+    "file_size_bytes": 17991,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_03",
+    "sha256": "26d6fe9034c9d8bc8b973eb3eb3a0c947e7ae59a4ee173821129d8565711d662",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.28.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.28.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_03.jpg",
+    "dimensions": [
+      303,
+      542
+    ],
+    "aspect_ratio": 0.559,
+    "file_size_bytes": 18315,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_04",
+    "sha256": "d420943bce8664a9e6d450b983de6cdd27d4baa4dd54ed88907a8e0f2cf98fc4",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.29 (1).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.29 (1).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_04.jpg",
+    "dimensions": [
+      309,
+      482
+    ],
+    "aspect_ratio": 0.641,
+    "file_size_bytes": 16912,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_05",
+    "sha256": "16c13b2134b6b3b33eabc6e8ac1d6b0a2fc72d9f3c5e168d3adf5be546432c05",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.29 (2).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.29 (2).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_05.jpg",
+    "dimensions": [
+      304,
+      542
+    ],
+    "aspect_ratio": 0.561,
+    "file_size_bytes": 17245,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_06",
+    "sha256": "ea198c14330e4abcfc8a385e5e297efa89928e754dff85de07cd17bf845603d5",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.29.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.29.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_06.jpg",
+    "dimensions": [
+      311,
+      542
+    ],
+    "aspect_ratio": 0.574,
+    "file_size_bytes": 18110,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_07",
+    "sha256": "17b52326178e626eaee3f3431489196b48119fcc27606e234f2f95a9e0081b4f",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.30 (1).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.30 (1).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_07.jpg",
+    "dimensions": [
+      309,
+      482
+    ],
+    "aspect_ratio": 0.641,
+    "file_size_bytes": 17387,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_08",
+    "sha256": "28297ddcb7f3ea6f28816b81a86cec78b86184f1b06024fccac0354bbce8e168",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.30 (2).jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.30 (2).jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_08.jpg",
+    "dimensions": [
+      303,
+      482
+    ],
+    "aspect_ratio": 0.629,
+    "file_size_bytes": 13663,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_09",
+    "sha256": "0883273a697a72da64a1e12c12e8c6eab13358cb8935df514513e4726d8adeeb",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.30.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.30.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_09.jpg",
+    "dimensions": [
+      311,
+      482
+    ],
+    "aspect_ratio": 0.645,
+    "file_size_bytes": 15986,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  },
+  {
+    "sample_id": "user_fake_10",
+    "sha256": "4939e87cbeb26795c9c1a92191ce521cb486eb05a3f51e8278386365d9c40585",
+    "original_filename": "WhatsApp Image 2026-11-11 at 17.57.31.jpeg",
+    "source_location": "C:\\Users\\HP\\Downloads\\fakes",
+    "raw_storage_path": "datasets\\user_supplied\\raw\\fakes\\WhatsApp Image 2026-11-11 at 17.57.31.jpeg",
+    "derivative_image_path": "datasets\\user_supplied\\derivatives\\images\\user_fake_10.jpg",
+    "dimensions": [
+      304,
+      482
+    ],
+    "aspect_ratio": 0.631,
+    "file_size_bytes": 17310,
+    "format": "JPEG",
+    "encoding": {
+      "has_exif": false,
+      "quantization_tables_count": 2,
+      "color_mode": "RGB",
+      "is_whatsapp_naming": true
+    },
+    "initial_classification": "UNKNOWN_USER_SUPPLIED",
+    "ground_truth_category": "USER_ASSERTED_MANIPULATED",
+    "label_provenance": "USER_PROVIDED_IN_FAKES_DIRECTORY",
+    "manipulation_type": "ALLEGED_WHATSAPP_TAMPERING",
+    "ground_truth_mask": null,
+    "split_assignment": "HELD_OUT_EVALUATION",
+    "permission_status": "RESEARCH_USE_AUTHORIZED"
+  }
+]
