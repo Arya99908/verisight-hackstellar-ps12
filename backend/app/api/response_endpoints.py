@@ -8,6 +8,7 @@ from app.services.response.dossier_generator import (
     generate_evidence_dossier_pdf,
 )
 from app.services.response.models import (
+    ExtractedIncidentDetails,
     FormalComplaint,
     GenerateComplaintRequest,
     RegenerateSectionRequest,
