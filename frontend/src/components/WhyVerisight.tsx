@@ -36,7 +36,7 @@ interface WhyVerisightProps {
 }
 
 // ---------------------------------------------------------------------------
-// 1. DATASET EVALUATION FIXTURES (Category A - Measured Ground Truth)
+// 1. ILLUSTRATIVE DEMO CURVES. These are not measured model results.
 // ---------------------------------------------------------------------------
 interface DatasetEval {
   id: string;
@@ -57,9 +57,9 @@ interface DatasetEval {
 const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   user_supplied_external: {
     id: "user_supplied_external",
-    name: "External Real-World WhatsApp Mobile Corpus",
+    name: "Illustrative curve A (synthetic demo)",
     description:
-      "23 un-curated mobile screenshots collected across PhonePe, Google Pay, and Paytm transferred over lossy WhatsApp channels (Samsung, OnePlus, Xiaomi, iOS).",
+      "Synthetic points used only to demonstrate the chart controls. They are not observations, labels, or model predictions.",
     sampleCount: 23,
     posCount: 10,
     negCount: 13,
@@ -83,9 +83,9 @@ const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   },
   held_out_benchmark: {
     id: "held_out_benchmark",
-    name: "Held-Out Strict Laboratory Benchmark",
+    name: "Illustrative curve B (synthetic demo)",
     description:
-      "Strict isolated benchmark of 7 native mobile captures featuring uncompressed direct digital splices and baseline native receipts.",
+      "Synthetic points used only to demonstrate the chart controls. No held-out benchmark has been run.",
     sampleCount: 7,
     posCount: 4,
     negCount: 3,
@@ -105,9 +105,9 @@ const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   },
   dev_oof_cv: {
     id: "dev_oof_cv",
-    name: "Development 3-Fold Stratified Cross-Validation (OOF)",
+    name: "Illustrative curve C (synthetic demo)",
     description:
-      "20 balanced development samples evaluated using 3-fold stratified out-of-fold cross-validation with GBDT model fusion.",
+      "Synthetic points used only to demonstrate the chart controls. No cross-validation result is being reported.",
     sampleCount: 20,
     posCount: 10,
     negCount: 10,
@@ -129,7 +129,7 @@ const EVALUATION_DATASETS: Record<string, DatasetEval> = {
 };
 
 // ---------------------------------------------------------------------------
-// 2. RADAR CHART DIMENSIONS & COMPETITOR PROFILES (Documented Rubric)
+// 2. SCHEMATIC RADAR CHART DIMENSIONS. Scores are visual placeholders only.
 // ---------------------------------------------------------------------------
 interface RadarAxis {
   key: string;
@@ -138,16 +138,16 @@ interface RadarAxis {
 }
 
 const RADAR_AXES: RadarAxis[] = [
-  { key: "ela", label: "Compression ELA", description: "Resaving quantization anomaly detection" },
-  { key: "wavelet", label: "Wavelet Noise", description: "Daubechies high-frequency noise variance" },
-  { key: "clones", label: "Copy-Move ORB", description: "Cloned keypoint translation vectors" },
-  { key: "lasers", label: "Sub-Pixel Lasers", description: "Horizontal baseline regression drift" },
-  { key: "colorPatch", label: "CIELAB ΔE Patch", description: "Background splicing color homogeneity" },
-  { key: "clockParadox", label: "Clock Paradox", description: "Status bar vs receipt chronological cross-check" },
-  { key: "whatsappLaunder", label: "WhatsApp Defense", description: "Dynamic spatial IoU compensation on recompression" },
-  { key: "upiDomain", label: "UPI & Bank Syntax", description: "VPA handle routing and RBI 12-digit UTR checks" },
-  { key: "mlFusion", label: "ML Ensemble Fusion", description: "Calibrated multi-layer cross-layer spatial IoU" },
-  { key: "legalNotice", label: "Section 91 Notice", description: "Automated police cyber-cell statutory subpoenas" },
+  { key: "ela", label: "Compression cues", description: "Concept: inspect image recompression patterns" },
+  { key: "wavelet", label: "Wavelet cues", description: "Concept: compare high-frequency image regions" },
+  { key: "clones", label: "Repeated patterns", description: "Concept: identify visually similar regions" },
+  { key: "lasers", label: "Text layout", description: "Concept: inspect text-like region alignment" },
+  { key: "colorPatch", label: "Color regions", description: "Concept: compare color consistency around regions" },
+  { key: "clockParadox", label: "Metadata cues", description: "Concept: inspect available file metadata" },
+  { key: "whatsappLaunder", label: "Recompression", description: "Concept: account for image resizing and recompression" },
+  { key: "upiDomain", label: "QR/payment fields", description: "Concept: parse untrusted readable QR content" },
+  { key: "mlFusion", label: "Heuristic review", description: "Prototype: combine selected image-review signals" },
+  { key: "legalNotice", label: "Response drafts", description: "Prototype: prepare editable incident-response drafts" },
 ];
 
 interface CompetitorScore {
@@ -176,7 +176,7 @@ const COMPETITOR_SCORES: CompetitorScore[] = [
       mlFusion: 94,
       legalNotice: 100,
     },
-    notes: "Full 4-layer synchronized pipeline evaluated on real WhatsApp mobile receipts.",
+    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
     sourceUrl: "https://github.com/verisight-forensics",
   },
   {
@@ -195,7 +195,7 @@ const COMPETITOR_SCORES: CompetitorScore[] = [
       mlFusion: 0,
       legalNotice: 0,
     },
-    notes: "Excellent client-side photo tool. Lacks typography, payment rules, and ML scoring.",
+    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
     sourceUrl: "https://29a.ch/photo-forensics/",
   },
   {
@@ -214,7 +214,7 @@ const COMPETITOR_SCORES: CompetitorScore[] = [
       mlFusion: 0,
       legalNotice: 0,
     },
-    notes: "Pioneering photographic ELA and EXIF tool. Completely non-domain-aware for screenshots.",
+    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
     sourceUrl: "https://fotoforensics.com/",
   },
   {
@@ -233,7 +233,7 @@ const COMPETITOR_SCORES: CompetitorScore[] = [
       mlFusion: 70,
       legalNotice: 0,
     },
-    notes: "Cloud deepfake classifier. Black-box percentage score without localized physical proof.",
+    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
     sourceUrl: "https://fauxlens.com/",
   },
   {
@@ -252,7 +252,7 @@ const COMPETITOR_SCORES: CompetitorScore[] = [
       mlFusion: 0,
       legalNotice: 0,
     },
-    notes: "Simple web regex OCR checker. Easily fooled by fake APKs and has zero signal forensics.",
+    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
     sourceUrl: "https://navines.com/",
   },
 ];
@@ -430,7 +430,7 @@ const HEATMAP_DATA: HeatmapRow[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// 4. GBDT FEATURE IMPORTANCE WEIGHTS (Category A Measured)
+// 4. ILLUSTRATIVE SIGNAL MIX. Bar widths are visual placeholders, not learned weights.
 // ---------------------------------------------------------------------------
 const GBDT_FEATURE_WEIGHTS = [
   { name: "Layer 2: Sub-Pixel Baseline Drift (Δy)", weight: 32.4, color: "#38bdf8", layer: "L2" },
@@ -452,8 +452,8 @@ interface PipelineNode {
   inputs: string;
   outputs: string;
   algorithm: string;
-  latencyMs: number;
-  status: "PRODUCTION" | "EXPERIMENTAL";
+  latencyMs: string;
+  status: "PROTOTYPE";
 }
 
 const PIPELINE_NODES: PipelineNode[] = [
@@ -463,21 +463,21 @@ const PIPELINE_NODES: PipelineNode[] = [
     layer: "Core",
     shortDesc: "Cryptographic SHA-256 seal & container normalization",
     inputs: "PNG / JPG / WebP / BMP byte stream (<20MB)",
-    outputs: "Normal BGR matrix + SHA-256 evidence fingerprint",
-    algorithm: "SHA-256 streaming digest + OpenCV headless decode",
-    latencyMs: 14,
-    status: "PRODUCTION",
+    outputs: "Decoded image and SHA-256 fingerprint for the review report",
+    algorithm: "Image decoding and SHA-256 hashing",
+    latencyMs: "Not measured",
+    status: "PROTOTYPE",
   },
   {
     id: "metadata",
     name: "Protocol & Metadata Verification",
     layer: "Layer 3",
-    shortDesc: "EXIF, WhatsApp recompression & status bar clock paradox",
-    inputs: "Raw image buffer + header dictionary",
-    outputs: "Clock delta (min), WhatsApp flag, Aspect ratio verification",
-    algorithm: "ExifTool tag parsing + OCR status-bar clock extraction",
-    latencyMs: 28,
-    status: "PRODUCTION",
+    shortDesc: "Reads available metadata and reports QR/provenance cues",
+    inputs: "Image bytes and available metadata",
+    outputs: "Metadata, QR text, and unverified provenance markers where detected",
+    algorithm: "Metadata parsing, QR decoding, and marker inspection; no bank lookup",
+    latencyMs: "Not measured",
+    status: "PROTOTYPE",
   },
   {
     id: "ela",
@@ -487,8 +487,8 @@ const PIPELINE_NODES: PipelineNode[] = [
     inputs: "Full BGR image",
     outputs: "Inferno heatmap image + block variance score",
     algorithm: "Normalized absolute matrix differential: |I - I_Q95| * scale",
-    latencyMs: 42,
-    status: "PRODUCTION",
+    latencyMs: "Not measured",
+    status: "PROTOTYPE",
   },
   {
     id: "wavelet",
@@ -498,41 +498,41 @@ const PIPELINE_NODES: PipelineNode[] = [
     inputs: "Luminance channel Y (YCrCb)",
     outputs: "Wavelet noise mask + regional variance score",
     algorithm: "2D Discrete Wavelet Transform (db4 filter bank)",
-    latencyMs: 55,
-    status: "PRODUCTION",
+    latencyMs: "Not measured",
+    status: "PROTOTYPE",
   },
   {
     id: "typography",
     name: "Sub-Pixel Typography Lasers",
     layer: "Layer 2",
-    shortDesc: "Horizontal linear regression lasers measuring font baseline slope",
-    inputs: "Connected components text bounding boxes",
-    outputs: "Sub-pixel baseline coordinates + vertical drift Δy",
-    algorithm: "Morphological gradient + least-squares linear regression",
-    latencyMs: 48,
-    status: "PRODUCTION",
+    shortDesc: "Examines text-like regions and line-baseline consistency",
+    inputs: "Text-like component regions detected in the image",
+    outputs: "Heuristic geometry cues and candidate regions for human review",
+    algorithm: "Image morphology and baseline geometry heuristics; OCR may be unavailable",
+    latencyMs: "Not measured",
+    status: "PROTOTYPE",
   },
   {
     id: "syndicate",
-    name: "UPI Syndicate Resolution & Section 91",
-    layer: "Layer 4",
-    shortDesc: "OCR VPA extraction, bank PSP routing & statutory subpoena",
-    inputs: "Extracted tokens + QR payment intent",
-    outputs: "Beneficiary VPA, Payee, 12-digit UTR, Section 91 Notice",
-    algorithm: "NPCI handle regex + statutory Section 91 Cr.P.C. compiler",
-    latencyMs: 36,
-    status: "PRODUCTION",
+    name: "QR & Payment Entity Inspection",
+    layer: "Layer 3",
+    shortDesc: "Decodes readable QR text and parses possible payment fields",
+    inputs: "Decoded QR payloads and image review cues",
+    outputs: "Parsed fields that remain unverified; no syndicate or account lookup",
+    algorithm: "QR decoding and bounded field parsing; no provider or bank verification",
+    latencyMs: "Not measured",
+    status: "PROTOTYPE",
   },
   {
     id: "ensemble",
-    name: "Cross-Layer Spatial IoU Synergy & GBDT",
+    name: "Heuristic Evidence Fusion",
     layer: "Ensemble",
-    shortDesc: "Non-linear multi-signal risk fusion & IoU spatial clustering",
-    inputs: "L1, L2, L3, L4 signal vectors & bounding boxes",
-    outputs: "Calibrated 0-100 Tamper Score & court-admissible bounding boxes",
-    algorithm: "Spatial IoU overlap clustering + calibrated sigmoid fusion",
-    latencyMs: 22,
-    status: "PRODUCTION",
+    shortDesc: "Combines selected image cues into review points and candidate regions",
+    inputs: "Available image-review signals and candidate regions",
+    outputs: "Heuristic review points and regions; not a probability or legal finding",
+    algorithm: "Deterministic rules and signal aggregation; no trained or calibrated classifier",
+    latencyMs: "Not measured",
+    status: "PROTOTYPE",
   },
 ];
 
@@ -570,7 +570,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
     const pos = currentDataset.posCount;
     const neg = currentDataset.negCount;
 
-    // Simulation derived from calibrated threshold
+    // Illustrative counts derived from synthetic demo curves only.
     let tp = 0;
     let fp = 0;
     let fn = 0;
@@ -627,11 +627,11 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
         <div className="relative mx-auto max-w-7xl">
           <div className="flex flex-col items-center text-center">
             {/* Category Pill */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/60 px-3.5 py-1 text-xs font-mono text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-950/60 px-3.5 py-1 text-xs font-mono text-amber-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
               <ShieldCheck className="h-4 w-4 text-cyan-400" />
               <span>HACKSTELLAR 2026 // PROBLEM STATEMENT 12</span>
               <span className="text-slate-500">•</span>
-              <span className="text-emerald-400 font-semibold">EMPIRICALLY VERIFIED</span>
+              <span className="font-semibold">PROTOTYPE • PERFORMANCE NOT EVALUATED</span>
             </div>
 
             {/* Main Headline */}
@@ -644,43 +644,43 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
 
             {/* Sub-headline */}
             <p className="mt-6 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base lg:text-lg">
-              From pixel-level compression anomalies to Indian UPI syndicate forensics, VeriSight
-              combines four synchronized physical, geometric, and protocol layers into one explainable,
-              court-admissible investigation workflow.
+              From pixel-level review cues to QR and payment-field inspection, VeriSight
+              combines available heuristic image-review cues with QR, metadata, and response-drafting tools.
+              Its results are not a trained authenticity prediction, legal finding, or proof of payment settlement.
             </p>
 
             {/* High-Impact Stat Strip */}
             <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-4xl w-full font-mono text-left">
               <div className="rounded-xl border border-cyan-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Real-World ROC-AUC
+                  Measured ROC-AUC
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-cyan-400">0.9731</span>
-                <span className="text-[10px] text-slate-500">23 WhatsApp mobile test set</span>
+                <span className="mt-1 block text-2xl font-bold text-cyan-400">N/A</span>
+                <span className="text-[10px] text-slate-500">No authorized locked test set</span>
               </div>
 
               <div className="rounded-xl border border-emerald-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Sub-Pixel Lasers
+                  Trained classifier
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-emerald-400">&lt; 0.1 px</span>
-                <span className="text-[10px] text-slate-500">Slope & kerning drift detection</span>
+                <span className="mt-1 block text-2xl font-bold text-emerald-400">Not deployed</span>
+                <span className="text-[10px] text-slate-500">Current review uses heuristics</span>
               </div>
 
               <div className="rounded-xl border border-amber-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Inference Latency
+                  Measured latency
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-amber-400">&lt; 350 ms</span>
-                <span className="text-[10px] text-slate-500">100% deterministic offline core</span>
+                <span className="mt-1 block text-2xl font-bold text-amber-400">N/A</span>
+                <span className="text-[10px] text-slate-500">Not benchmarked</span>
               </div>
 
               <div className="rounded-xl border border-purple-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Law Enforcement
+                  Settlement check
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-purple-400">Sec 91</span>
-                <span className="text-[10px] text-slate-500">Cr.P.C. & 1930 Cyber-Cell Ready</span>
+                <span className="mt-1 block text-2xl font-bold text-purple-400">Not linked</span>
+                <span className="text-[10px] text-slate-500">Requires authorized bank/PSP integration</span>
               </div>
             </div>
 
@@ -697,13 +697,13 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                 href="#interactive-roc"
                 className="rounded-lg border border-white/10 bg-white/[0.05] px-4 py-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
               >
-                Inspect Empirical ROC Data ↓
+                Explore Demo Curves ↓
               </a>
               <a
                 href="#capability-radar"
                 className="rounded-lg border border-white/10 bg-white/[0.05] px-4 py-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
               >
-                Compare Competitor Radar ↓
+                Explore Capability Map ↓
               </a>
             </div>
           </div>
@@ -711,7 +711,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
       </section>
 
       {/* ----------------------------------------------------------------- */}
-      {/* SECTION 2: INTERACTIVE ANIMATED ROC-AUC & PRECISION-RECALL BENCHMARK */}
+      {/* SECTION 2: INTERACTIVE ILLUSTRATIVE CURVE SANDBOX */}
       {/* ----------------------------------------------------------------- */}
       <section id="interactive-roc" className="border-b border-white/[0.08] px-4 py-16 sm:px-8">
         <div className="mx-auto max-w-7xl">
@@ -719,14 +719,14 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             <div>
               <div className="flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-wider">
                 <BarChart3 className="h-4 w-4" />
-                <span>Section 2: Empirical Performance Sandbox</span>
+                <span>Section 2: Illustrative Curve Sandbox</span>
               </div>
               <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl font-mono">
-                Interactive ROC-AUC & Decision Threshold Calibration
+                Interactive ROC/PR Curve Demonstration
               </h2>
               <p className="mt-1 text-xs text-slate-400 max-w-2xl">
-                Explore real ground-truth predictions. Scrub the decision threshold slider to observe
-                real-time trade-offs between True Positive Rate, False Alarms, and Confusion Matrices.
+                The curves and counts below are synthetic UI examples. They are not predictions, benchmark results,
+                or evidence of VeriSight accuracy. Move the threshold to see how these illustrative values change.
               </p>
             </div>
 
@@ -746,10 +746,10 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                   }`}
                 >
                   {ds.id === "user_supplied_external"
-                    ? "External WhatsApp (N=23)"
+                    ? "Demo A (N=23 synthetic points)"
                     : ds.id === "held_out_benchmark"
-                    ? "Laboratory Held-Out (N=7)"
-                    : "3-Fold Dev OOF (N=20)"}
+                    ? "Demo B (N=7 synthetic points)"
+                    : "Demo C (N=20 synthetic points)"}
                 </button>
               ))}
             </div>
@@ -765,7 +765,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     {curveMode === "ROC" ? "Receiver Operating Characteristic (ROC)" : "Precision-Recall Curve"}
                   </span>
                   <span className="rounded bg-cyan-950 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 border border-cyan-800">
-                    AUC = {currentDataset.rocAuc.toFixed(4)}
+                    Illustrative AUC = {(curveMode === "ROC" ? currentDataset.rocAuc : currentDataset.prAuc).toFixed(4)}
                   </span>
                 </div>
 
@@ -903,14 +903,14 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                 <div className="mt-2 flex justify-between text-[10px] font-mono text-slate-500">
                   <span>0.00 (Max Sensitivity / Flags All)</span>
                   <span className="text-cyan-400 font-bold">
-                    Optimal Baseline ({currentDataset.optimalThreshold.toFixed(2)})
+                    Example Threshold ({currentDataset.optimalThreshold.toFixed(2)})
                   </span>
                   <span>1.00 (Strict Zero-Alarm)</span>
                 </div>
               </div>
             </div>
 
-            {/* Right 5 Columns: Dynamic Confusion Matrix & Instant Metrics */}
+            {/* Right 5 Columns: Synthetic Demo Matrix and Metrics */}
             <div className="lg:col-span-5 space-y-4">
               {/* Dynamic Metrics Cards */}
               <div className="grid grid-cols-2 gap-3 font-mono text-xs">
@@ -920,7 +920,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     {(currentStats.tpr * 100).toFixed(1)}%
                   </span>
                   <span className="text-[10px] text-slate-500">
-                    {currentStats.tp} / {currentDataset.posCount} Forgeries Intercepted
+                    {currentStats.tp} / {currentDataset.posCount} positive demo points
                   </span>
                 </div>
 
@@ -930,7 +930,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     {(currentStats.fpr * 100).toFixed(1)}%
                   </span>
                   <span className="text-[10px] text-slate-500">
-                    {currentStats.fp} / {currentDataset.negCount} False Alarms
+                    {currentStats.fp} / {currentDataset.negCount} negative demo points
                   </span>
                 </div>
 
@@ -978,7 +978,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     <span className="text-2xl font-extrabold text-rose-300 block mt-1">
                       {currentStats.fp}
                     </span>
-                    <span className="text-[9px] text-slate-400">Authentic Flagged as Fraud</span>
+                    <span className="text-[9px] text-slate-400">Illustrative false-positive count</span>
                   </div>
 
                   {/* False Negative */}
@@ -989,7 +989,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     <span className="text-2xl font-extrabold text-amber-300 block mt-1">
                       {currentStats.fn}
                     </span>
-                    <span className="text-[9px] text-slate-400">Missed Spliced Receipt</span>
+                    <span className="text-[9px] text-slate-400">Illustrative false-negative count</span>
                   </div>
 
                   {/* True Negative */}
@@ -1000,15 +1000,14 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     <span className="text-2xl font-extrabold text-cyan-300 block mt-1">
                       {currentStats.tn}
                     </span>
-                    <span className="text-[9px] text-slate-400">Correctly Cleared Authentic</span>
+                    <span className="text-[9px] text-slate-400">Illustrative true-negative count</span>
                   </div>
                 </div>
 
                 <p className="mt-3 text-[11px] text-slate-400 leading-relaxed font-sans">
-                  <strong>Judicial Integrity Rule:</strong> In financial fraud investigations, a false
-                  positive destroys merchant-customer trust. VeriSight calibrates its optimal operating threshold
-                  at <strong>25.0</strong>, achieving <strong>90% recall</strong> while suppressing false alarms
-                  down to <strong>7.7%</strong> on recompressed WhatsApp evidence.
+                  <strong>Demo only:</strong> These confusion-matrix counts are generated from the synthetic points above.
+                  VeriSight has no trained or calibrated classifier and no independent locked-test results; do not use
+                  this sandbox to estimate real-world error rates.
                 </p>
               </div>
             </div>
@@ -1024,14 +1023,14 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
           <div className="border-b border-white/[0.08] pb-6">
             <div className="flex items-center gap-2 font-mono text-xs text-amber-400 uppercase tracking-wider">
               <Radar className="h-4 w-4" />
-              <span>Section 3: Multi-Dimensional Competitor Comparison</span>
+              <span>Section 3: Schematic Capability Map</span>
             </div>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl font-mono">
-              10-Axis Forensic Capability Radar
+              10-Axis Capability Map (Illustrative)
             </h2>
             <p className="mt-1 text-xs text-slate-400 max-w-3xl">
-              Compare VeriSight against established industry utilities across 10 objective forensic
-              dimensions. Toggle competitors to see where standalone tools fall short.
+              This animated comparison is a visual mockup only. Scores are placeholder values and do not represent measured
+              capabilities of VeriSight or other products; no comparative evaluation has been performed.
             </p>
           </div>
 
@@ -1130,7 +1129,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             {/* Right 5 Columns: Competitor Toggles & Strategic Analysis */}
             <div className="lg:col-span-5 space-y-3">
               <span className="font-mono text-xs uppercase tracking-wider text-slate-400 block mb-2">
-                Toggle Competitor Overlays
+                Toggle Illustrative Overlays
               </span>
 
               {COMPETITOR_SCORES.map((comp) => {
@@ -1165,9 +1164,8 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
               })}
 
               <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-3 mt-4 text-xs font-mono text-cyan-300">
-                <strong>Key Takeaway:</strong> Traditional utilities (FotoForensics, Forensically) excel
-                at raw JPEG ELA, but score <strong>0/100</strong> across font lasers, UPI syntax, and statutory
-                reporting. VeriSight covers all 10 axes.
+                <strong>Reading this diagram:</strong> The plotted shapes and profile notes are illustrative placeholders,
+                not comparative findings. Check each product directly for its current features.
               </div>
             </div>
           </div>
@@ -1183,13 +1181,13 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             <div>
               <div className="flex items-center gap-2 font-mono text-xs text-emerald-400 uppercase tracking-wider">
                 <Flame className="h-4 w-4" />
-                <span>Section 4: Granular Feature Coverage Heatmap</span>
+                <span>Section 4: Feature Reference Matrix</span>
               </div>
               <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl font-mono">
-                14-Point Forensic Capability Comparison Matrix
+                14-Point Capability Reference Matrix
               </h2>
               <p className="mt-1 text-xs text-slate-400">
-                Click any row to inspect underlying mathematical formulations, verified competitor evidence, and source citations.
+                Click a row to inspect a method note and reference link. Implementation and competitor coverage are not independently validated here.
               </p>
             </div>
 
@@ -1239,6 +1237,13 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                         </span>
                       );
                     }
+                    if (status === "UNVERIFIED") {
+                      return (
+                        <span className="inline-flex items-center gap-1 rounded bg-slate-900 px-2 py-0.5 text-[9px] text-slate-300 border border-white/[0.08]">
+                          <Info className="h-3 w-3" /> UNVERIFIED
+                        </span>
+                      );
+                    }
                     return (
                       <span className="inline-flex items-center gap-1 rounded bg-slate-900 px-2 py-0.5 text-[9px] text-slate-500 border border-white/[0.05]">
                         <XCircle className="h-3 w-3" /> NONE
@@ -1265,12 +1270,12 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                         </div>
                       </td>
                       <td className="py-3 px-3 font-semibold text-cyan-300">
-                        {renderBadge(row.verisight)}
+                        {renderBadge("UNVERIFIED")}
                       </td>
-                      <td className="py-3 px-3">{renderBadge(row.forensically)}</td>
-                      <td className="py-3 px-3">{renderBadge(row.fotoforensics)}</td>
-                      <td className="py-3 px-3">{renderBadge(row.fauxlens)}</td>
-                      <td className="py-3 px-3">{renderBadge(row.navines)}</td>
+                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
+                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
+                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
+                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
                     </tr>
                   );
                 })}
@@ -1295,12 +1300,12 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 text-sky-400 hover:underline text-[11px]"
                 >
-                  <span>Verified Source Reference</span>
+                  <span>Reference link (not validation)</span>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
               <p className="mt-2 text-slate-300 font-sans text-xs leading-relaxed">
-                {selectedHeatmapRow.details}
+                This is a conceptual method note only. Neither the prototype nor any compared product has been independently tested for this capability here.
               </p>
             </motion.div>
           )}
@@ -1313,16 +1318,16 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
       <section className="border-b border-white/[0.08] px-4 py-16 sm:px-8 bg-[#070B16]">
         <div className="mx-auto max-w-7xl">
           <div className="border-b border-white/[0.08] pb-6">
-            <div className="flex items-center gap-2 font-mono text-xs text-sky-400 uppercase tracking-wider">
+          <div className="flex items-center gap-2 font-mono text-xs text-sky-400 uppercase tracking-wider">
               <Cpu className="h-4 w-4" />
-              <span>Section 5: Multi-Signal Forensic Pipeline</span>
+                <span>Section 5: Prototype Review Pipeline</span>
             </div>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl font-mono">
               Interconnected Analytical Architecture
             </h2>
             <p className="mt-1 text-xs text-slate-400 max-w-3xl">
-              See how digital evidence moves sequentially from raw container ingestion to court-admissible
-              Section 91 subpoenas. Click any stage to inspect its mathematical formulation.
+              Explore the prototype’s image-review stages. Click a stage for the implemented method summary and its limits.
+              Runtime latency is not benchmarked, and this workflow does not issue legal notices.
             </p>
           </div>
 
@@ -1343,7 +1348,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                   <div>
                     <div className="flex items-center justify-between text-[10px] text-slate-400">
                       <span>STEP {i + 1}</span>
-                      <span className="text-cyan-400 font-bold">{node.latencyMs}ms</span>
+                      <span className="text-cyan-400 font-bold">{node.latencyMs}</span>
                     </div>
                     <span className="font-bold text-white block mt-1.5 leading-snug">
                       {node.name}
@@ -1377,7 +1382,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
 
               <div className="flex items-center gap-2">
                 <span className="rounded bg-cyan-950 px-2 py-0.5 text-cyan-300 font-bold border border-cyan-800">
-                  Latency: {selectedPipelineNode.latencyMs} ms
+                  Latency: {selectedPipelineNode.latencyMs}
                 </span>
                 <span className="rounded bg-emerald-950 px-2 py-0.5 text-emerald-300 font-bold border border-emerald-800">
                   Status: {selectedPipelineNode.status}
@@ -1409,20 +1414,18 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
       <section className="border-b border-white/[0.08] px-4 py-16 sm:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left 6 Columns: Explanation & GBDT Gini Weights */}
+            {/* Left 6 Columns: Explanatory signal categories */}
             <div className="lg:col-span-6 space-y-4">
               <div className="flex items-center gap-2 font-mono text-xs text-purple-400 uppercase tracking-wider">
                 <Scale className="h-4 w-4" />
                 <span>Section 6: Model Explainability</span>
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl font-mono">
-                GBDT Normalized Signal Importance
+                Illustrative Signal Mix
               </h2>
               <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                Unlike deep neural networks that output unexplainable black-box probabilities,
-                VeriSight’s Gradient-Boosted Decision Tree assigns calibrated weights across four physical
-                and semantic signals. Notice that <strong>over 53% of predictive power</strong> comes from
-                geometric and protocol checks that conventional tools ignore entirely.
+                The bars below are visual placeholders showing categories of signals that may be reviewed.
+                They are not learned feature-importance weights: VeriSight has no trained or calibrated authenticity classifier.
               </p>
 
               {/* Progress Bar Weights */}
@@ -1431,7 +1434,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                   <div key={idx} className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-300">{feat.name}</span>
-                      <span className="font-bold text-white">{feat.weight.toFixed(1)}%</span>
+                      <span className="font-bold text-white">Illustrative</span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-[#0d1627] overflow-hidden">
                       <div
@@ -1447,7 +1450,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             {/* Right 6 Columns: 12-Point Attack Category Interception Matrix */}
             <div className="lg:col-span-6 rounded-2xl border border-white/10 bg-[#0A1020] p-6 shadow-xl font-mono text-xs">
               <span className="font-bold text-white text-sm block border-b border-white/10 pb-2">
-                12-Point Forgery Category Coverage
+                Example Edit Scenarios to Evaluate
               </span>
 
               <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
@@ -1471,7 +1474,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                   >
                     <span className="text-slate-300 truncate">{item.name}</span>
                     <span className="rounded bg-emerald-950 px-1.5 py-0.5 font-bold text-emerald-400 border border-emerald-800 text-[9px] shrink-0">
-                      INTERCEPTED
+                      NOT VALIDATED
                     </span>
                   </div>
                 ))}
@@ -1505,24 +1508,24 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             <div className="rounded-xl border border-cyan-500/30 bg-[#091122] p-4">
               <span className="text-cyan-400 font-bold block mb-1">1. Pixel Integrity</span>
               <p className="text-[11px] text-slate-300 font-sans">
-                Verifies whether pixels, compression quantization, or high-frequency noise have been
-                spliced, cloned, or resaved in editing software.
+                Reports image cues that may be consistent with recompression, repeated patterns, or region differences.
+                These heuristics cannot confirm an image is authentic or identify every edit.
               </p>
             </div>
 
             <div className="rounded-xl border border-emerald-500/30 bg-[#091122] p-4">
               <span className="text-emerald-400 font-bold block mb-1">2. Semantic Consistency</span>
               <p className="text-[11px] text-slate-300 font-sans">
-                Cross-references transaction timestamps against status-bar clocks and validates 12-digit
-                UTRs against standard banking rules.
+                May parse readable QR text and inspect available metadata. Parsed values are untrusted and are not checked
+                against an issuing bank or payment provider.
               </p>
             </div>
 
             <div className="rounded-xl border border-amber-500/30 bg-[#091122] p-4">
               <span className="text-amber-400 font-bold block mb-1">3. Interbank Settlement</span>
               <p className="text-[11px] text-slate-300 font-sans">
-                Requires server-side bank confirmation. VeriSight empowers this via instant Section 91
-                Statutory Subpoenas for emergency account freezes within the 24h golden window.
+                Requires an authorized bank or payment-provider status integration. No settlement check is integrated here;
+                complaint and evidence exports are drafts and do not freeze accounts or issue legal notices.
               </p>
             </div>
           </div>
@@ -1538,7 +1541,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             </button>
 
             <span className="text-xs text-slate-400 font-mono">
-              Evaluated on 50+ Real & Synthetic Forgeries • 0.9731 ROC-AUC
+              Prototype demonstration • accuracy and latency not measured
             </span>
           </div>
         </div>

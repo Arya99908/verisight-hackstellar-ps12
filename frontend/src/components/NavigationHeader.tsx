@@ -6,11 +6,11 @@ import {
   ArrowRight,
   Upload,
   ExternalLink,
-  Info,
-  MessageSquareText,
+  Award,
+  LifeBuoy,
 } from "lucide-react";
 
-export type AppRoute = "/" | "/workbench" | "/evaluation" | "/response" | "/why-verisight";
+export type AppRoute = "/" | "/workbench" | "/evaluation" | "/why-verisight" | "/response";
 
 interface NavigationHeaderProps {
   currentRoute: AppRoute;
@@ -52,7 +52,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
               <span className="font-mono text-[10px] text-slate-400">
-                {databaseStatus === "HEALTHY" ? "4-Layer Core Active" : `Core: ${databaseStatus}`}
+                {databaseStatus === "HEALTHY" ? "Database connected" : `Database: ${databaseStatus}`}
               </span>
             </div>
           </div>
@@ -101,24 +101,15 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           onClick={() => onNavigate("/response")}
           className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all ${
             currentRoute === "/response"
-              ? "bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm"
+              ? "bg-gradient-to-r from-sky-500/25 to-indigo-500/25 text-sky-200 border border-sky-500/40 shadow-sm"
               : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
           }`}
         >
-          <MessageSquareText className="h-3.5 w-3.5" />
+          <LifeBuoy className="h-3.5 w-3.5 text-sky-400" />
           <span>Response & Guidance</span>
-        </button>
-
-        <button
-          onClick={() => onNavigate("/why-verisight")}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all ${
-            currentRoute === "/why-verisight"
-              ? "bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm"
-              : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-          }`}
-        >
-          <Info className="h-3.5 w-3.5" />
-          <span>About VeriSight</span>
+          <span className="rounded bg-sky-950 px-1 py-0.2 font-mono text-[8px] font-bold text-sky-300 border border-sky-800">
+            NEW
+          </span>
         </button>
       </div>
 
@@ -134,7 +125,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           aria-label="Open Response and Guidance"
           title="Response and Guidance"
         >
-          <MessageSquareText className="h-4 w-4" />
+          <LifeBuoy className="h-4 w-4" />
         </button>
         {currentRoute !== "/workbench" ? (
           <button

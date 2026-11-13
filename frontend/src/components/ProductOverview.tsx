@@ -22,10 +22,23 @@ import {
   Terminal,
   Compass,
   Award,
+  Mic,
+  LifeBuoy,
+  FileText,
+  CheckCircle2,
+  Clock,
+  Landmark,
+  Users,
+  ArrowUpRight,
+  PhoneCall,
+  History,
+  FolderLock,
+  BookOpen,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { AppRoute } from "./NavigationHeader";
 import { DemoSampleMeta } from "../types/forensic";
+import { WhyVerisight } from "./WhyVerisight";
 import { RealWorldCaseShowcase } from "./RealWorldCaseShowcase";
 
 interface ProductOverviewProps {
@@ -52,42 +65,42 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
           {
             id: "sample_1",
             title: "Sample 1 — Clean Synthetic Payment UI",
-            scenario: "Synthetic baseline fixture. It does not establish that a real screenshot is authentic or that a payment occurred.",
+            scenario: "Synthetic baseline fixture. It is not a genuine bank receipt and does not establish that a payment occurred.",
             expected_verdict: "INCONCLUSIVE",
             target_score_range: "Variable heuristic points",
-            tags: ["Synthetic", "Baseline", "Not payment verified"],
+            tags: ["Clean Baseline", "Synthetic", "UPI-style"],
           },
           {
             id: "sample_2",
-            title: "Pixel-Spliced Amount (₹95,250.00)",
-            scenario: "Amount altered with off-color patch (ΔE=5.2), +3.5px baseline laser drop, and zero-noise wavelet void.",
-            expected_verdict: "MANIPULATED_FORGERY",
+            title: "Sample 2 — Synthetic Edited Amount",
+            scenario: "A known edit in a synthetic fixture. Image cues are heuristic and do not establish real-world accuracy.",
+            expected_verdict: "REVIEW_REQUIRED",
             target_score_range: "Variable heuristic points",
-            tags: ["Spliced", "Forgery", "High-Risk", "Baseline Drift"],
+            tags: ["Synthetic", "Known Edit", "Demonstration"],
           },
           {
             id: "sample_3",
-            title: "Fake Generator / DOM Edit",
-            scenario: "Uniform PNG with status-bar clock paradox (11:12 vs 11:45 AM) and invalid 10-digit UTR.",
-            expected_verdict: "MANIPULATED_FORGERY",
+            title: "Sample 3 — Synthetic Receipt Generator",
+            scenario: "Synthetic generator-style fixture for demonstrating review cues; not a bank record.",
+            expected_verdict: "REVIEW_REQUIRED",
             target_score_range: "Variable heuristic points",
-            tags: ["DOM Edit", "Generator", "Clock Paradox", "Fake UTR"],
+            tags: ["Synthetic", "Generator-style", "Demonstration"],
           },
           {
             id: "sample_4",
-            title: "WhatsApp-Forwarded Forgery",
-            scenario: "Spliced receipt passed through WhatsApp delivery (EXIF stripped, 4:2:0 subsampling, JPEG Q=77).",
-            expected_verdict: "MANIPULATED_FORGERY",
+            title: "Sample 4 — Recompressed Synthetic Edit",
+            scenario: "A synthetic edited fixture after JPEG recompression. Recompression may weaken or change forensic cues.",
+            expected_verdict: "REVIEW_REQUIRED",
             target_score_range: "Variable heuristic points",
-            tags: ["WhatsApp", "Laundered", "Re-compressed", "Surviving Geometry"],
+            tags: ["Synthetic", "Recompressed", "Demonstration"],
           },
           {
             id: "sample_5",
-            title: "Copy-Move Cloned Digits",
-            scenario: "Digit sequence cloned to inflate balance; non-native cropped viewport (680x1120).",
-            expected_verdict: "MANIPULATED_FORGERY",
+            title: "Sample 5 — Synthetic Copy-Move Example",
+            scenario: "A synthetic copy-move fixture for demonstrating image-review cues, not a real transaction record.",
+            expected_verdict: "REVIEW_REQUIRED",
             target_score_range: "Variable heuristic points",
-            tags: ["Copy-Move", "Cloned Digits", "ORB", "Cropped Viewport"],
+            tags: ["Synthetic", "Copy-Move", "Demonstration"],
           },
         ];
 
@@ -129,7 +142,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
 
   return (
     <div className="relative min-h-[calc(100vh-3.5rem)] w-full overflow-y-auto bg-[#060911] text-slate-100 selection:bg-sky-500/30 selection:text-sky-200">
-      {/* Background ambient radial glow with subtle breathing animation */}
+      {/* Background ambient radial glow */}
       <motion.div
         animate={
           shouldReduceMotion
@@ -147,103 +160,109 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
         className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[600px] w-[1000px] -translate-x-1/2 rounded-full bg-gradient-to-b from-sky-500/12 via-indigo-500/6 to-transparent blur-[140px]"
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-16">
         {/* =========================================================================
-            SECTION A: HERO NARRATIVE & DUAL CTA
+            SECTION 1: HERO NARRATIVE & POSITIONING (DUAL PRIMARY ACTIONS)
         ========================================================================= */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8 pt-4 pb-16"
+          className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8 pt-4 pb-8"
         >
           <div className="lg:col-span-7 space-y-6">
-            {/* Eyebrow badge */}
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-950/40 px-3.5 py-1 text-xs font-mono font-medium text-sky-400 backdrop-blur-md">
+            {/* Platform Eyebrow Badge */}
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-950/40 px-3.5 py-1 text-xs font-mono font-medium text-sky-300 backdrop-blur-md"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500" />
               </span>
-              <span>DIGITAL PAYMENT EVIDENCE FORENSICS</span>
+              <span>INTELLIGENT EVIDENCE FORENSICS & RESPONSE PLATFORM</span>
               <span className="text-slate-500">|</span>
-              <span className="text-slate-400">v1.2.1-calibrated</span>
+              <span className="text-emerald-400 font-semibold">v1.3.0 UNIFIED</span>
             </motion.div>
 
             {/* Headline */}
-            <motion.h1 variants={itemVariants} className="text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-5xl text-white leading-tight">
-              Investigate the integrity of{" "}
+            <motion.h1
+              variants={itemVariants}
+              className="text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-5xl text-white leading-tight font-sans"
+            >
+              From suspicious evidence{" "}
+              <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">
-                payment screenshots.
+                to informed action.
               </span>
             </motion.h1>
 
-            {/* Supporting paragraph */}
-            <motion.p variants={itemVariants} className="text-base text-slate-300 sm:text-lg leading-relaxed max-w-2xl font-sans">
-              VeriSight Pro equips cybercrime officers, fraud intelligence teams, and legal counsel
-              to inspect compressed UPI receipts, expose subtle splice boundaries, and generate
-              court-admissible Section 94 BNSS forensic dossiers beyond naked-eye inspection.
+            {/* Sub-headline */}
+            <motion.p
+              variants={itemVariants}
+              className="text-base text-slate-300 sm:text-lg leading-relaxed max-w-2xl font-sans"
+            >
+              VeriSight bridges the gap between deep digital image forensics and active incident response.
+              Detect spliced payment screenshots, speak what happened in your own language, and generate
+              review-ready evidence dossiers and incident-report drafts. VeriSight does not submit complaints or verify legal admissibility or payment settlement.
             </motion.p>
 
-            {/* Dual CTAs */}
-            <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4 pt-2">
+            {/* Dual Primary Action CTAs */}
+            <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3 pt-2">
               <motion.button
                 whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
                 whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
                 onClick={() => onNavigate("/workbench")}
-                className="group flex items-center gap-2.5 rounded-lg border border-sky-400/40 bg-gradient-to-r from-sky-500 to-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition-all hover:from-sky-400 hover:to-sky-500 hover:shadow-sky-500/30"
+                className="group flex items-center gap-2.5 rounded-xl border border-sky-400/40 bg-gradient-to-r from-sky-500 to-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition-all hover:from-sky-400 hover:to-sky-500"
               >
+                <Layers className="h-4 w-4" />
                 <span>Launch Forensic Workbench</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </motion.button>
 
-              <motion.a
+              <motion.button
                 whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
                 whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
-                href="#demo-gallery"
-                className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#0c1222] px-5 py-3 text-sm font-medium text-slate-200 shadow-sm transition-all hover:bg-white/[0.06] hover:text-white hover:border-white/20"
+                onClick={() => onNavigate("/response")}
+                className="group flex items-center gap-2.5 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-600 to-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:from-emerald-500 hover:to-teal-600"
               >
-                <span>Explore Demonstration Cases</span>
-                <ChevronRight className="h-4 w-4 text-slate-400" />
-              </motion.a>
+                <Mic className="h-4 w-4 text-emerald-200" />
+                <span>Report an Incident (Voice AI)</span>
+                <ChevronRight className="h-4 w-4 text-emerald-200 transition-transform group-hover:translate-x-1" />
+              </motion.button>
 
-              <button
-                onClick={() => onNavigate("/why-verisight")}
-                className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3.5 py-3 text-xs font-mono text-amber-300 hover:bg-amber-500/20 transition-all shadow-sm"
+              <a
+                href="#why-verisight"
+                className="flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs font-mono text-amber-300 hover:bg-amber-500/20 transition-all"
               >
                 <Award className="h-3.5 w-3.5 text-amber-400" />
-                <span>Why We Are Better</span>
-              </button>
-
-              <button
-                onClick={() => onNavigate("/evaluation")}
-                className="flex items-center gap-1.5 px-3 py-3 text-xs font-mono text-slate-400 hover:text-sky-300 transition-colors"
-              >
-                <BarChart3 className="h-3.5 w-3.5" />
-                <span>View Live Evaluation Telemetry</span>
-              </button>
+              <span>Why VeriSight ↓</span>
+              </a>
             </motion.div>
 
-            {/* Quick trust metrics */}
-            <motion.div variants={itemVariants} className="pt-4 grid grid-cols-3 gap-4 border-t border-white/[0.08] text-xs font-mono">
+            {/* Trust Metrics Strip */}
+            <motion.div
+              variants={itemVariants}
+              className="pt-4 grid grid-cols-3 gap-4 border-t border-white/[0.08] text-xs font-mono"
+            >
               <div>
-                <span className="block text-slate-400">Multi-Spectral</span>
-                <span className="text-sm font-semibold text-white">4 Core Layers</span>
+                <span className="block text-slate-400">Forensic Engine</span>
+                <span className="text-sm font-semibold text-white">4-Layer Multi-Spectral</span>
               </div>
               <div>
-                <span className="block text-slate-400">Statutory Notice</span>
-                <span className="text-sm font-semibold text-emerald-400">Sec 94 BNSS Ready</span>
+                <span className="block text-slate-400">Voice Intelligence</span>
+                <span className="text-sm font-semibold text-emerald-400">Browser-dependent support</span>
               </div>
               <div>
-                <span className="block text-slate-400">Analysis Privacy</span>
-                <span className="text-sm font-semibold text-sky-400">Ephemeral In-Memory</span>
+                <span className="block text-slate-400">Statutory Framework</span>
+                <span className="text-sm font-semibold text-sky-400">Complaint draft guidance</span>
               </div>
             </motion.div>
           </div>
 
-          {/* Interactive Live Preview Component with animated scanline sweep */}
+          {/* Interactive Live Preview Component */}
           <motion.div variants={itemVariants} className="lg:col-span-5">
             <div className="relative rounded-2xl border border-white/[0.12] bg-[#0A0F1D]/90 p-4 shadow-2xl backdrop-blur-xl">
-              {/* Header bar of preview */}
               <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-rose-500 inline-block animate-pulse" />
@@ -278,9 +297,8 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 ))}
               </div>
 
-              {/* Visual viewport simulator */}
+              {/* Viewport simulator */}
               <div className="relative mt-3 h-[290px] w-full overflow-hidden rounded-xl border border-white/[0.08] bg-[#03060C] flex flex-col items-center justify-center">
-                {/* Animated forensic scanline laser sweep */}
                 {!shouldReduceMotion && (
                   <motion.div
                     className="pointer-events-none absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent shadow-[0_0_8px_rgba(56,189,248,0.8)] z-20"
@@ -289,20 +307,16 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                   />
                 )}
 
-                {/* Simulated UPI Card */}
                 <div className="relative w-[85%] max-w-[280px] rounded-lg border border-white/[0.12] bg-[#0E1526] p-4 shadow-xl z-10">
-                  {/* Top Bar */}
                   <div className="flex items-center justify-between border-b border-white/[0.06] pb-2 text-[10px] font-mono text-slate-400">
                     <span>Google Pay UPI</span>
                     <span>14:32 IST</span>
                   </div>
 
-                  {/* Payment Body */}
                   <div className="mt-3 text-center space-y-1">
                     <p className="text-[11px] text-slate-400 font-sans">Payment to Merchant</p>
                     <p className="text-xs font-semibold text-slate-200">APOLLO PHARMACY PVT</p>
 
-                    {/* Amount Block with AnimatePresence Layer Overlays */}
                     <div className="relative my-3 inline-block rounded border px-3 py-1.5 transition-all">
                       <AnimatePresence mode="wait">
                         {activePreviewLayer === "ORIGINAL" && (
@@ -371,7 +385,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
 
                     <div className="text-[10px] font-mono text-emerald-400 flex items-center justify-center gap-1">
                       <ShieldCheck className="h-3 w-3" />
-                      <span>Completed via HDFC Bank UPI</span>
+                      <span>Illustrative payment screen</span>
                     </div>
                   </div>
                 </div>
@@ -381,449 +395,305 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
         </motion.div>
 
         {/* =========================================================================
-            SECTION B: 4-LAYER FORENSIC ARCHITECTURE BREAKDOWN
+            SECTION 2: THE PROBLEM (PAYMENT FRAUD & VICTIM CONFUSION)
         ========================================================================= */}
         <motion.div
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="py-16 border-t border-white/[0.08]"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
         >
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
-              Decomposition Architecture
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-rose-400">
+              The Critical Challenge
             </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-              Deterministic Multi-Layer Signal Analysis
+            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+              The Digital Payment Fraud Crisis
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              VeriSight decomposes every evidence screenshot across physical frequency domains,
-              typographic alignment lasers, container metadata, and mathematical fusion.
+            <p className="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
+              With over 14 billion monthly UPI transactions, fraudsters exploit manipulated screenshots,
+              counterfeit receipt APKs, and psychological urgency to defraud merchants and consumers.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Layer 1: Physical ELA */}
-            <motion.div
-              whileHover={shouldReduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
-              className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6 shadow-lg hover:border-sky-500/40 transition-all"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-950/60 text-sky-400 mb-4">
-                <Layers className="h-5 w-5" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A]/80 p-6 space-y-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-500/30 bg-rose-950/40 text-rose-400">
+                <AlertTriangle className="h-5 w-5" />
               </div>
-              <span className="font-mono text-xs font-semibold text-sky-400">LAYER 01</span>
-              <h3 className="text-base font-bold text-white mt-1">Physical Signal Forensics</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Multi-scale Error Level Analysis (ELA) at Q75, Q85, and Q95. Sweeps quantization matrices
-                to detect local compression variance differences typical of image pastes.
+              <h3 className="text-base font-bold text-white">Manipulated Payment Receipts</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Subtle pixel splices alter transaction amounts from ₹10 to ₹10,000. Counterfeit generator APKs
+                mimic PhonePe, Google Pay, and Paytm UI templates to trick counter staff and vendors.
               </p>
-              <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: JPEG resaving & spliced patches
-              </div>
-            </motion.div>
-
-            {/* Layer 2: Wavelet Residual */}
-            <motion.div
-              whileHover={shouldReduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
-              className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6 shadow-lg hover:border-cyan-500/40 transition-all"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-950/60 text-cyan-400 mb-4">
-                <Activity className="h-5 w-5" />
-              </div>
-              <span className="font-mono text-xs font-semibold text-cyan-400">LAYER 02</span>
-              <h3 className="text-base font-bold text-white mt-1">High-Pass Wavelet Residuals</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Daubechies db4 discrete wavelet transforms isolate high-frequency sensor noise.
-                Synthetic brush edits and smooth Gaussian fills produce distinct zero-noise voids.
-              </p>
-              <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: Inpainted voids & digital blurs
-              </div>
-            </motion.div>
-
-            {/* Layer 3: Clone-Move Vectors */}
-            <motion.div
-              whileHover={shouldReduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
-              className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6 shadow-lg hover:border-pink-500/40 transition-all"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-pink-500/30 bg-pink-950/60 text-pink-400 mb-4">
-                <Fingerprint className="h-5 w-5" />
-              </div>
-              <span className="font-mono text-xs font-semibold text-pink-400">LAYER 03</span>
-              <h3 className="text-base font-bold text-white mt-1">ORB Copy-Move Vectors</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Extracts Oriented FAST and Rotated BRIEF keypoints to locate duplicated textures or cloned
-                digits within the screenshot, filtering out repetitive legitimate UI elements.
-              </p>
-              <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: Cloned digits & spliced stamps
-              </div>
-            </motion.div>
-
-            {/* Layer 4: Text Laser Baseline */}
-            <motion.div
-              whileHover={shouldReduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
-              className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6 shadow-lg hover:border-amber-500/40 transition-all"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-950/60 text-amber-400 mb-4">
-                <Sliders className="h-5 w-5" />
-              </div>
-              <span className="font-mono text-xs font-semibold text-amber-400">LAYER 04</span>
-              <h3 className="text-base font-bold text-white mt-1">Text Baseline Geometry</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Calculates sub-pixel font baseline angles and character bounding box alignments.
-                Flags micro-kerning irregularities and vertical misalignments exceeding 1.8 pixels.
-              </p>
-              <div className="mt-4 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                Target: Typographic drift & font substitution
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* =========================================================================
-            SECTION C: 4-STAGE INVESTIGATIVE WORKFLOW
-        ========================================================================= */}
-        <motion.div
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="py-16 border-t border-white/[0.08]"
-        >
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
-              Operational Protocol
-            </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-              From Ingestion to Judicial Summons
-            </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              A standard operating procedure engineered specifically for cybercrime desks and fraud analysis.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-            {/* Step 1 */}
-            <div className="relative rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
-              <div className="font-mono text-3xl font-extrabold text-sky-400/30 mb-2">01</div>
-              <h3 className="text-base font-bold text-white">Evidence Ingest</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Drag-and-drop raw PNG, JPG, or WhatsApp forwarded payment receipts. Mobile QR bridge
-                allows officers to transfer evidence directly from field devices securely.
-              </p>
-              <div className="mt-3 font-mono text-[10px] text-sky-400">Hash SHA-256 logged</div>
             </div>
 
-            {/* Step 2 */}
-            <div className="relative rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
-              <div className="font-mono text-3xl font-extrabold text-sky-400/30 mb-2">02</div>
-              <h3 className="text-base font-bold text-white">Multi-Layer Decomposition</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Automated multi-spectral pipeline computes compression deltas, high-pass frequencies,
-                OCR baseline geometry, and camera metadata integrity simultaneously.
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A]/80 p-6 space-y-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-950/40 text-amber-400">
+                <Clock className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-bold text-white">The "Golden Hour" Void</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                It can be difficult to know what to do after suspected payment fraud. Report suspected incidents through
+                official channels as soon as possible; VeriSight provides guidance and draft tools.
               </p>
-              <div className="mt-3 font-mono text-[10px] text-sky-400">Mean processing &lt; 850ms</div>
             </div>
 
-            {/* Step 3 */}
-            <div className="relative rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
-              <div className="font-mono text-3xl font-extrabold text-sky-400/30 mb-2">03</div>
-              <h3 className="text-base font-bold text-white">Corroborated Inspection</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Examine suspicious regions with synchronized loupe (8x zoom), interactive split sliders,
-                and quad-matrix views comparing original pixels against forensic heatmaps.
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A]/80 p-6 space-y-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-950/40 text-sky-400">
+                <Scale className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-bold text-white">Bureaucratic Reporting Friction</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Official cybercrime forms demand strict legal formats, specific IPC/BNS sections, UTRs, and
+                evidence annexures. Non-specialist victims struggle to produce acceptable complaints.
               </p>
-              <div className="mt-3 font-mono text-[10px] text-sky-400">Interactive Canvas Loupe</div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="relative rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
-              <div className="font-mono text-3xl font-extrabold text-sky-400/30 mb-2">04</div>
-              <h3 className="text-base font-bold text-white">Statutory Dossier Export</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Export verifiable PDF investigation reports or generate a Section 94 BNSS
-                statutory summons document to serve on banks or intermediary payment apps.
-              </p>
-              <div className="mt-3 font-mono text-[10px] text-emerald-400">Sec 94 BNSS Compliant</div>
             </div>
           </div>
         </motion.div>
 
         {/* =========================================================================
-            SECTION D: VERIFIED CAPABILITIES VS REAL-WORLD BOUNDARIES
+            SECTION 2.5: REAL-WORLD FRAUD CASES (SCAMSHIELD-INSPIRED SHOWCASE)
         ========================================================================= */}
         <motion.div
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="py-16 border-t border-white/[0.08]"
+          viewport={{ once: true, margin: "-60px" }}
+          className="pt-4 pb-8"
         >
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <RealWorldCaseShowcase
+            onNavigateWorkbench={() => onNavigate("/workbench")}
+            onNavigateResponse={(cat) =>
+              onNavigate("/response", cat ? { category: cat } : undefined)
+            }
+          />
+        </motion.div>
+
+        {/* =========================================================================
+            SECTION 3: HOW VERISIGHT WORKS (4-STEP WORKFLOW)
+        ========================================================================= */}
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-10">
             <span className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
-              Methodological Integrity
+              End-to-End Pipeline
             </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-              What VeriSight Verifies & What It Does Not
+            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+              How VeriSight Solves the Crisis
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              Digital image forensics evaluates the visual and digital integrity of the file itself.
-              Investigators must understand the exact boundary between pixel forensics and banking ledgers.
+            <p className="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
+              A four-stage workflow that organizes suspicious evidence into a reviewable incident dossier.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left: What We Verify */}
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-6 shadow-xl">
-              <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-4">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-emerald-200">Verified Capabilities</h3>
-                  <span className="text-xs font-mono text-emerald-400">Deterministic & Statistical Image Tests</span>
-                </div>
-              </div>
-
-              <ul className="mt-4 space-y-3 text-xs sm:text-sm text-slate-300">
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>Compression Quantization Inconsistencies:</strong> Identifies modified regions saved with different JPEG quality factors than the host image.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>High-Frequency Wavelet Perturbations:</strong> Exposes synthetic brush smoothing, copy voids, and artificial Gaussian smoothing.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>Typographic Alignment & Baseline Drift:</strong> Measures font baseline angle shifts and micro-kerning discrepancies across amount fields.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>Cloned Transaction Digit Sequences:</strong> Uses ORB descriptor keypoint clustering to pinpoint duplicated numbers or reference IDs.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>Temporal & Viewport Sanity:</strong> Checks status bar clock consistency against receipt body timestamps and detects non-standard device crops.
-                  </span>
-                </li>
-              </ul>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-6 relative">
+              <span className="font-mono text-3xl font-extrabold text-sky-500/30 block mb-2">01</span>
+              <h3 className="text-base font-bold text-white">Ingest & Detect</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                Upload a screenshot to run available image-review checks, including compression, wavelet, repeated-pattern,
+                typography, QR, metadata, and provenance cues. Results are heuristic evidence for review, not proof of tampering.
+              </p>
+              <div className="mt-4 font-mono text-[10px] text-sky-400">SHA-256 Chain of Custody</div>
             </div>
 
-            {/* Right: Explicit Limitations */}
-            <div className="rounded-2xl border border-rose-500/30 bg-rose-950/15 p-6 shadow-xl">
-              <div className="flex items-center gap-3 border-b border-rose-500/20 pb-4">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                  <AlertTriangle className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-rose-200">Forensic Limitations & Non-Claims</h3>
-                  <span className="text-xs font-mono text-rose-400">Strict Operational Boundaries</span>
-                </div>
-              </div>
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-6 relative">
+              <span className="font-mono text-3xl font-extrabold text-indigo-500/30 block mb-2">02</span>
+              <h3 className="text-base font-bold text-white">Contextual Handoff</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                When tampering is detected, click "What should I do next?". Your forensic report facts,
+                tamper scores, and file hash automatically bind into the Response Module.
+              </p>
+              <div className="mt-4 font-mono text-[10px] text-indigo-400">Zero Manual Data Re-entry</div>
+            </div>
 
-              <ul className="mt-4 space-y-3 text-xs sm:text-sm text-slate-300">
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>No Banking Ledger Access:</strong> VeriSight Pro does not access RBI, NPCI, or commercial bank databases. It does not verify whether fiat funds actually settled.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>Does Not Prove Criminal Intent:</strong> Image manipulation detection provides technical corroboration of alterations, but cannot identify who performed the modification.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>Extreme Laundering Degradation:</strong> If a screenshot is recompressed multiple times through lossy chat platforms at low resolution (&lt;480px), fine ELA evidence may degrade.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400 mt-2 shrink-0" />
-                  <span>
-                    <strong>Corroboration Tool, Not Sole Determiner:</strong> Results should be accompanied by statutory Section 94 BNSS notices to banks for definitive transaction confirmation.
-                  </span>
-                </li>
-              </ul>
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-6 relative">
+              <span className="font-mono text-3xl font-extrabold text-emerald-500/30 block mb-2">03</span>
+              <h3 className="text-base font-bold text-white">Voice Incident Intake</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                Speak what happened in Hindi, Kannada, Tamil, Telugu, Bengali, Marathi, or English.
+                Browser speech recognition or typed notes feed rule-based extraction of incident details.
+              </p>
+              <div className="mt-4 font-mono text-[10px] text-emerald-400">Browser ASR where supported</div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-6 relative">
+              <span className="font-mono text-3xl font-extrabold text-teal-500/30 block mb-2">04</span>
+              <h3 className="text-base font-bold text-white">Formal Complaint & Summons</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                Prepare complaint and evidence dossier drafts for review. VeriSight does not file reports, issue legal notices,
+                freeze accounts, or verify payment settlement.
+              </p>
+              <div className="mt-4 font-mono text-[10px] text-teal-400">Review-Ready Draft PDF Export</div>
             </div>
           </div>
         </motion.div>
 
         {/* =========================================================================
-            SECTION E: DEMONSTRATION CASE GALLERY (S1–S5)
+            SECTION 4: FORENSIC WORKBENCH (4-LAYER SIGNAL ARCHITECTURE & S1-S5)
         ========================================================================= */}
         <motion.div
-          id="demo-gallery"
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="py-16 border-t border-white/[0.08]"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
         >
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
               <span className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
-                Golden Test Suite
+                Core Science
               </span>
-              <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-                Demonstration Case Catalog
+              <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+                Forensic Workbench Architecture
               </h2>
               <p className="mt-2 text-slate-400 text-sm max-w-xl">
-                Synthetic fixtures and user-submitted examples are separated and labeled by provenance.
-                Open a case in the workbench to inspect its image cues.
+                4 synchronized physical, typographic, and probabilistic inspection layers.
               </p>
             </div>
-            <div className="shrink-0">
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-950/40 px-3 py-1.5 text-xs font-mono text-amber-300">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
-                <span>Example provenance is shown per case</span>
-              </span>
+            <motion.button
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+              onClick={() => onNavigate("/workbench")}
+              className="flex items-center gap-2 rounded-xl border border-sky-500/40 bg-sky-500/20 px-4 py-2.5 text-xs font-mono font-semibold text-sky-300 hover:bg-sky-500/30 transition-all self-start md:self-auto"
+            >
+              <span>Launch Full Workbench</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </motion.button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5 shadow-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-950/60 text-sky-400 mb-3">
+                <Layers className="h-4 w-4" />
+              </div>
+              <span className="font-mono text-[11px] font-semibold text-sky-400">LAYER 01</span>
+              <h3 className="text-sm font-bold text-white mt-1">Multi-Scale ELA</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                Evaluates Error Level Analysis across Q75, Q85, and Q95 quantization matrices to expose modified patches.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5 shadow-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-950/60 text-cyan-400 mb-3">
+                <Activity className="h-4 w-4" />
+              </div>
+              <span className="font-mono text-[11px] font-semibold text-cyan-400">LAYER 02</span>
+              <h3 className="text-sm font-bold text-white mt-1">Wavelet Residuals</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                Daubechies db4 wavelet analysis measures frequency-domain variation as an image-review cue; it cannot prove image origin.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5 shadow-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-950/60 text-amber-400 mb-3">
+                <Sliders className="h-4 w-4" />
+              </div>
+              <span className="font-mono text-[11px] font-semibold text-amber-400">LAYER 03</span>
+              <h3 className="text-sm font-bold text-white mt-1">Typography & Laser Drift</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                Text-like region alignment and color-difference heuristics can flag areas for inspection; they do not identify every pasted value.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5 shadow-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-purple-500/30 bg-purple-950/60 text-purple-400 mb-3">
+                <Cpu className="h-4 w-4" />
+              </div>
+              <span className="font-mono text-[11px] font-semibold text-purple-400">LAYER 04</span>
+              <h3 className="text-sm font-bold text-white mt-1">Heuristic evidence fusion</h3>
+              <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
+                Combines heuristic image cues for review. It is not a calibrated probability model.
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {samples.map((sample, idx) => {
-              const isManipulated =
-                sample.expected_verdict?.includes("MANIPULATED") ||
-                sample.expected_verdict?.includes("FORGERY");
-              const isUserProvided = sample.tags?.includes("User-provided") ?? false;
-              const isSynthetic = sample.tags?.includes("Synthetic") ?? sample.id.startsWith("sample_");
-              const provenanceLabel = isUserProvided
-                ? "USER-PROVIDED EXAMPLE — AUTHENTICITY NOT INDEPENDENTLY VERIFIED"
-                : isSynthetic
-                  ? "SYNTHETIC DEMONSTRATION — NOT REAL PAYMENT EVIDENCE"
-                  : "EXAMPLE — PROVENANCE NOT VERIFIED";
+          {/* Golden Demonstration Sample Grid */}
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A]/90 p-6">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-4 mb-5">
+              <div>
+                <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
+                  Golden Benchmark Samples (S1 – S5)
+                </h3>
+                <span className="text-xs text-slate-400">
+                  Click any benchmark case to load it directly into the Forensic Workbench.
+                </span>
+              </div>
+              <span className="rounded bg-sky-950 px-2 py-1 font-mono text-[10px] text-sky-300 border border-sky-800">
+                Active Benchmark Set
+              </span>
+            </div>
 
-              return (
-                <motion.div
-                  key={sample.id}
-                  whileHover={shouldReduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
-                  className="flex flex-col justify-between rounded-xl border border-white/[0.1] bg-[#0A0F1E] overflow-hidden shadow-lg hover:border-sky-500/50 hover:shadow-sky-500/10 transition-all group"
-                >
-                  {/* Provenance banner: never infer authenticity from a clean score. */}
-                  <div
-                    className={
-                      isManipulated || isUserProvided
-                        ? "bg-amber-950/80 border-b border-amber-800/50 px-3 py-1.5 text-center"
-                        : "bg-slate-900/80 border-b border-white/10 px-3 py-1.5 text-center"
-                    }
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {samples.map((s, idx) => {
+                const isManipulated =
+                  s.expected_verdict?.includes("MANIPULATED") ||
+                  s.expected_verdict?.includes("FORGERY");
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => onNavigate("/workbench", { case: s.id })}
+                    className="flex flex-col justify-between rounded-xl border border-white/[0.08] bg-[#060911] p-3 text-left hover:border-sky-500/50 hover:bg-[#080E1C] transition-all group"
                   >
-                    <span
-                      className={`font-mono text-[9px] font-bold tracking-wider uppercase ${
-                        isManipulated || isUserProvided ? "text-amber-300" : "text-slate-300"
-                      }`}
-                    >
-                      {provenanceLabel}
-                    </span>
-                  </div>
-
-                  {/* Body Content */}
-                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-semibold text-sky-400">
-                          SAMPLE S{idx + 1}
-                        </span>
+                      <div className="flex items-center justify-between text-[10px] font-mono mb-1">
+                        <span className="text-sky-400 font-bold">S{idx + 1}</span>
                         <span
-                          className={`rounded px-2 py-0.5 font-mono text-[10px] font-semibold ${
+                          className={`rounded px-1.5 py-0.2 font-semibold ${
                             isManipulated
-                              ? "bg-rose-950/80 text-rose-300 border border-rose-800/50"
-                              : isUserProvided
-                                ? "bg-amber-950/80 text-amber-200 border border-amber-800/50"
-                                : "bg-slate-900 text-slate-300 border border-white/10"
+                              ? "bg-rose-950 text-rose-300 border border-rose-800/40"
+                              : "bg-emerald-950 text-emerald-300 border border-emerald-800/40"
                           }`}
                         >
-                          {isManipulated ? "KNOWN SYNTHETIC EDIT" : isUserProvided ? "USER-ASSERTED" : "SYNTHETIC BASELINE"}
+                          {isManipulated ? "TAMPERED" : "AUTHENTIC"}
                         </span>
                       </div>
-
-                      <h3 className="text-base font-bold text-white mt-2 group-hover:text-sky-300 transition-colors">
-                        {sample.title}
-                      </h3>
-
-                      {isUserProvided && "url" in sample && sample.url && (
-                        <img src={sample.url} alt="User-provided payment screenshot; not independently verified" className="mt-3 max-h-72 w-full rounded-lg border border-white/10 bg-black object-contain" loading="lazy" />
-                      )}
-
-                      <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                        {sample.scenario}
+                      <h4 className="text-xs font-semibold text-white group-hover:text-sky-300 transition-colors line-clamp-1">
+                        {s.title}
+                      </h4>
+                      <p className="mt-1 text-[11px] text-slate-400 line-clamp-2 font-sans">
+                        {s.scenario}
                       </p>
                     </div>
-
-                    <div className="space-y-3 pt-3 border-t border-white/[0.06]">
-                      <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-slate-500">Expected Score:</span>
-                        <span className={isManipulated ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}>
-                          {sample.target_score_range || "N/A"}
-                        </span>
-                      </div>
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1.5">
-                        {sample.tags?.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded bg-white/[0.04] px-2 py-0.5 text-[10px] font-mono text-slate-400 border border-white/[0.06]"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Action Button */}
-                      <motion.button
-                        whileHover={shouldReduceMotion ? undefined : { scale: 1.01 }}
-                        whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
-                        onClick={() => onNavigate("/workbench", { case: sample.id })}
-                        className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg border border-sky-500/40 bg-sky-500/15 py-2 text-xs font-mono font-medium text-sky-300 hover:bg-sky-500/25 transition-all"
-                      >
-                        <span>Inspect in Workbench</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </motion.button>
+                    <div className="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between font-mono text-[10px]">
+                      <span className="text-slate-500">{s.target_score_range}</span>
+                      <ArrowRight className="h-3 w-3 text-sky-400 group-hover:translate-x-0.5 transition-transform" />
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </motion.div>
 
         {/* =========================================================================
-            SECTION F: RESEARCH & EVALUATION METHODOLOGY SUMMARY
+            SECTION 5: EVALUATION & RESEARCH TELEMETRY
         ========================================================================= */}
         <motion.div
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="py-16 border-t border-white/[0.08]"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
         >
-          <div className="rounded-2xl border border-white/[0.1] bg-[#0A0F1F] p-8 shadow-2xl">
+          <div className="rounded-2xl border border-white/[0.1] bg-[#0A0F1F] p-6 sm:p-8 shadow-2xl">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/[0.08]">
               <div>
                 <span className="font-mono text-xs font-semibold text-sky-400 uppercase tracking-wider">
                   Model Governance & Empirical Rigor
                 </span>
                 <h2 className="text-xl sm:text-3xl font-bold text-white mt-1">
-                  VeriSight Fusion GBDT v1.2.1
+                  Evaluation Status: No authorized locked test set
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl font-sans">
-                  The forensic core combines 5 independent estimators into a calibrated HistGradientBoosting
-                  Classifier using 3-fold CalibratedClassifierCV (Sigmoid) to produce trustworthy probabilities.
+                  Current results are heuristic demonstrations. No representative locked test set is available for a real-world accuracy claim.
                 </p>
               </div>
 
@@ -831,233 +701,470 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
                 onClick={() => onNavigate("/evaluation")}
-                className="shrink-0 flex items-center gap-2 rounded-lg border border-sky-500/40 bg-sky-500/20 px-4 py-2.5 text-xs font-mono font-semibold text-sky-300 hover:bg-sky-500/30 transition-all"
+                className="shrink-0 flex items-center gap-2 rounded-xl border border-sky-500/40 bg-sky-500/20 px-4 py-2.5 text-xs font-mono font-semibold text-sky-300 hover:bg-sky-500/30 transition-all"
               >
                 <span>Full Evaluation Dashboard</span>
                 <ExternalLink className="h-3.5 w-3.5" />
               </motion.button>
             </div>
 
-            {/* Mandatory Academic & Scientific Disclosure */}
-            <div className="my-6 rounded-lg border border-amber-500/40 bg-amber-950/30 p-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-amber-200/90 leading-relaxed">
-                  <strong className="text-amber-200 uppercase font-mono block mb-1">
-                    Mandatory Benchmark Disclosure:
-                  </strong>
-                  Current evaluation uses synthetic development samples and external WhatsApp blind test sets.
-                  Benchmark scores reflect in-sample and held-out synthetic test partitions (20 development, 7 held-out evaluation samples)
-                  and 23 blind consumer samples (ROC-AUC = 0.9731).
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
+              <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
+                <span className="font-mono text-[11px] text-slate-400 block">WhatsApp ROC-AUC</span>
+                <span className="font-mono text-2xl font-bold text-sky-400 mt-1 block">N/A</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">No locked test set</span>
+              </div>
+
+              <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
+                <span className="font-mono text-[11px] text-slate-400 block">Brier Score</span>
+                <span className="font-mono text-2xl font-bold text-emerald-400 mt-1 block">N/A</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Not calibrated</span>
+              </div>
+
+              <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
+                <span className="font-mono text-[11px] text-slate-400 block">Held-out Benchmark</span>
+                <span className="font-mono text-2xl font-bold text-white mt-1 block">N/A</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Not independently evaluated</span>
+              </div>
+
+              <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
+                <span className="font-mono text-[11px] text-slate-400 block">Inference Speed</span>
+                <span className="font-mono text-2xl font-bold text-indigo-400 mt-1 block">Variable</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Depends on image and hosting</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* =========================================================================
+            SECTION 6: RESPONSE & GUIDANCE (THE 6 SUBMODULES)
+        ========================================================================= */}
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
+        >
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                Action Module
+              </span>
+              <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+                Response & Guidance System
+              </h2>
+              <p className="mt-2 text-slate-400 text-sm max-w-xl">
+                6 integrated submodules assisting victims and investigators from immediate containment to judicial resolution.
+              </p>
+            </div>
+            <motion.button
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+              onClick={() => onNavigate("/response")}
+              className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-4 py-2.5 text-xs font-mono font-semibold text-emerald-300 hover:bg-emerald-500/30 transition-all self-start md:self-auto"
+            >
+              <span>Launch Response & Guidance</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </motion.button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Submodule 1 */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A] p-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-950 border border-sky-800 text-sky-400 font-mono text-xs font-bold">
+                  01
+                </div>
+                <h3 className="text-sm font-bold text-white">Incident Centre</h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Immediate triage wizard evaluating financial loss and incident category. Delivers urgent golden-hour advice (1930 call, UPI freeze, SIM deactivation).
+              </p>
+            </div>
+
+            {/* Submodule 2 */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A] p-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-400 font-mono text-xs font-bold">
+                  02
+                </div>
+                <h3 className="text-sm font-bold text-white">Voice Reporting Assistant</h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Conversational incident intake with browser speech recognition where supported. Availability and language coverage depend on the browser; review all extracted details.
+              </p>
+            </div>
+
+            {/* Submodule 3 */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A] p-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-950 border border-indigo-800 text-indigo-400 font-mono text-xs font-bold">
+                  03
+                </div>
+                <h3 className="text-sm font-bold text-white">Formal Complaint Builder</h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Generates chronological complaint drafts that can be reviewed and edited before you submit them through the relevant official channel.
+              </p>
+            </div>
+
+            {/* Submodule 4 */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A] p-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-950 border border-purple-800 text-purple-400 font-mono text-xs font-bold">
+                  04
+                </div>
+                <h3 className="text-sm font-bold text-white">Evidence Dossier Organizer</h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Packages the workbench observations and SHA-256 fingerprint into a PDF draft for human review. It is not signed or certified as legally admissible.
+              </p>
+            </div>
+
+            {/* Submodule 5 */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A] p-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-950 border border-teal-800 text-teal-400 font-mono text-xs font-bold">
+                  05
+                </div>
+                <h3 className="text-sm font-bold text-white">Indian Reporting Directory</h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Provides reporting guidance, reference links, and draft communication templates for supported agencies and financial institutions.
+              </p>
+            </div>
+
+            {/* Submodule 6 */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A] p-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-950 border border-amber-800 text-amber-400 font-mono text-xs font-bold">
+                  06
+                </div>
+                <h3 className="text-sm font-bold text-white">Complaint Tracking & Follow-up</h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Local-first case management recording NCRP acknowledgement numbers, timeline events, statutory 30-day escalation deadlines, and notes.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* =========================================================================
+            SECTION 7: VOICE-TO-COMPLAINT INTELLIGENCE DEEP DIVE
+        ========================================================================= */}
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-teal-400">
+                Speech AI Feature Spotlight
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+                Voice-to-Complaint Intelligence
+              </h2>
+              <p className="text-sm text-slate-300 leading-relaxed font-sans">
+                When people experience fraud, typing complex legal details is intimidating.
+                VeriSight enables victims to explain what occurred naturally in their mother tongue.
+              </p>
+
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3">
+                  <div className="h-6 w-6 rounded-lg bg-teal-950 border border-teal-800 flex items-center justify-center shrink-0 text-teal-400 mt-0.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">7 Indian Regional Languages</h4>
+                    <p className="text-xs text-slate-400 font-sans">
+                      English (India), हिन्दी (Hindi), ಕನ್ನಡ (Kannada), বাংলা (Bengali), தமிழ் (Tamil), తెలుగు (Telugu), and मराठी (Marathi).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="h-6 w-6 rounded-lg bg-teal-950 border border-teal-800 flex items-center justify-center shrink-0 text-teal-400 mt-0.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Speech and Typed Intake</h4>
+                    <p className="text-xs text-slate-400 font-sans">
+                      Browser speech recognition with a live preview where supported. Server-side audio transcription is currently unavailable; typed intake remains available.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="h-6 w-6 rounded-lg bg-teal-950 border border-teal-800 flex items-center justify-center shrink-0 text-teal-400 mt-0.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Automated Forensic Fact Extraction</h4>
+                    <p className="text-xs text-slate-400 font-sans">
+                      The assistant helps organize incident details and reported transaction identifiers into a draft. Verify every field before using it.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Telemetry Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-              <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
-                <span className="font-mono text-[11px] text-slate-400 block">ROC-AUC (Dev GBDT)</span>
-                <span className="font-mono text-2xl font-bold text-sky-400 mt-1 block">0.910</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">1.000 (Test Partition)</span>
-              </div>
-
-              <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
-                <span className="font-mono text-[11px] text-slate-400 block">Brier Score</span>
-                <span className="font-mono text-2xl font-bold text-emerald-400 mt-1 block">0.0992</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Calibrated probability</span>
-              </div>
-
-              <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
-                <span className="font-mono text-[11px] text-slate-400 block">Benchmark Corpus</span>
-                <span className="font-mono text-2xl font-bold text-white mt-1 block">27 Samples</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">20 Dev / 7 Held-out Test</span>
-              </div>
-
-              <div className="rounded-lg border border-white/[0.06] bg-[#070B16] p-4 text-center">
-                <span className="font-mono text-[11px] text-slate-400 block">Calibration Model</span>
-                <span className="font-mono text-sm font-bold text-indigo-300 mt-2 block">
-                  CalibratedClassifierCV
+            <div className="lg:col-span-5 rounded-2xl border border-teal-500/30 bg-[#0A1220] p-5 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-teal-500/20 pb-3">
+                <span className="font-mono text-xs font-bold text-teal-300">VOICE ASSISTANT PREVIEW</span>
+                <span className="font-mono text-[9px] text-teal-400 bg-teal-950 px-2 py-0.5 rounded border border-teal-800">
+                  BROWSER ASR IF SUPPORTED
                 </span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Sigmoid (3-Fold CV)</span>
               </div>
+
+              <div className="rounded-xl border border-white/[0.06] bg-[#060911] p-3 font-mono text-xs text-slate-300 space-y-2">
+                <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                  <Mic className="h-3 w-3 text-rose-400 animate-pulse" />
+                  <span>"I received a suspicious payment screenshot..."</span>
+                </div>
+                <div className="rounded bg-teal-950/40 p-2 text-[11px] text-teal-200 border border-teal-800/40">
+                  <strong className="block text-white mb-0.5">Illustrative draft fields (not live results):</strong>
+                  • Category: User-reported incident<br />
+                  • Amount: Not provided<br />
+                  • Channel: Not verified<br />
+                  • Review all fields before using
+                </div>
+              </div>
+
+              <button
+                onClick={() => onNavigate("/response")}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-500 py-2.5 font-mono text-xs font-semibold text-white transition-all shadow-md"
+              >
+                <span>Try Voice Reporting Assistant</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </motion.div>
 
         {/* =========================================================================
-            SECTION G: PRIVACY, DATA RETENTION & STATUTORY COMPLIANCE
+            SECTION 8: EVIDENCE-TO-ACTION WORKFLOW
         ========================================================================= */}
         <motion.div
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="py-16 border-t border-white/[0.08]"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
         >
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-10">
             <span className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
-              Judicial & Data Safeguards
+              Connected Continuity
             </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white">
-              Data Privacy & Statutory Framework
+            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+              The Evidence-to-Action Bridge
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              Engineered with strict zero-retention principles and integrated Section 94 BNSS legal notice generation.
+            <p className="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
+              Forensic inspection and reporting are no longer fragmented across disconnected tools.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-950/60 text-sky-400 mb-4">
-                <Lock className="h-5 w-5" />
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-6 lg:p-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+              <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 space-y-2">
+                <span className="font-mono text-[10px] text-sky-400 font-bold uppercase">Phase 1: Workbench</span>
+                <h4 className="text-sm font-bold text-white">Detection & Scoring</h4>
+                <p className="text-slate-400 leading-relaxed font-sans">
+                The user reviews an uploaded image and its heuristic cues. Scores are review points, not probabilities or proof of fraud.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white">Ephemeral In-Memory Processing</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Evidence screenshots uploaded to VeriSight are processed in RAM memory buffers during
-                the analysis session. They are not stored permanently on disk or harvested into training corpora.
-              </p>
-            </div>
 
-            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-950/60 text-emerald-400 mb-4">
-                <Scale className="h-5 w-5" />
+              <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 space-y-2">
+                <span className="font-mono text-[10px] text-emerald-400 font-bold uppercase">Phase 2: One-Click Handoff</span>
+                <h4 className="text-sm font-bold text-white">Contextual Transfer</h4>
+                <p className="text-slate-400 leading-relaxed font-sans">
+                Clicking "What should I do next?" transfers the filename, SHA-256 hash, verdict, and findings into Response & Guidance.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white">Section 94 BNSS Modernization</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                CrPC Section 91 has been superseded by Section 94 of Bharatiya Nagarik Suraksha Sanhita (BNSS),
-                2023. VeriSight automatically populates legally valid summons notices with verified transaction hashes.
-              </p>
-            </div>
 
-            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-950/60 text-indigo-400 mb-4">
-                <FileCheck2 className="h-5 w-5" />
+              <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 space-y-2">
+                <span className="font-mono text-[10px] text-indigo-400 font-bold uppercase">Phase 3: Formal Output</span>
+                <h4 className="text-sm font-bold text-white">Complaint Draft</h4>
+                <p className="text-slate-400 leading-relaxed font-sans">
+                  The complaint builder combines user-reviewed incident details with image-review notes in an editable draft. It is not a certified finding.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white">Chain of Custody SHA-256</h3>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Every forensic report logs the cryptographic SHA-256 hash, pixel dimensions, DPI, and
-                color space of the ingested screenshot, preserving evidentiary integrity for court submission.
-              </p>
             </div>
           </div>
         </motion.div>
 
         {/* =========================================================================
-            SECTION H: HONEST FAQ & FORENSIC FOOTER
+            SECTION 9: WHY VERISIGHT (EMBEDDED BENCHMARK & COMPARATIVE SANDBOX)
         ========================================================================= */}
         <motion.div
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="py-16 border-t border-white/[0.08]"
+          viewport={{ once: true, margin: "-60px" }}
+          className="pt-12 border-t border-white/[0.08]"
         >
-          <div className="text-center max-w-2xl mx-auto mb-12">
+          {/* Seamlessly embed the complete WhyVerisight interactive suite */}
+          <WhyVerisight
+            embedMode={true}
+            id="why-verisight"
+            onNavigateWorkbench={() => onNavigate("/workbench")}
+          />
+        </motion.div>
+
+        {/* =========================================================================
+            SECTION 10: WHO BENEFITS (STAKEHOLDER IMPACT)
+        ========================================================================= */}
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-10">
             <span className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
-              Investigator Q&A
+              Ecosystem Utility
             </span>
-            <h2 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              Frequently Asked Questions
+            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans">
+              Who Benefits from VeriSight
             </h2>
+            <p className="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
+              Purpose-built for multiple stakeholders across the cybercrime prevention and judicial lifecycle.
+            </p>
           </div>
 
-          <div className="max-w-3xl mx-auto space-y-4">
-            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
-                <span>Can VeriSight prove who committed the forgery?</span>
-              </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                No. VeriSight provides technical, mathematical corroboration that an image has been altered
-                (such as spliced numbers, font baseline shifts, or double-compression boundaries). It cannot identify
-                the individual behind the keyboard. Formal attribution requires IP logs, ISP data, or device seizure.
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-5 space-y-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-950 border border-sky-800 text-sky-400">
+                <Users className="h-4 w-4" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Fraud Victims & Citizens</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Review image cues, find reporting guidance, and prepare multilingual complaint drafts. Screenshot analysis cannot verify payment settlement.
               </p>
             </div>
 
-            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
-                <span>Why does WhatsApp compression make forensics difficult?</span>
-              </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                When a screenshot is sent through WhatsApp, it is recompressed with 4:2:0 chroma subsampling
-                and a lower JPEG quality factor (typically Q=75–77), stripping EXIF metadata. VeriSight accounts
-                for this by checking high-frequency wavelet subbands and geometric font baselines that survive recompression.
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-5 space-y-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-400">
+                <Landmark className="h-4 w-4" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Merchants & Business Owners</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Review suspicious payment screenshots as one input before making a decision. Screenshot analysis does not confirm that funds settled.
               </p>
             </div>
 
-            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
-                <span>What is Section 94 of BNSS, 2023?</span>
-              </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                Under the new criminal laws of India enacted in 2023, Section 94 of the Bharatiya Nagarik Suraksha
-                Sanhita (BNSS) replaces the former Section 91 of the Code of Criminal Procedure (CrPC). It empowers
-                investigating police officers to issue formal summons for the production of documents or electronic records.
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-5 space-y-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-950 border border-indigo-800 text-indigo-400">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Police Cyber-Cells & Investigators</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Export evidence dossier and complaint drafts for human review. Drafts are not legal notices, filings, or instructions to freeze an account.
               </p>
             </div>
 
-            <div className="rounded-xl border border-white/[0.08] bg-[#0A0F1E] p-5">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-sky-400 shrink-0" />
-                <span>Does VeriSight connect to NPCI or bank servers?</span>
-              </h3>
-              <p className="mt-2 text-xs text-slate-300 leading-relaxed pl-6">
-                No. VeriSight operates exclusively as a digital media forensics platform. It analyzes the pixel structure
-                and metadata of screenshots. For confirmation of account balances or ledger credits, investigators should
-                serve Section 94 BNSS notices directly on the relevant banks or payment aggregators.
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-5 space-y-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-950 border border-purple-800 text-purple-400">
+                <Scale className="h-4 w-4" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Fintech & Bank Compliance</h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Triage customer-provided screenshots with heuristic pixel and layout cues. Results require review and do not verify transaction status.
               </p>
             </div>
           </div>
         </motion.div>
 
         {/* =========================================================================
-            FOOTER
+            SECTION 11: CALL TO ACTION & PLATFORM FOOTER
         ========================================================================= */}
-        <section className="border-t border-white/[0.08] pt-12" aria-label="Selected fraud case studies">
-          <RealWorldCaseShowcase onNavigateResponse={() => onNavigate("/response")} />
-        </section>
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="py-12 border-t border-white/[0.08]"
+        >
+          {/* Main CTA Card */}
+          <div className="relative rounded-3xl border border-sky-500/30 bg-gradient-to-b from-[#0B152A] to-[#070D1B] p-8 sm:p-12 text-center overflow-hidden shadow-2xl">
+            <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-48 w-96 rounded-full bg-sky-500/20 blur-[90px]" />
 
-        <footer className="mt-16 border-t border-white/[0.08] pt-8 pb-12 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-mono gap-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-sky-400" />
-            <span className="font-semibold text-slate-400">VERISIGHT PRO FORENSIC SUITE</span>
-            <span>•</span>
-            <span>v1.2.1-calibrated</span>
+            <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-sky-400 bg-sky-950/70 px-3 py-1 rounded-full border border-sky-800/50 inline-block">
+                START INVESTIGATING OR REPORTING
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-sans">
+                Take Informed Action Against Digital Evidence Tampering
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+                Explore our Golden Benchmark catalog or launch the Voice Reporting Assistant to prepare your formal complaint.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+                <button
+                  onClick={() => onNavigate("/workbench")}
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 px-6 py-3 font-mono text-xs font-semibold text-white shadow-lg shadow-sky-500/25 hover:from-sky-400 hover:to-sky-500 transition-all active:scale-[0.98]"
+                >
+                  <Layers className="h-4 w-4" />
+                  <span>Launch Forensic Workbench</span>
+                </button>
+
+                <button
+                  onClick={() => onNavigate("/response")}
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 font-mono text-xs font-semibold text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-400 hover:to-teal-500 transition-all active:scale-[0.98]"
+                >
+                  <Mic className="h-4 w-4" />
+                  <span>Report an Incident</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => onNavigate("/")}
-              className="hover:text-slate-300 transition-colors"
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => onNavigate("/workbench")}
-              className="hover:text-slate-300 transition-colors"
-            >
-              Workbench
-            </button>
-            <button
-              onClick={() => onNavigate("/evaluation")}
-              className="hover:text-slate-300 transition-colors"
-            >
-              Evaluation
-            </button>
-            <button
-              onClick={() => onNavigate("/why-verisight")}
-              className="text-amber-400 hover:text-amber-300 font-semibold transition-colors"
-            >
-              Why VeriSight
-            </button>
-          </div>
+          {/* Unified Platform Footer */}
+          <footer className="mt-12 pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-mono gap-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-sky-400" />
+              <span className="font-semibold text-slate-300">VERISIGHT PLATFORM</span>
+              <span>•</span>
+              <span>Intelligent Digital Evidence Forensics & Response</span>
+            </div>
 
-          <div>
-            <span>Section 94 BNSS Compliant</span>
-          </div>
-        </footer>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => onNavigate("/")}
+                className="hover:text-slate-300 transition-colors"
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => onNavigate("/workbench")}
+                className="hover:text-slate-300 transition-colors"
+              >
+                Workbench
+              </button>
+              <button
+                onClick={() => onNavigate("/evaluation")}
+                className="hover:text-slate-300 transition-colors"
+              >
+                Evaluation
+              </button>
+              <button
+                onClick={() => onNavigate("/response")}
+                className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
+              >
+                Response & Guidance
+              </button>
+            </div>
+
+            <div>
+              <span>Guidance and draft tools • review before official submission</span>
+            </div>
+          </footer>
+        </motion.div>
       </div>
     </div>
   );
