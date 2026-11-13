@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import {
   X,
   ExternalLink,
-  MapPin,
+  FileCheck2,
   Calendar,
   AlertTriangle,
   ShieldCheck,
@@ -58,7 +58,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
               PUBLIC ADVISORY
             </span>
             <div className="flex items-center gap-1 text-slate-400">
-              <MapPin className="h-3.5 w-3.5 text-sky-400" />
+              <FileCheck2 className="h-3.5 w-3.5 text-sky-400" />
               <span>
                 {caseItem.sourceScope}
               </span>
