@@ -12,13 +12,28 @@ A 108-second walkthrough of the actual forensic workbench, evidence views, inter
 
 The video is an H.264 MP4 (1080p, approximately 71 MB); the slide deck is an editable `.pptx` (approximately 2.2 MB). Press play in the video above to watch directly in this README, or use the links to download the files.
 
+### Product Overview demo player
+
+The Product Overview includes a **Watch Product Demo** button that opens the supplied walkthrough in an in-page player. The same clip is playable here:
+
+<video src="https://verisight-ps12.vercel.app/demo/verisight-demo.mp4" controls playsinline preload="metadata" width="100%">
+  Your Markdown viewer does not support embedded video. [Open the Product Overview demo](https://verisight-ps12.vercel.app/demo/verisight-demo.mp4).
+</video>
+
+[Open or download the supplied MP4](https://verisight-ps12.vercel.app/demo/verisight-demo.mp4) · [View its source in this repository](frontend/public/demo/verisight-demo.mp4)
+
+This supplied walkthrough is separate from the full-resolution demo film above. Screenshot analysis provides heuristic review cues and does not verify payment settlement.
+
 ## 🔴 Live Demo
 
 **[https://verisight-ps12.vercel.app](https://verisight-ps12.vercel.app)**
 
 | Endpoint | URL |
 |---|---|
-| Forensic Workbench | https://verisight-ps12.vercel.app |
+| Product Overview | https://verisight-ps12.vercel.app/ |
+| Forensic Workbench | https://verisight-ps12.vercel.app/workbench |
+| Response & Guidance | https://verisight-ps12.vercel.app/response |
+| Evaluation & Research | https://verisight-ps12.vercel.app/evaluation |
 | Health Check | https://verisight-ps12.vercel.app/api/health |
 | API Docs (Swagger) | https://verisight-ps12.vercel.app/docs |
 | Demo Samples | https://verisight-ps12.vercel.app/api/demo-samples |
@@ -27,7 +42,7 @@ The video is an H.264 MP4 (1080p, approximately 71 MB); the slide deck is an edi
 
 ## What It Does
 
-VeriSight accepts common image formats and computes pixel, layout, metadata, and QR review cues. The current build cannot determine that every screenshot is authentic or edited: it has no trained image classifier, and it does not verify payments. Analysis runs server-side. Case summaries are persisted; original image bytes are not stored in the case table. A short-lived private storage object is used by the signed-upload flow and deleted after analysis.
+VeriSight accepts common image formats and computes pixel, layout, metadata, and QR review cues. The current build cannot determine that every screenshot is authentic or edited: it has no trained image classifier, and it does not verify payments. Analysis runs server-side. Case summaries are persisted; original image bytes are not stored in the case table. A short-lived private storage object is used by the signed-upload flow and deleted after analysis. The Product Overview includes the supplied demo video in an accessible in-page player.
 
 The **Response & Guidance** area adds typed or browser-assisted incident intake, rules-based field extraction, a user-editable complaint draft, a downloadable evidence summary, public reporting links, and a case-notes tracker. This is a drafting aid: it does not file a complaint, contact authorities, confirm a settlement, or retrieve an official case status. Incident narratives are sent to the VeriSight API for extraction/draft generation. Case notes are kept in `sessionStorage` for the current browser tab and are cleared when that tab closes; they are not stored in Supabase or synchronized between devices. Browser speech recognition privacy and availability depend on the browser. Avoid entering passwords, UPI PINs, or full account numbers.
 

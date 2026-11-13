@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -34,6 +34,8 @@ import {
   History,
   FolderLock,
   BookOpen,
+  Play,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { AppRoute } from "./NavigationHeader";
@@ -51,11 +53,28 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
   demoSamples = [],
 }) => {
   const shouldReduceMotion = useReducedMotion();
+  const [showDemoVideo, setShowDemoVideo] = useState(false);
 
   // Interactive Hero Preview state
   const [activePreviewLayer, setActivePreviewLayer] = useState<
     "ORIGINAL" | "ELA" | "WAVELET" | "LASER"
   >("ELA");
+
+  useEffect(() => {
+    if (!showDemoVideo) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowDemoVideo(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [showDemoVideo]);
 
   // Fallback demo samples if not passed from parent
   const samples =
@@ -229,6 +248,16 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                 <Mic className="h-4 w-4 text-emerald-200" />
                 <span>Report an Incident (Voice AI)</span>
                 <ChevronRight className="h-4 w-4 text-emerald-200 transition-transform group-hover:translate-x-1" />
+              </motion.button>
+
+              <motion.button
+                whileHover={shouldReduceMotion ? undefined : { scale: 1.015 }}
+                whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}
+                onClick={() => setShowDemoVideo(true)}
+                className="group flex items-center gap-2.5 rounded-xl border border-violet-400/40 bg-violet-500/10 px-5 py-3 text-sm font-semibold text-violet-100 transition-all hover:border-violet-300/60 hover:bg-violet-500/20"
+              >
+                <Play className="h-4 w-4 fill-current" />
+                <span>Watch Product Demo</span>
               </motion.button>
 
               <a
@@ -1166,6 +1195,68 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
           </footer>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showDemoVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 p-3 backdrop-blur-sm sm:p-6"
+            onClick={() => setShowDemoVideo(false)}
+            role="presentation"
+          >
+            <motion.section
+              initial={{ opacity: 0, y: 18, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-[#080d18] shadow-2xl shadow-black/60"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="verisight-demo-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-6">
+                <div>
+                  <h2 id="verisight-demo-title" className="font-semibold text-white">
+                    VeriSight Product Demo
+                  </h2>
+                  <p className="mt-0.5 text-xs text-slate-400">Prototype walkthrough</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDemoVideo(false)}
+                  className="rounded-lg p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                  aria-label="Close demo video"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="bg-black">
+                <video
+                  className="max-h-[72vh] w-full bg-black object-contain"
+                  src="/demo/verisight-demo.mp4"
+                  controls
+                  autoPlay
+                  playsInline
+                  preload="metadata"
+                  aria-label="VeriSight prototype demonstration video"
+                >
+                  Your browser does not support HTML video. You can open the video directly at{" "}
+                  <a href="/demo/verisight-demo.mp4" className="text-sky-300 underline">
+                    the demo video
+                  </a>.
+                </video>
+              </div>
+              <p className="px-4 py-3 text-xs leading-relaxed text-slate-400 sm:px-6">
+                This is a prototype walkthrough. Screenshot analysis provides heuristic review cues and does not verify payment settlement.
+              </p>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
