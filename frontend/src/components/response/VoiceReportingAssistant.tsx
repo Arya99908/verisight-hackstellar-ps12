@@ -55,6 +55,22 @@ const SUPPORTED_LANGUAGES = [
   { code: "mr-IN", label: "मराठी (Marathi)", short: "Marathi" },
 ];
 
+const SCRIPT_PATTERNS: Record<string, RegExp> = {
+  "en-IN": /[A-Za-z]/g,
+  "hi-IN": /[\u0900-\u097F]/g,
+  "mr-IN": /[\u0900-\u097F]/g,
+  "kn-IN": /[\u0C80-\u0CFF]/g,
+  "bn-IN": /[\u0980-\u09FF]/g,
+  "ta-IN": /[\u0B80-\u0BFF]/g,
+  "te-IN": /[\u0C00-\u0C7F]/g,
+};
+
+const matchesSelectedLanguageScript = (text: string, locale: string) => {
+  const letters = text.match(/[\p{L}]/gu) ?? [];
+  const expectedLetters = text.match(SCRIPT_PATTERNS[locale] ?? SCRIPT_PATTERNS["en-IN"]) ?? [];
+  return letters.length > 0 && expectedLetters.length >= Math.min(2, letters.length) && expectedLetters.length / letters.length >= 0.35;
+};
+
 export type SpeechServiceStatus =
   | "IDLE"
   | "INITIALIZING"
@@ -90,6 +106,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
   const [restartCount, setRestartCount] = useState<number>(0);
   const [interimTranscript, setInterimTranscript] = useState<string>("");
   const [finalTranscript, setFinalTranscript] = useState<string>("");
+  const [transcriptLanguageNotice, setTranscriptLanguageNotice] = useState<string | null>(null);
   const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
 
   // Transcript & Analysis States
@@ -212,7 +229,9 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
       recognition.lang = selectedLanguage;
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
+      // Browser engines may return multiple hypotheses; prefer the candidate
+      // written in the script for the selected locale.
+      recognition.maxAlternatives = 5;
 
       recognition.onstart = () => {
         setSpeechServiceStatus("LISTENING");
@@ -225,9 +244,21 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
 
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           const res = event.results[i];
-          const text = res[0].transcript;
+          const alternatives = Array.from({ length: res.length }, (_, index) => res[index]);
+          const matchingAlternative = alternatives.find((alternative: any) =>
+            matchesSelectedLanguageScript(alternative.transcript || "", selectedLanguage),
+          ) as any;
+          const text = (matchingAlternative || alternatives[0])?.transcript?.trim() || "";
+          if (!matchingAlternative) {
+            const languageName = SUPPORTED_LANGUAGES.find((language) => language.code === selectedLanguage)?.short ?? selectedLanguage;
+            setTranscriptLanguageNotice(
+              `The browser returned speech in a different writing system. VeriSight is set to ${languageName}; use a browser speech service that supports this language, or type the statement. The mismatched text was not added.`,
+            );
+            continue;
+          }
+          setTranscriptLanguageNotice(null);
           if (res.isFinal) {
-            newFinalChunk += text + " ";
+            newFinalChunk += `${text} `;
           } else {
             interim += text;
           }
@@ -260,7 +291,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
           consecutiveErrorsRef.current += 1;
           setSpeechServiceStatus("BLOCKED");
           toast.warning(
-            "Browser speech service blocked (common in Brave / Firefox). You can still speak and click 'Transcribe Audio via Server' or type directly."
+            "This browser blocked speech recognition. You can type the incident narrative or try a browser with speech recognition enabled."
           );
         } else if (err === "not-allowed" || err === "permission-denied") {
           consecutiveErrorsRef.current += 1;
@@ -325,7 +356,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
       audioContextRef.current = audioCtx;
       analyserRef.current = analyser;
 
-      // Start MediaRecorder for audio playback and server fallback
+      // Capture audio locally for replay; server transcription is not configured.
       audioChunksRef.current = [];
       const recorder = new MediaRecorder(stream);
       recorder.ondataavailable = (e) => {
@@ -637,7 +668,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
               </div>
               {lastRecognitionError === "network" && (
                 <div className="rounded border border-amber-800/40 bg-amber-950/30 p-1.5 text-[10px] text-amber-200">
-                  Note: Chromium/Brave Shields block Google cloud speech endpoints. Use "Transcribe Audio via Server" below for reliable local fallback.
+                  The browser speech service is unavailable. VeriSight does not have server transcription configured; type or paste the incident narrative instead.
                 </div>
               )}
             </div>
@@ -664,7 +695,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
               <div className="flex items-center gap-3">
                 <Volume2 className="h-6 w-6 text-emerald-400 animate-pulse" />
                 <span className="font-mono text-xs text-emerald-300">
-                  Voice recording ready for replay, server transcription, and fact extraction
+                  Voice recording ready for replay. The transcript follows the selected browser speech locale.
                 </span>
               </div>
             ) : (
@@ -810,6 +841,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
 
             <div className="relative">
               <textarea
+                aria-label={`Incident narrative in selected language ${selectedLanguage}`}
                 value={transcript}
                 onChange={(e) => {
                   setTranscript(e.target.value);
@@ -820,6 +852,12 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                 rows={5}
                 className="w-full rounded-xl border border-white/10 bg-[#060911] p-3 text-xs leading-relaxed text-slate-200 placeholder-slate-600 focus:border-sky-500 focus:outline-none font-sans"
               />
+
+              {transcriptLanguageNotice && (
+                <div role="alert" className="mt-2 rounded-lg border border-amber-500/30 bg-amber-950/30 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
+                  {transcriptLanguageNotice}
+                </div>
+              )}
 
               {/* Interim Transcript Live Streaming Preview */}
               {interimTranscript && isRecording && (

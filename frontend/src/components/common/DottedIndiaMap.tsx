@@ -7,6 +7,16 @@ import {
 } from "../../data/indiaGeospatial";
 import { PublicFraudAdvisory } from "../../data/realWorldCases";
 
+// These coordinates are interface controls only; they are not geographic data.
+const ADVISORY_SELECTOR_POINTS = [
+  { x: 132, y: 112 },
+  { x: 220, y: 172 },
+  { x: 304, y: 214 },
+  { x: 176, y: 296 },
+  { x: 266, y: 346 },
+  { x: 133, y: 405 },
+];
+
 interface DottedIndiaMapProps {
   advisories: PublicFraudAdvisory[];
   activeAdvisoryId: string;
@@ -68,25 +78,32 @@ export const DottedIndiaMap: React.FC<DottedIndiaMapProps> = ({
               />
             ))}
           </g>
-          {/* The pulse marks the selected advisory in the interface, not a place on the map. */}
-          <circle cx="220" cy="236" r="11" fill="none" stroke="rgba(52,211,153,.75)" strokeWidth="1.5" className="animate-ping" />
-          <circle cx="220" cy="236" r="5" fill="#34d399" fillOpacity=".9" />
-          <text
-            x="220"
-            y="273"
-            textAnchor="middle"
-            className="fill-cyan-200/80 font-mono text-[13px] font-semibold tracking-[0.2em]"
-          >
-            PUBLIC ADVISORIES
-          </text>
-          <text
-            x="220"
-            y="294"
-            textAnchor="middle"
-            className="fill-slate-400 font-mono text-[9px] tracking-[0.12em]"
-          >
-            {String(displayIndex + 1).padStart(2, "0")} / {String(advisories.length).padStart(2, "0")}
-          </text>
+          {/* Markers reproduce the selector visual; their positions have no geographic meaning. */}
+          {advisories.map((advisory, index) => {
+            const point = ADVISORY_SELECTOR_POINTS[index % ADVISORY_SELECTOR_POINTS.length];
+            const isSelected = advisory.id === displayAdvisory.id;
+            return (
+              <g
+                key={advisory.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select advisory ${index + 1}: ${advisory.shortHeadline || advisory.headline}`}
+                aria-pressed={advisory.id === activeAdvisoryId}
+                className="cursor-pointer outline-none"
+                onClick={() => onSelectAdvisory(advisory.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelectAdvisory(advisory.id);
+                  }
+                }}
+              >
+                {isSelected && <circle cx={point.x} cy={point.y} r="12" fill="none" stroke="#34d399" strokeWidth="1.5" className="animate-ping" />}
+                <circle cx={point.x} cy={point.y} r={isSelected ? 6 : 4.5} fill={isSelected ? "#ef4444" : "#10b981"} fillOpacity={isSelected ? ".95" : ".8"} />
+                <circle cx={point.x} cy={point.y} r="1.8" fill="#fff" />
+              </g>
+            );
+          })}
         </svg>
       </div>
 
@@ -117,7 +134,7 @@ export const DottedIndiaMap: React.FC<DottedIndiaMapProps> = ({
         })}
       </div>
 
-      <div className="mt-3 w-full max-w-sm rounded-xl border border-white/[0.08] bg-[#07101d]/90 p-3 text-left shadow-lg transition-all duration-300">
+      <div className="absolute left-[36%] top-[45%] z-10 w-[58%] max-w-56 rounded-xl border border-emerald-500/40 bg-[#06111E]/95 p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300">
         <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-300">
           <FileCheck2 className="h-3.5 w-3.5" />
           <span>Advisory {displayIndex + 1} · {displayAdvisory.publisher}</span>
@@ -130,12 +147,12 @@ export const DottedIndiaMap: React.FC<DottedIndiaMapProps> = ({
           onClick={() => onOpenAdvisory(displayAdvisory)}
           className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-300 transition-colors hover:text-cyan-200"
         >
-          View advisory details <ArrowRight className="h-3 w-3" />
+          View advisory <ArrowRight className="h-3 w-3" />
         </button>
       </div>
 
       <p className="mt-3 max-w-sm text-center text-[10px] leading-relaxed text-slate-400">
-        The silhouette and selector are illustrative only. They do not show verified incident locations.
+        Marker positions are illustrative selector controls, not incident locations. The source links describe advisories and public reporting.
       </p>
     </div>
   );

@@ -7,8 +7,10 @@ import {
   Database,
   FileSearch,
   Layers,
+  LineChart,
   Loader2,
   RefreshCw,
+  SlidersHorizontal,
   ShieldAlert,
   Sparkles,
   Upload,
@@ -85,6 +87,162 @@ const CoverageCard: React.FC<{
 
 const formatTime = (milliseconds: number) =>
   milliseconds < 1000 ? `${milliseconds} ms` : `${(milliseconds / 1000).toFixed(1)} s`;
+
+const ARCHIVE_THRESHOLDS = ["0.60", "0.50", "0.42", "0.39", "0.37", "0.34"];
+
+/** Historical screenshot figures are reproduced for context, never presented as live measurements. */
+const ArchivedEvaluationPanel: React.FC = () => {
+  const [selectedThreshold, setSelectedThreshold] = useState("0.42");
+  const hasRecordedPoint = selectedThreshold === "0.42";
+
+  return (
+    <section aria-labelledby="archive-evaluation-title" className="space-y-5">
+      <header>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-sky-400">
+          <LineChart className="h-4 w-4" /> Forensic engineering transparency
+        </div>
+        <h2 id="archive-evaluation-title" className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          Model Registry &amp; ROC-AUC Evaluation
+        </h2>
+        <p className="mt-2 max-w-4xl text-sm leading-relaxed text-slate-400">
+          Historical figures transcribed from the supplied interface screenshots. Their source records, labels, and calculations have not been independently verified or reproduced by the deployed analyzer.
+        </p>
+      </header>
+
+      <div role="note" className="rounded-2xl border border-amber-500/30 bg-amber-950/30 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+          <div>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-amber-200">Archive figures · unverified · not live model output</p>
+            <p className="mt-2 text-xs leading-relaxed text-amber-100/80">
+              The current deployment reports heuristic image-review cues only. It does not load the archived model, provide calibrated authenticity probabilities, or verify payment settlement. Treat every number below as an unverified historical claim, not evidence of current accuracy.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <ArchiveMetric label="Archive ROC-AUC" value="0.9731" detail="Screenshot-reported · N=23 described samples" tone="sky" />
+        <ArchiveMetric label="Archive Brier score" value="0.1124" detail="Screenshot-reported · calibration not verified" tone="green" />
+        <ArchiveMetric label="Archive model name" value="verisight-fusion-gbdt-v1" detail="Version 1.2.1 · not deployed in this site" tone="sky" compact />
+        <ArchiveMetric label="Data isolation" value="Claim unverified" detail="Screenshot says isolated; split records are unavailable" tone="amber" compact />
+      </div>
+
+      <div className="rounded-xl border border-white/[0.08] bg-[#0B1220] px-4 py-3 font-mono text-[11px] leading-6 text-slate-300 sm:flex sm:flex-wrap sm:items-center sm:gap-x-5">
+        <span><span className="text-slate-500">Dataset:</span> User-described WhatsApp screenshots</span>
+        <span><span className="text-slate-500">Samples:</span> 23 (labels unverified)</span>
+        <span><span className="text-rose-300">Manipulated:</span> 10 claimed</span>
+        <span><span className="text-emerald-300">Authentic:</span> 13 claimed</span>
+      </div>
+
+      <div className="grid items-start gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+        <article className="rounded-2xl border border-white/[0.09] bg-[#080D18] p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-sky-300">Recreated archive figure</p>
+              <h3 className="mt-1 text-base font-semibold text-white">Receiver Operating Characteristic (ROC) Curve</h3>
+            </div>
+            <span className="rounded border border-amber-500/30 bg-amber-950/30 px-2 py-1 font-mono text-[10px] text-amber-200">AUC 0.9731 · unverified</span>
+          </div>
+          <div className="mt-4 rounded-xl bg-[#060911] p-2 sm:p-4">
+            <svg viewBox="0 0 640 390" className="w-full" role="img" aria-label="Schematic recreation of the ROC curve shown in the supplied screenshot; source scores are unavailable.">
+              {[0, 0.2, 0.4, 0.6, 0.8, 1].map((tick) => {
+                const x = 62 + tick * 530;
+                const y = 318 - tick * 260;
+                return <g key={tick}>
+                  <line x1="62" y1={y} x2="592" y2={y} stroke="#1e293b" strokeDasharray="3 4" />
+                  <line x1={x} y1="58" x2={x} y2="318" stroke="#1e293b" strokeDasharray="3 4" />
+                  <text x="50" y={y + 4} textAnchor="end" fill="#64748b" fontSize="11">{tick.toFixed(1)}</text>
+                  <text x={x} y="338" textAnchor="middle" fill="#64748b" fontSize="11">{tick.toFixed(1)}</text>
+                </g>;
+              })}
+              <line x1="62" y1="318" x2="592" y2="58" stroke="#475569" strokeDasharray="5 5" />
+              <path d="M 62 318 L 62 292 L 62 240 L 62 162 L 103 58 L 592 58" fill="none" stroke="#22c7f5" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M 62 318 L 62 292 L 62 240 L 62 162 L 103 58 L 592 58 L 592 318 Z" fill="#0ea5e9" opacity=".12" />
+              {[[62,292],[62,240],[62,162],[103,58],[357,58],[592,58]].map(([x,y], index) => <circle key={index} cx={x} cy={y} r={index === 3 ? 6 : 4} fill="#22c7f5" stroke="#e0f2fe" strokeWidth="1.5" />)}
+              <text x="327" y="376" textAnchor="middle" fill="#94a3b8" fontSize="12">False positive rate (1 − specificity)</text>
+              <text x="18" y="190" textAnchor="middle" fill="#94a3b8" fontSize="12" transform="rotate(-90 18 190)">True positive rate (sensitivity)</text>
+            </svg>
+          </div>
+          <p className="mt-3 text-[10px] leading-relaxed text-slate-500">Visual trace is an approximate recreation of the supplied screenshot. The original per-image scores and exact plotted coordinates were not provided.</p>
+        </article>
+
+        <article className="rounded-2xl border border-white/[0.09] bg-[#0B1220] p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] pb-3">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-sky-300" />
+              <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white">Archive operating point</h3>
+            </div>
+            <span className="rounded border border-sky-500/30 bg-sky-950/50 px-2 py-1 font-mono text-xs font-bold text-sky-200">τ = {selectedThreshold}</span>
+          </div>
+          <p className="mt-3 text-[10px] uppercase tracking-wider text-slate-500">Select an archived threshold</p>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {ARCHIVE_THRESHOLDS.map((threshold) => (
+              <button
+                key={threshold}
+                type="button"
+                aria-pressed={selectedThreshold === threshold}
+                onClick={() => setSelectedThreshold(threshold)}
+                className={`rounded-lg px-2 py-2 font-mono text-xs transition ${selectedThreshold === threshold ? "bg-sky-500 text-slate-950 font-bold" : "bg-[#151d2d] text-slate-300 hover:bg-[#202b40]"}`}
+              >τ = {threshold}</button>
+            ))}
+          </div>
+
+          {hasRecordedPoint ? (
+            <>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <ArchiveMetric label="Sensitivity (TPR)" value="100.0%" detail="10 of 10 claimed positives" tone="green" compact />
+                <ArchiveMetric label="Specificity" value="92.3%" detail="12 of 13 claimed negatives" tone="green" compact />
+                <ArchiveMetric label="Precision (PPV)" value="90.9%" detail="10 / (10 + 1), archive counts" tone="sky" compact />
+                <ArchiveMetric label="False-positive rate" value="7.7%" detail="1 false alarm of 13" tone="amber" compact />
+              </div>
+              <div className="mt-4 border-t border-white/[0.08] pt-3">
+                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-slate-400">
+                  <span>Confusion matrix at τ = 0.42</span><span>Archive counts</span>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+                  <ConfusionCell label="True positive" value="10" tone="green" />
+                  <ConfusionCell label="False positive" value="1" tone="rose" />
+                  <ConfusionCell label="False negative" value="0" tone="amber" />
+                  <ConfusionCell label="True negative" value="12" tone="green" />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div role="status" className="mt-4 rounded-xl border border-amber-500/20 bg-amber-950/20 p-4 text-xs leading-relaxed text-amber-100/80">
+              The supplied screenshots show counts only at τ = 0.42. No results were provided for τ = {selectedThreshold}; metrics are unavailable for this selection.
+            </div>
+          )}
+          <p className="mt-3 text-[10px] leading-relaxed text-slate-500">Archive screenshot values are not live predictions or a verified real-world error rate. They do not verify whether funds settled.</p>
+        </article>
+      </div>
+    </section>
+  );
+};
+
+const ArchiveMetric: React.FC<{
+  label: string;
+  value: string;
+  detail: string;
+  tone: "sky" | "green" | "amber";
+  compact?: boolean;
+}> = ({ label, value, detail, tone, compact = false }) => {
+  const color = tone === "green" ? "text-emerald-300" : tone === "amber" ? "text-amber-200" : "text-sky-200";
+  const border = tone === "green" ? "border-emerald-500/20" : tone === "amber" ? "border-amber-500/20" : "border-sky-500/20";
+  return (
+    <article className={`rounded-xl border ${border} bg-[#0C1322] ${compact ? "p-3" : "p-4"}`}>
+      <p className="font-mono text-[9px] uppercase tracking-wider text-slate-500">{label}</p>
+      <p className={`mt-1 ${compact ? "text-lg" : "text-2xl"} font-semibold tabular-nums ${color}`}>{value}</p>
+      <p className="mt-1 text-[10px] leading-relaxed text-slate-400">{detail}</p>
+    </article>
+  );
+};
+
+const ConfusionCell: React.FC<{ label: string; value: string; tone: "green" | "rose" | "amber" }> = ({ label, value, tone }) => {
+  const color = tone === "rose" ? "text-rose-300" : tone === "amber" ? "text-amber-300" : "text-emerald-300";
+  const border = tone === "rose" ? "border-rose-500/30" : tone === "amber" ? "border-amber-500/30" : "border-emerald-500/30";
+  return <div className={`rounded-lg border ${border} bg-black/20 p-2`}><p className="text-[9px] text-slate-400">{label}</p><p className={`mt-1 font-mono text-xl font-bold ${color}`}>{value}</p></div>;
+};
 
 export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
   onNavigateWorkbench,
@@ -224,6 +382,8 @@ export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
             <button type="button" onClick={() => void refresh()} className="rounded border border-amber-500/30 px-2.5 py-1 hover:bg-amber-500/10">Retry</button>
           </div>
         )}
+
+        <ArchivedEvaluationPanel />
 
         <section className="relative overflow-hidden rounded-2xl border border-sky-500/20 bg-gradient-to-br from-[#0D1A30] via-[#0A1221] to-[#0A0F1A] p-5 shadow-xl sm:p-6">
           <div className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full bg-sky-500/10 blur-3xl" />

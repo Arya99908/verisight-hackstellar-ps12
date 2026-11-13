@@ -174,9 +174,9 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
 
             {/* Headline matching user's visual reference */}
             <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-white leading-[1.15] tracking-tight font-sans">
-              Recognize the pattern.
+              It happened to them.
               <br />
-              Verify before you act
+              Learn to recognize it
               <br />
               <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
                 before it happens to you.
@@ -185,10 +185,10 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
 
             {/* Introductory Narrative Prose */}
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans max-w-lg">
-              Explore official public guidance about payment screenshots, QR codes, impersonation, and reporting.
+              Explore public reporting and official guidance about UPI fraud, fake payment screenshots, QR codes, and digital deception across India. Learn the warning signs and how to check a suspicious claim.
             </p>
             <p className="max-w-lg text-xs leading-relaxed text-amber-200/80">
-              These cards summarize public advisories, not individual incident reports. The illustrations are examples only; no case-specific losses or incident locations are claimed.
+              Cards are sourced public advisories and reporting summaries. Review the linked source for incident details; illustrations are examples, not original evidence. Map markers are decorative and do not show incident locations.
             </p>
           </div>
 
