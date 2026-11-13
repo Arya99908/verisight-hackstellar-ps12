@@ -31,6 +31,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface WhyVerisightProps {
   onNavigateWorkbench: () => void;
+  embedMode?: boolean;
+  id?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -534,7 +536,11 @@ const PIPELINE_NODES: PipelineNode[] = [
   },
 ];
 
-export const WhyVerisight: React.FC<WhyVerisightProps> = ({ onNavigateWorkbench }) => {
+export const WhyVerisight: React.FC<WhyVerisightProps> = ({
+  onNavigateWorkbench,
+  embedMode = false,
+  id = "why-verisight",
+}) => {
   // 1. ROC / PR Sandbox State
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>("user_supplied_external");
   const [threshold, setThreshold] = useState<number>(0.25);
@@ -604,7 +610,12 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({ onNavigateWorkbench 
   }, [heatmapDomain]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#060a12] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div
+      id={id}
+      className={`${
+        embedMode ? "" : "flex-1 overflow-y-auto"
+      } bg-[#060a12] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200`}
+    >
       {/* ----------------------------------------------------------------- */}
       {/* SECTION 1: HERO & POSITIONING STATEMENT                           */}
       {/* ----------------------------------------------------------------- */}

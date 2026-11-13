@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { CaseRecord, IncidentCategory } from "../../types/response";
+import { RealWorldCaseShowcase } from "../RealWorldCaseShowcase";
 
 interface IncidentCentreProps {
   onNavigateTab: (tab: string, initialCategory?: IncidentCategory) => void;
@@ -403,6 +404,13 @@ export const IncidentCentre: React.FC<IncidentCentreProps> = ({
             );
           })}
         </div>
+      </div>
+
+      {/* 5. Real-World Documented Fraud Cases Showcase */}
+      <div className="pt-6 border-t border-white/[0.08]">
+        <RealWorldCaseShowcase
+          onNavigateResponse={(cat) => onNavigateTab("voice", cat as any)}
+        />
       </div>
     </div>
   );

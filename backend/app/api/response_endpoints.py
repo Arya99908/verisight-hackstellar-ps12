@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, File, Form, HTTPException, Query, Response, UploadFile
 
 from app.services.response.complaint_generator import generate_formal_complaint
 from app.services.response.dossier_generator import (
@@ -8,6 +8,7 @@ from app.services.response.dossier_generator import (
     generate_evidence_dossier_pdf,
 )
 from app.services.response.models import (
+    AudioTranscriptionResponse,
     ExtractedIncidentDetails,
     FormalComplaint,
     GenerateComplaintRequest,
@@ -26,6 +27,18 @@ from app.services.response.reporting_directory import (
 )
 
 router = APIRouter(prefix="/response", tags=["Response & Guidance"])
+
+
+@router.post("/transcribe-audio", response_model=AudioTranscriptionResponse)
+async def transcribe_audio_endpoint(
+    file: UploadFile = File(...), language: str = Form("en-IN")
+):
+    # No server-side ASR model is configured. Never substitute canned text for speech.
+    await file.close()
+    raise HTTPException(
+        status_code=503,
+        detail="Server transcription is unavailable. Use browser speech recognition or type the transcript.",
+    )
 
 
 @router.post("/understand", response_model=UnderstandIncidentResponse)

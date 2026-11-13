@@ -190,3 +190,12 @@ class CaseRecord(BaseModel):
     complaint_draft: Optional[FormalComplaint] = None
     forensic_attachment: Optional[dict[str, Any]] = None
     timeline: list[TimelineEvent] = Field(default_factory=list)
+
+
+class AudioTranscriptionResponse(BaseModel):
+    transcript: str
+    confidence: Optional[float] = None
+    detected_language: str = "en-IN"
+    duration_seconds: float = 0.0
+    engine: str = "Unavailable"
+    client_action_needed: bool = True

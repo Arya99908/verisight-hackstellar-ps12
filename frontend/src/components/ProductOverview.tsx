@@ -26,6 +26,7 @@ import {
 import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { AppRoute } from "./NavigationHeader";
 import { DemoSampleMeta } from "../types/forensic";
+import { RealWorldCaseShowcase } from "./RealWorldCaseShowcase";
 
 interface ProductOverviewProps {
   onNavigate: (route: AppRoute, query?: Record<string, string>) => void;
@@ -1014,6 +1015,10 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
         {/* =========================================================================
             FOOTER
         ========================================================================= */}
+        <section className="border-t border-white/[0.08] pt-12" aria-label="Selected fraud case studies">
+          <RealWorldCaseShowcase onNavigateResponse={() => onNavigate("/response")} />
+        </section>
+
         <footer className="mt-16 border-t border-white/[0.08] pt-8 pb-12 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-mono gap-4">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-sky-400" />

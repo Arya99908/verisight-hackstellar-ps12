@@ -375,3 +375,33 @@ export async function downloadDossierPdfBlob(report: object, complaintRef?: stri
   if (!res.ok) throw new Error("Could not generate the evidence dossier PDF.");
   return res.blob();
 }
+
+export interface AudioTranscriptionResponse {
+  transcript: string;
+  confidence: number | null;
+  detected_language: string;
+  duration_seconds: number;
+  engine: string;
+  client_action_needed: boolean;
+}
+
+export async function transcribeAudioFile(
+  audioBlob: Blob,
+  language = "en-IN",
+  clientHint = ""
+): Promise<AudioTranscriptionResponse> {
+  const formData = new FormData();
+  formData.append("file", audioBlob, "recording.webm");
+  formData.append("language", language);
+  if (clientHint) formData.append("client_hint", clientHint);
+
+  const res = await fetch(`${API_BASE}/response/transcribe-audio`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Audio transcription failed" }));
+    throw new Error(err.detail || "Audio transcription failed");
+  }
+  return res.json();
+}

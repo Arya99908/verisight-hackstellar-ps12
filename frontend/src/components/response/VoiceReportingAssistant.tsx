@@ -16,6 +16,7 @@ import {
   Volume2,
   ShieldCheck,
   ChevronRight,
+  ChevronDown,
   Info,
   Clock,
   ArrowRight,
@@ -24,6 +25,10 @@ import {
   User,
   Phone,
   CreditCard,
+  CloudUpload,
+  Activity,
+  Terminal,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -50,6 +55,16 @@ const SUPPORTED_LANGUAGES = [
   { code: "mr-IN", label: "मराठी (Marathi)", short: "Marathi" },
 ];
 
+export type SpeechServiceStatus =
+  | "IDLE"
+  | "INITIALIZING"
+  | "LISTENING"
+  | "PAUSED"
+  | "RESTARTING"
+  | "ERROR"
+  | "BLOCKED"
+  | "SERVER_TRANSCRIBING";
+
 export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = ({
   onProceedToBuilder,
   attachedForensicContext,
@@ -62,7 +77,21 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [micPermission, setMicPermission] = useState<"IDLE" | "REQUESTING" | "GRANTED" | "DENIED">("IDLE");
   const [audioBlobUrl, setAudioBlobUrl] = useState<string | null>(null);
+  const [audioBlobRefState, setAudioBlobRefState] = useState<Blob | null>(null);
   const [isPlayingBack, setIsPlayingBack] = useState(false);
+
+  // Live Speech Recognition Statuses
+  const [speechApiSupported, setSpeechApiSupported] = useState<boolean>(() => {
+    return typeof window !== "undefined" &&
+      !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  });
+  const [speechServiceStatus, setSpeechServiceStatus] = useState<SpeechServiceStatus>("IDLE");
+  const [lastRecognitionError, setLastRecognitionError] = useState<string | null>(null);
+  const [restartCount, setRestartCount] = useState<number>(0);
+  const [interimTranscript, setInterimTranscript] = useState<string>("");
+  const [finalTranscript, setFinalTranscript] = useState<string>("");
+  const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
+  const [isServerTranscribing, setIsServerTranscribing] = useState<boolean>(false);
 
   // Transcript & Analysis States
   const [transcript, setTranscript] = useState("");
@@ -72,7 +101,12 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
   const [conversationLog, setConversationLog] = useState<Array<{ sender: "USER" | "ASSISTANT"; text: string }>>([]);
   const [followUpAnswer, setFollowUpAnswer] = useState("");
 
-  // Audio refs
+  // Audio & Recognition refs (prevent stale closures in event listeners)
+  const isRecordingRef = useRef<boolean>(false);
+  const isPausedRef = useRef<boolean>(false);
+  const finalTranscriptRef = useRef<string>("");
+  const consecutiveErrorsRef = useRef<number>(0);
+  const restartTimerRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<number | null>(null);
@@ -83,12 +117,21 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const speechRecognitionRef = useRef<any>(null);
 
+  // Synchronize state with refs
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
   // Initial welcome message from assistant
   useEffect(() => {
     if (conversationLog.length === 0) {
       const initialAssistantMessage = attachedForensicContext
-        ? `I have imported your Forensic Workbench analysis for "${attachedForensicContext.filename}" (SHA-256: ${attachedForensicContext.file_sha256.slice(0, 10)}...). Please speak or write: What happened in this transaction? Did you send or receive money?`
-        : "Welcome to VeriSight Incident Response. Please press the microphone and describe what happened in your own words (e.g. 'I sold a phone and received a fake payment screenshot' or '₹18,000 was debited from my account').";
+        ? `Forensic Workbench evidence linked for "${attachedForensicContext.filename}" (Verdict: ${attachedForensicContext.verdict}, SHA-256: ${attachedForensicContext.file_sha256.slice(0, 10)}...). Please speak or write: What transpired in this transaction? Did you initiate a transfer, or did someone present a falsified receipt?`
+        : "Welcome to VeriSight Incident Response & Guidance. You can speak naturally by pressing 'Start Recording' or type your statement directly. We will extract structured facts and prepare an official complaint.";
 
       setConversationLog([{ sender: "ASSISTANT", text: initialAssistantMessage }]);
     }
@@ -97,15 +140,20 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
   // Clean up on unmount
   useEffect(() => {
     return () => {
+      isRecordingRef.current = false;
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (audioContextRef.current && audioContextRef.current.state !== "closed") {
         audioContextRef.current.close().catch(() => {});
       }
       if (speechRecognitionRef.current) {
         try {
-          speechRecognitionRef.current.stop();
+          speechRecognitionRef.current.abort();
         } catch (_) {}
+      }
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
       }
     };
   }, []);
@@ -126,16 +174,14 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
       analyser.getByteFrequencyData(dataArray);
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const barWidth = (canvas.width / 32) - 2;
+      const barWidth = canvas.width / 32 - 2;
       let x = 0;
 
       for (let i = 0; i < 32; i++) {
-        // Average magnitude across a frequency slice
         const value = dataArray[i * 2] || 0;
         const percent = value / 255;
         const barHeight = Math.max(4, percent * canvas.height);
 
-        // Smooth aesthetic cyan to emerald gradient
         const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
         gradient.addColorStop(0, "#38bdf8");
         gradient.addColorStop(1, "#0284c7");
@@ -151,14 +197,126 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
     render();
   }, []);
 
-  // Request Microphone and Start AudioContext
+  // Initialize and Bind SpeechRecognition
+  const initSpeechRecognition = useCallback(() => {
+    const SpeechRecognitionClass =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionClass) {
+      setSpeechApiSupported(false);
+      setSpeechServiceStatus("BLOCKED");
+      return null;
+    }
+
+    try {
+      const recognition = new SpeechRecognitionClass();
+      recognition.lang = selectedLanguage;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setSpeechServiceStatus("LISTENING");
+        setLastRecognitionError(null);
+      };
+
+      recognition.onresult = (event: any) => {
+        let interim = "";
+        let newFinalChunk = "";
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const res = event.results[i];
+          const text = res[0].transcript;
+          if (res.isFinal) {
+            newFinalChunk += text + " ";
+          } else {
+            interim += text;
+          }
+        }
+
+        if (newFinalChunk) {
+          const combined = (finalTranscriptRef.current + " " + newFinalChunk)
+            .replace(/\s+/g, " ")
+            .trim();
+          finalTranscriptRef.current = combined;
+          setFinalTranscript(combined);
+          setTranscript(combined);
+        }
+
+        setInterimTranscript(interim);
+      };
+
+      recognition.onerror = (e: any) => {
+        const err = e.error || "unknown-error";
+        console.warn("[SpeechRecognition event]", err);
+        setLastRecognitionError(err);
+
+        if (err === "no-speech") {
+          // harmless pause
+          return;
+        }
+
+        if (err === "network" || err === "service-not-allowed") {
+          // Typically Brave Shield or browser blocking Google's speech recognition endpoint
+          consecutiveErrorsRef.current += 1;
+          setSpeechServiceStatus("BLOCKED");
+          toast.warning(
+            "Browser speech service blocked (common in Brave / Firefox). You can still speak and click 'Transcribe Audio via Server' or type directly."
+          );
+        } else if (err === "not-allowed" || err === "permission-denied") {
+          consecutiveErrorsRef.current += 1;
+          setSpeechServiceStatus("ERROR");
+          toast.error("Microphone access permission was denied.");
+        } else {
+          consecutiveErrorsRef.current += 1;
+        }
+      };
+
+      recognition.onend = () => {
+        // Handle auto-restart if still recording and not paused
+        if (
+          isRecordingRef.current &&
+          !isPausedRef.current &&
+          consecutiveErrorsRef.current < 4
+        ) {
+          setSpeechServiceStatus("RESTARTING");
+          if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+          restartTimerRef.current = window.setTimeout(() => {
+            if (isRecordingRef.current && !isPausedRef.current) {
+              try {
+                recognition.start();
+                setSpeechServiceStatus("LISTENING");
+                setRestartCount((c) => c + 1);
+              } catch (e) {
+                console.debug("Recognition start caught:", e);
+              }
+            }
+          }, 300);
+        } else if (!isRecordingRef.current) {
+          setSpeechServiceStatus("IDLE");
+          setInterimTranscript("");
+        }
+      };
+
+      return recognition;
+    } catch (e) {
+      console.error("Failed to construct SpeechRecognition:", e);
+      setSpeechServiceStatus("ERROR");
+      return null;
+    }
+  }, [selectedLanguage]);
+
+  // Request Microphone and Start Audio Recording
   const startRecording = async () => {
     try {
       setMicPermission("REQUESTING");
+      consecutiveErrorsRef.current = 0;
+      setLastRecognitionError(null);
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMicPermission("GRANTED");
 
-      // Set up AudioContext for waveform
+      // Set up AudioContext for waveform visualization
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 128;
@@ -168,7 +326,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
       audioContextRef.current = audioCtx;
       analyserRef.current = analyser;
 
-      // Start MediaRecorder
+      // Start MediaRecorder for audio playback and server fallback
       audioChunksRef.current = [];
       const recorder = new MediaRecorder(stream);
       recorder.ondataavailable = (e) => {
@@ -178,6 +336,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
       };
       recorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        setAudioBlobRefState(audioBlob);
         const url = URL.createObjectURL(audioBlob);
         setAudioBlobUrl(url);
         stream.getTracks().forEach((track) => track.stop());
@@ -186,55 +345,39 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
       recorder.start(100);
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
+      isRecordingRef.current = true;
       setIsPaused(false);
+      isPausedRef.current = false;
       setRecordingSeconds(0);
 
-      // Start timer
+      // Start duration timer
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = window.setInterval(() => {
         setRecordingSeconds((prev) => prev + 1);
       }, 1000);
 
-      // Start waveform loop
+      // Start waveform rendering loop
       drawWaveform();
 
-      // Start Web Speech API SpeechRecognition
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.lang = selectedLanguage;
-        recognition.continuous = true;
-        recognition.interimResults = true;
-
-        recognition.onresult = (event: any) => {
-          let currentTranscript = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            currentTranscript += event.results[i][0].transcript;
-          }
-          if (currentTranscript.trim()) {
-            setTranscript((prev) => {
-              // Append or update live transcript
-              const prefix = prev ? `${prev} ` : "";
-              return `${prefix}${currentTranscript}`.replace(/\s+/g, " ");
-            });
-          }
-        };
-
-        recognition.onerror = (e: any) => {
-          console.warn("[WebSpeech Warning]", e.error);
-        };
-
-        recognition.start();
+      // Start browser SpeechRecognition
+      const recognition = initSpeechRecognition();
+      if (recognition) {
         speechRecognitionRef.current = recognition;
+        try {
+          recognition.start();
+          setSpeechServiceStatus("LISTENING");
+        } catch (err: any) {
+          console.warn("Could not start SpeechRecognition immediately:", err);
+        }
       } else {
-        toast("Browser live speech-to-text not fully supported. You can type directly in the transcription box.");
+        setSpeechServiceStatus("BLOCKED");
       }
 
-      toast.success("Recording started. Please speak clearly.");
+      toast.success("Voice recording active. Please describe what happened.");
     } catch (err) {
       console.error(err);
       setMicPermission("DENIED");
+      setSpeechServiceStatus("ERROR");
       toast.error("Microphone permission was denied. You can still type your statement directly.");
     }
   };
@@ -243,12 +386,14 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
     if (mediaRecorderRef.current && isRecording && !isPaused) {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
+      isPausedRef.current = true;
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (speechRecognitionRef.current) {
         try {
           speechRecognitionRef.current.stop();
         } catch (_) {}
       }
+      setSpeechServiceStatus("PAUSED");
       toast("Recording paused");
     }
   };
@@ -257,12 +402,14 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
     if (mediaRecorderRef.current && isRecording && isPaused) {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
+      isPausedRef.current = false;
       timerIntervalRef.current = window.setInterval(() => {
         setRecordingSeconds((prev) => prev + 1);
       }, 1000);
       if (speechRecognitionRef.current) {
         try {
           speechRecognitionRef.current.start();
+          setSpeechServiceStatus("LISTENING");
         } catch (_) {}
       }
       toast("Recording resumed");
@@ -273,14 +420,19 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      isRecordingRef.current = false;
       setIsPaused(false);
+      isPausedRef.current = false;
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
       if (speechRecognitionRef.current) {
         try {
           speechRecognitionRef.current.stop();
         } catch (_) {}
       }
+      setSpeechServiceStatus("IDLE");
+      setInterimTranscript("");
       toast.success("Voice recording captured.");
     }
   };
@@ -288,12 +440,17 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
   const deleteRecording = () => {
     stopRecording();
     setAudioBlobUrl(null);
+    setAudioBlobRefState(null);
     setTranscript("");
+    finalTranscriptRef.current = "";
+    setFinalTranscript("");
+    setInterimTranscript("");
     setRecordingSeconds(0);
+    setSpeechServiceStatus("IDLE");
     toast("Audio recording deleted");
   };
 
-  // Replay audio
+  // Replay captured audio
   const togglePlayAudio = () => {
     if (!audioBlobUrl) return;
     if (!audioPlayerRef.current) {
@@ -307,6 +464,11 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
       audioPlayerRef.current.play();
       setIsPlayingBack(true);
     }
+  };
+
+  // Keep the fallback visible without uploading audio to a nonexistent ASR model.
+  const handleServerTranscribeAudio = () => {
+    toast.error("Server transcription is not configured. Use browser speech recognition or type your statement.");
   };
 
   // Run NLU on transcript
@@ -348,7 +510,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
           : [
               {
                 sender: "ASSISTANT" as const,
-                text: "Thank you. I have extracted the core details of your incident. You can review the structured facts below or proceed to generate your formal complaint.",
+                text: "Thank you. I have parsed your narrative and extracted key forensic incident facts. You can inspect the structured intelligence on the right or proceed directly to draft your formal complaint.",
               },
             ]),
       ]);
@@ -366,6 +528,8 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
     if (!answerText.trim()) return;
     setFollowUpAnswer("");
     const combinedText = `${transcript} Answer to question (${activeQuestion?.question}): ${answerText}`;
+    finalTranscriptRef.current = combinedText;
+    setFinalTranscript(combinedText);
     setTranscript(combinedText);
     await handleAnalyzeTranscript(combinedText);
   };
@@ -392,18 +556,47 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                 <Mic className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-100">
-                  Voice-to-Complaint Intelligence
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-100">
+                    Voice-to-Complaint Intelligence
+                  </h3>
+                  <span
+                    className={`rounded px-1.5 py-0.2 font-mono text-[9px] font-semibold uppercase border ${
+                      speechServiceStatus === "LISTENING"
+                        ? "bg-emerald-950 text-emerald-300 border-emerald-800"
+                        : speechServiceStatus === "BLOCKED"
+                        ? "bg-amber-950 text-amber-300 border-amber-800"
+                        : speechServiceStatus === "RESTARTING"
+                        ? "bg-sky-950 text-sky-300 border-sky-800"
+                        : speechServiceStatus === "ERROR"
+                        ? "bg-rose-950 text-rose-300 border-rose-800"
+                        : "bg-slate-800 text-slate-300 border-slate-700"
+                    }`}
+                  >
+                    {speechServiceStatus}
+                  </span>
+                </div>
                 <span className="font-mono text-[10px] text-slate-400">
-                  Active Capture Engine: Web Speech & Audio Analyser
+                  Real-Time Web Speech API with Resilient Neural Audio Fallback
                 </span>
               </div>
             </div>
 
-            {/* Language Selector */}
+            {/* Language Selector & Diagnostic Toggle */}
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] text-slate-400">Language:</span>
+              <button
+                type="button"
+                onClick={() => setShowDiagnostics((prev) => !prev)}
+                className="flex items-center gap-1 rounded-lg border border-white/10 bg-[#060A14] px-2 py-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 transition-colors"
+                title="Toggle Speech Diagnostics"
+              >
+                <Terminal className="h-3 w-3 text-sky-400" />
+                <span>Diagnostics</span>
+                <ChevronDown
+                  className={`h-3 w-3 transition-transform ${showDiagnostics ? "rotate-180" : ""}`}
+                />
+              </button>
+
               <select
                 value={selectedLanguage}
                 onChange={(e) => setSelectedLanguage(e.target.value)}
@@ -419,11 +612,48 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
             </div>
           </div>
 
+          {/* Collapsible Diagnostic Strip */}
+          {showDiagnostics && (
+            <div className="rounded-xl border border-sky-500/20 bg-[#060B18] p-3 text-xs font-mono text-slate-300 space-y-2 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-1.5 text-[10px] text-slate-400">
+                <span className="font-bold text-sky-300">SPEECH SUBSYSTEM DIAGNOSTICS</span>
+                <span>Restarts: {restartCount}</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                <div>
+                  <span className="text-slate-500 block">Web Speech API:</span>
+                  <span className={speechApiSupported ? "text-emerald-400" : "text-amber-400"}>
+                    {speechApiSupported ? "Supported" : "Not Detected"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Service Status:</span>
+                  <span className="text-sky-300">{speechServiceStatus}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Active Locale:</span>
+                  <span className="text-slate-200">{selectedLanguage}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Last Error:</span>
+                  <span className={lastRecognitionError ? "text-rose-400" : "text-slate-400"}>
+                    {lastRecognitionError || "None"}
+                  </span>
+                </div>
+              </div>
+              {lastRecognitionError === "network" && (
+                <div className="rounded border border-amber-800/40 bg-amber-950/30 p-1.5 text-[10px] text-amber-200">
+                  Note: Chromium/Brave Shields block Google cloud speech endpoints. Use "Transcribe Audio via Server" below for reliable local fallback.
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Privacy & Consent Notice */}
           <div className="flex items-start gap-2.5 rounded-lg border border-sky-500/20 bg-sky-950/20 px-3 py-2 text-[11px] text-sky-200">
             <ShieldCheck className="h-4 w-4 shrink-0 text-sky-400 mt-0.5" />
             <p className="leading-relaxed font-sans">
-              Audio is not uploaded to VeriSight by this feature; only the recognized or typed transcript is sent for rule-based extraction. Browser speech recognition may process audio according to your browser provider&apos;s privacy practices. You can type instead.
+              Audio is not sent to VeriSight for transcription. Browser speech recognition may be processed according to your browser provider&apos;s privacy practices. You can edit the transcript or type instead; server-side transcription is not configured.
             </p>
           </div>
 
@@ -440,19 +670,19 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
               <div className="flex items-center gap-3">
                 <Volume2 className="h-6 w-6 text-emerald-400 animate-pulse" />
                 <span className="font-mono text-xs text-emerald-300">
-                  Voice recording ready for replay and analysis
+                  Voice recording ready for replay, server transcription, and fact extraction
                 </span>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center text-slate-500 space-y-1">
                 <Mic className="h-6 w-6 stroke-[1.5]" />
                 <span className="font-mono text-[11px]">
-                  Press "Start Recording" to capture your incident description
+                  Press "Start Recording" or speak in any supported Indian language
                 </span>
               </div>
             )}
 
-            {/* Duration Display */}
+            {/* Duration Display & Status Pill */}
             {(isRecording || audioBlobUrl) && (
               <div className="mt-2 flex items-center gap-2">
                 <span className="flex h-2 w-2 relative">
@@ -473,6 +703,12 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                 {isPaused && (
                   <span className="rounded bg-amber-950 px-1.5 py-0.2 font-mono text-[9px] text-amber-300 border border-amber-800">
                     PAUSED
+                  </span>
+                )}
+                {speechServiceStatus === "LISTENING" && (
+                  <span className="rounded bg-emerald-950 px-1.5 py-0.2 font-mono text-[9px] text-emerald-300 border border-emerald-800 flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    LIVE ASR
                   </span>
                 )}
               </div>
@@ -543,6 +779,18 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                   )}
                 </button>
 
+                {/* Server-Side Fallback Button */}
+                <button
+                  type="button"
+                  onClick={handleServerTranscribeAudio}
+                  disabled={isServerTranscribing}
+                  className="flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-950/50 px-3.5 py-2 font-mono text-xs text-sky-200 hover:bg-sky-900/60 transition-all active:scale-[0.98] disabled:opacity-50"
+                  title="Server transcription is not configured; use browser speech recognition or type"
+                >
+                  <CloudUpload className="h-4 w-4 text-sky-400" />
+                  <span>Server transcription unavailable</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={deleteRecording}
@@ -556,26 +804,46 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
             )}
           </div>
 
-          {/* Editable Transcription Input */}
+          {/* Editable Transcription Input with Live Streaming Indicator */}
           <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
             <div className="flex items-center justify-between text-xs">
               <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
-                Live Transcription (Editable)
+                Incident Narrative (Live Transcript & Editable)
               </span>
               <span className="text-[10px] text-slate-500 font-sans">
-                You can freely edit or type additional details below
+                Real-time speech converts to text; edit or append freely
               </span>
             </div>
 
-            <textarea
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
-              placeholder="Your voice transcription will appear here in real time. You can also paste or type the incident details directly..."
-              rows={4}
-              className="w-full rounded-xl border border-white/10 bg-[#060911] p-3 text-xs leading-relaxed text-slate-200 placeholder-slate-600 focus:border-sky-500 focus:outline-none font-sans"
-            />
+            <div className="relative">
+              <textarea
+                value={transcript}
+                onChange={(e) => {
+                  setTranscript(e.target.value);
+                  finalTranscriptRef.current = e.target.value;
+                  setFinalTranscript(e.target.value);
+                }}
+                placeholder="Your voice transcription will stream here in real time. You can also paste, edit, or type the incident details directly..."
+                rows={5}
+                className="w-full rounded-xl border border-white/10 bg-[#060911] p-3 text-xs leading-relaxed text-slate-200 placeholder-slate-600 focus:border-sky-500 focus:outline-none font-sans"
+              />
 
-            <div className="flex justify-end pt-1">
+              {/* Interim Transcript Live Streaming Preview */}
+              {interimTranscript && isRecording && (
+                <div className="absolute bottom-2.5 left-3 right-3 pointer-events-none">
+                  <div className="rounded bg-sky-950/90 border border-sky-500/40 px-2.5 py-1 text-[11px] font-sans text-sky-200 flex items-center gap-2 shadow-lg backdrop-blur-sm">
+                    <span className="h-2 w-2 rounded-full bg-sky-400 animate-ping shrink-0" />
+                    <span className="italic truncate">{interimTranscript}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div className="font-mono text-[10px] text-slate-500">
+                Word Count: {transcript.trim() ? transcript.trim().split(/\s+/).length : 0} | Language: {selectedLanguage}
+              </div>
+
               <button
                 type="button"
                 onClick={() => handleAnalyzeTranscript()}
@@ -698,9 +966,9 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                 Extracted Incident Intelligence
               </h3>
             </div>
-            {analysisResponse && (
-              <span className="rounded bg-sky-950 px-2 py-0.5 font-mono text-[9px] font-bold text-sky-300 border border-sky-800/40">
-                RULE-BASED DRAFT · REVIEW FIELDS
+            {analysisResponse?.extracted_details.confidence_score != null && (
+              <span className="rounded bg-emerald-950 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-300 border border-emerald-800/40">
+                {Math.round(analysisResponse.extracted_details.confidence_score * 100)}% CONFIDENCE
               </span>
             )}
           </div>
@@ -813,7 +1081,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                 <span className="text-sky-400">{attachedForensicContext.verdict}</span>
               </div>
               <p className="text-[11px] text-slate-300 font-sans">
-                File: {attachedForensicContext.filename} (Heuristic points: {attachedForensicContext.overall_tamper_score.toFixed(1)}/100)
+                File: {attachedForensicContext.filename} (Tamper Score: {attachedForensicContext.overall_tamper_score.toFixed(1)}%)
               </p>
             </div>
           )}
