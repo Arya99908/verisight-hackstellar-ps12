@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,7 +11,12 @@ import {
   FileCheck2,
   Zap,
 } from "lucide-react";
-import { PUBLIC_FRAUD_ADVISORIES, PublicFraudAdvisory } from "../data/realWorldCases";
+import {
+  getAdvisorySourceKindLabel,
+  getSafeAdvisorySourceUrl,
+  PUBLIC_FRAUD_ADVISORIES,
+  PublicFraudAdvisory,
+} from "../data/realWorldCases";
 import { DottedIndiaMap } from "./common/DottedIndiaMap";
 import { CaseInvestigationModal } from "./CaseInvestigationModal";
 
@@ -56,21 +61,23 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
     [cases]
   );
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        handlePrev();
-      } else if (e.key === "ArrowRight") {
-        handleNext();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handlePrev, handleNext]);
+  const isInteractiveTarget = (target: EventTarget | null) =>
+    target instanceof Element && Boolean(target.closest("a, button, input, textarea, select, [contenteditable='true']"));
+
+  const handleCarouselKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (investigatingCase || isInteractiveTarget(e.target)) return;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      handlePrev();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      handleNext();
+    }
+  };
 
   // Touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isInteractiveTarget(e.target)) return;
     setDragStartX(e.touches[0].clientX);
     setDragCurrentX(e.touches[0].clientX);
     isDraggingRef.current = false;
@@ -104,7 +111,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
   // Mouse drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     // Only drag with primary left mouse button
-    if (e.button !== 0) return;
+    if (e.button !== 0 || isInteractiveTarget(e.target)) return;
     setDragStartX(e.clientX);
     setDragCurrentX(e.clientX);
     isDraggingRef.current = false;
@@ -188,7 +195,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
               Explore public reporting and official guidance about UPI fraud, fake payment screenshots, QR codes, and digital deception across India. Learn the warning signs and how to check a suspicious claim.
             </p>
             <p className="max-w-lg text-xs leading-relaxed text-amber-200/80">
-              Cards are sourced public advisories and reporting summaries. Review the linked source for incident details; illustrations are examples, not original evidence. Map markers are decorative and do not show incident locations.
+              Cards link to public advisories and safety guidance. They are not case records or loss statistics; illustrations are examples, not original evidence. Map markers are decorative and do not show incident locations.
             </p>
           </div>
 
@@ -208,7 +215,13 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
         ========================================================================= */}
         <div
           ref={carouselContainerRef}
-          className="lg:col-span-7 flex flex-col justify-center select-none"
+          className="lg:col-span-7 flex flex-col justify-center select-none touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/70 rounded-2xl"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Public fraud advisories and safety guidance"
+          aria-keyshortcuts="ArrowLeft ArrowRight"
+          tabIndex={0}
+          onKeyDown={handleCarouselKeyDown}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -222,7 +235,17 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
             {/* ================= LEFT CARD (PEEKING PREVIOUS) ================= */}
             <div
               onClick={() => handlePrev()}
+              onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handlePrev();
+                }
+              }}
               className="absolute left-0 sm:left-4 w-[280px] sm:w-[320px] rounded-3xl bg-white text-slate-900 shadow-2xl overflow-hidden border border-slate-100 transition-all duration-500 ease-out z-10 opacity-40 scale-[0.84] -translate-x-[45%] sm:-translate-x-[30%] pointer-events-auto cursor-pointer hover:opacity-70"
+              role="group"
+              aria-label={`Previous advisory: ${prevCase.headline}. Activate to select.`}
+              tabIndex={0}
             >
               <div className="relative h-44 w-full bg-slate-800 overflow-hidden">
                 <img
@@ -240,7 +263,18 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                   {prevCase.displayContext}
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
-                  {prevCase.headline}
+                  {getSafeAdvisorySourceUrl(prevCase.sourceUrl) ? (
+                    <a
+                      href={getSafeAdvisorySourceUrl(prevCase.sourceUrl)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="hover:text-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+                      aria-label={`${prevCase.sourceLinkLabel}: ${prevCase.headline} (opens in a new tab)`}
+                    >
+                      {prevCase.headline}
+                    </a>
+                  ) : prevCase.headline}
                 </h4>
                 <p className="text-[11px] text-slate-600 line-clamp-2">
                   {prevCase.summary}
@@ -251,6 +285,19 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                 <div className="text-[10px] text-slate-400 pt-1">
                   Source: {prevCase.publisher}
                 </div>
+                {getSafeAdvisorySourceUrl(prevCase.sourceUrl) ? (
+                  <a
+                    href={getSafeAdvisorySourceUrl(prevCase.sourceUrl)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 rounded-sm text-[10px] font-bold text-cyan-800 underline underline-offset-2 hover:text-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+                  >
+                    {prevCase.sourceLinkLabel}<ExternalLink className="h-3 w-3" aria-hidden="true" />
+                  </a>
+                ) : (
+                  <span className="block text-[10px] text-amber-700">Original source unavailable</span>
+                )}
               </div>
             </div>
 
@@ -266,7 +313,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
 
                 {/* Tilted Red Rubber Stamp Badge */}
                 <div className="absolute top-4 right-4 z-10 transform -rotate-12 select-none pointer-events-none rounded border-2 border-red-500 bg-red-950/90 px-3 py-1 font-mono text-xs font-black tracking-widest text-red-400 shadow-xl backdrop-blur-md uppercase">
-                  PUBLIC ADVISORY
+                  {getAdvisorySourceKindLabel(activeCase.sourceKind)}
                 </div>
               </div>
 
@@ -292,7 +339,18 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
 
                 {/* Headline */}
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug font-sans">
-                  {activeCase.headline}
+                  {getSafeAdvisorySourceUrl(activeCase.sourceUrl) ? (
+                    <a
+                      href={getSafeAdvisorySourceUrl(activeCase.sourceUrl)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex items-start gap-1.5 rounded-sm underline decoration-slate-300 underline-offset-4 hover:text-cyan-800 hover:decoration-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+                      aria-label={`${activeCase.sourceLinkLabel}: ${activeCase.headline} (opens in a new tab)`}
+                    >
+                      <span>{activeCase.headline}</span>
+                      <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-cyan-700" aria-hidden="true" />
+                    </a>
+                  ) : activeCase.headline}
                 </h3>
 
                 {/* Narrative Summary */}
@@ -312,24 +370,41 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                 </div>
 
                 {/* Card Bottom: Source Attribution & Read Full Report Link */}
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 border-t border-slate-100 text-xs">
                   <span className="text-slate-400 font-medium">
                     Source: {activeCase.publisher}
                   </span>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      if (!isDraggingRef.current) {
-                        e.stopPropagation();
-                        setInvestigatingCase(activeCase);
-                      }
-                    }}
-                    className="font-bold text-slate-900 hover:text-emerald-600 flex items-center gap-1 transition-colors"
-                  >
-                    <span>Open Advisory Details</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    {getSafeAdvisorySourceUrl(activeCase.sourceUrl) ? (
+                      <a
+                        href={getSafeAdvisorySourceUrl(activeCase.sourceUrl)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-bold text-cyan-800 underline underline-offset-2 hover:text-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+                        aria-label={`${activeCase.sourceLinkLabel} (opens in a new tab)`}
+                      >
+                        <span>{activeCase.sourceLinkLabel}</span>
+                        <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <span className="text-[11px] text-amber-700" role="status">Original source unavailable</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        if (!isDraggingRef.current) {
+                          e.stopPropagation();
+                          setInvestigatingCase(activeCase);
+                        }
+                      }}
+                      className="font-bold text-slate-900 hover:text-emerald-600 flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+                      aria-haspopup="dialog"
+                    >
+                      <span>Open Advisory Details</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -337,7 +412,17 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
             {/* ================= RIGHT CARD (PEEKING NEXT) ================= */}
             <div
               onClick={() => handleNext()}
+              onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleNext();
+                }
+              }}
               className="absolute right-0 sm:right-4 w-[280px] sm:w-[320px] rounded-3xl bg-white text-slate-900 shadow-2xl overflow-hidden border border-slate-100 transition-all duration-500 ease-out z-10 opacity-40 scale-[0.84] translate-x-[45%] sm:translate-x-[30%] pointer-events-auto cursor-pointer hover:opacity-70"
+              role="group"
+              aria-label={`Next advisory: ${nextCase.headline}. Activate to select.`}
+              tabIndex={0}
             >
               <div className="relative h-44 w-full bg-slate-800 overflow-hidden">
                 <img
@@ -355,7 +440,18 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                   {nextCase.displayContext}
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
-                  {nextCase.headline}
+                  {getSafeAdvisorySourceUrl(nextCase.sourceUrl) ? (
+                    <a
+                      href={getSafeAdvisorySourceUrl(nextCase.sourceUrl)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="hover:text-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+                      aria-label={`${nextCase.sourceLinkLabel}: ${nextCase.headline} (opens in a new tab)`}
+                    >
+                      {nextCase.headline}
+                    </a>
+                  ) : nextCase.headline}
                 </h4>
                 <p className="text-[11px] text-slate-600 line-clamp-2">
                   {nextCase.summary}
@@ -366,6 +462,19 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                 <div className="text-[10px] text-slate-400 pt-1">
                   Source: {nextCase.publisher}
                 </div>
+                {getSafeAdvisorySourceUrl(nextCase.sourceUrl) ? (
+                  <a
+                    href={getSafeAdvisorySourceUrl(nextCase.sourceUrl)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 rounded-sm text-[10px] font-bold text-cyan-800 underline underline-offset-2 hover:text-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+                  >
+                    {nextCase.sourceLinkLabel}<ExternalLink className="h-3 w-3" aria-hidden="true" />
+                  </a>
+                ) : (
+                  <span className="block text-[10px] text-amber-700">Original source unavailable</span>
+                )}
               </div>
             </div>
 
@@ -374,7 +483,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
               type="button"
               onClick={handlePrev}
               className="absolute left-2 sm:left-12 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white flex items-center justify-center hover:bg-slate-800 hover:scale-105 transition-all shadow-xl backdrop-blur-md"
-              aria-label="Previous case"
+              aria-label="Previous advisory"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -383,7 +492,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
               type="button"
               onClick={handleNext}
               className="absolute right-2 sm:right-12 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white flex items-center justify-center hover:bg-slate-800 hover:scale-105 transition-all shadow-xl backdrop-blur-md"
-              aria-label="Next case"
+              aria-label="Next advisory"
             >
               <ChevronRight className="h-5 w-5" />
             </button>

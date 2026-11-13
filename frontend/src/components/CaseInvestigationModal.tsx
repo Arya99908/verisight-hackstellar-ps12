@@ -15,7 +15,11 @@ import {
   Building2,
   ShieldAlert,
 } from "lucide-react";
-import { PublicFraudAdvisory } from "../data/realWorldCases";
+import {
+  getAdvisorySourceKindLabel,
+  getSafeAdvisorySourceUrl,
+  PublicFraudAdvisory,
+} from "../data/realWorldCases";
 
 interface CaseInvestigationModalProps {
   caseItem: PublicFraudAdvisory | null;
@@ -45,17 +49,26 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
 
   if (!isOpen || !caseItem) return null;
 
+  const sourceUrl = getSafeAdvisorySourceUrl(caseItem.sourceUrl);
+  const sourceKindLabel = getAdvisorySourceKindLabel(caseItem.sourceKind);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div
         className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border border-white/10 bg-[#0A0F1F] shadow-2xl overflow-hidden font-sans text-slate-100"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="case-investigation-title"
       >
         {/* Top Header Bar */}
         <div className="flex items-center justify-between border-b border-white/[0.08] bg-[#070B16] px-6 py-4 shrink-0">
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
             <span className="rounded bg-rose-950 px-2 py-0.5 text-rose-300 font-bold border border-rose-800/40">
-              PUBLIC ADVISORY
+              {sourceKindLabel}
             </span>
             <div className="flex items-center gap-1 text-slate-400">
               <FileCheck2 className="h-3.5 w-3.5 text-sky-400" />
@@ -73,8 +86,9 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            className="rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 transition-colors"
             title="Close Advisory"
+            aria-label="Close advisory details"
           >
             <X className="h-5 w-5" />
           </button>
@@ -92,7 +106,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1F] via-transparent to-transparent opacity-80" />
               <div className="absolute top-3 right-3 transform -rotate-6 rounded border-2 border-red-500 bg-red-950/90 px-2.5 py-0.5 font-mono text-[10px] font-black tracking-widest text-red-400 shadow-xl uppercase">
-                PUBLIC ADVISORY
+                {sourceKindLabel}
               </div>
             </div>
           )}
@@ -102,14 +116,25 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
             <span className="font-mono text-xs font-semibold text-sky-400 uppercase tracking-wider">
               {caseItem.scamCategory}
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-white leading-snug">
-              {caseItem.headline}
+            <h2 id="case-investigation-title" className="text-xl sm:text-2xl font-bold text-white leading-snug">
+              {sourceUrl ? (
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-start gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                  aria-label={`${caseItem.sourceLinkLabel}: ${caseItem.headline} (opens in a new tab)`}
+                >
+                  <span className="underline decoration-white/30 underline-offset-4 group-hover:decoration-cyan-300">{caseItem.headline}</span>
+                  <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
+                </a>
+              ) : caseItem.headline}
             </h2>
 
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-white/[0.06]">
               <div>
                 <span className="block font-mono text-[10px] text-slate-400 uppercase">
-                  ADVISORY TOPIC · NO CASE-SPECIFIC LOSS CLAIMED
+                  {sourceKindLabel} · NO CASE-SPECIFIC LOSS CLAIMED
                 </span>
                 <span className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono tracking-tight">
                   {caseItem.displayContext}
@@ -121,15 +146,9 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
                 <span className="block font-mono text-[10px] text-slate-400 uppercase">
                   SOURCE
                 </span>
-                <a
-                  href={caseItem.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-sky-400 hover:text-sky-300 hover:underline pt-0.5"
-                >
-                  <span>{caseItem.publisher}</span>
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                <span className="block font-mono text-xs font-semibold text-slate-200 pt-0.5">
+                  {caseItem.publisher}
+                </span>
                 <span className="block text-[10px] text-slate-500 font-mono">
                   Source date: {caseItem.sourceDate}
                 </span>
@@ -140,11 +159,16 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
           {/* Incident Narrative Summary */}
           <div className="rounded-xl border border-white/[0.08] bg-[#070B16] p-4 space-y-2">
             <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-300">
-              Summary of the Public Guidance
+              Editorial summary · not the full source text
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               {caseItem.summary}
             </p>
+            {caseItem.sourceAccessNote && (
+              <p className="text-xs text-cyan-200/80 leading-relaxed">
+                Source access: {caseItem.sourceAccessNote}
+              </p>
+            )}
           </div>
 
           {/* Step-by-Step Modus Operandi */}
@@ -246,15 +270,22 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
 
         {/* Footer Actions */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] bg-[#070B16] px-6 py-4 shrink-0">
-          <a
-            href={caseItem.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 font-mono text-xs text-slate-400 hover:text-white transition-colors"
-          >
-            <span>Open Original Source Page</span>
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          {sourceUrl ? (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-3 py-2 font-mono text-xs font-semibold text-cyan-200 hover:border-cyan-300 hover:bg-cyan-400/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 transition-colors"
+              aria-label={`${caseItem.sourceLinkLabel} (opens in a new tab)`}
+            >
+              <span>{caseItem.sourceLinkLabel}</span>
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            </a>
+          ) : (
+            <span className="inline-flex min-h-10 items-center rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 font-mono text-xs text-amber-200" role="status">
+              Original source unavailable · no verified link is available.
+            </span>
+          )}
 
           <div className="flex items-center gap-2">
             {onNavigateWorkbench && (
@@ -280,7 +311,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
                 }}
                 className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 font-mono text-xs font-semibold text-white hover:from-emerald-400 hover:to-teal-500 shadow-md transition-all active:scale-[0.98]"
               >
-                <span>Report Similar Incident</span>
+                <span>Open Response Guidance</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             )}

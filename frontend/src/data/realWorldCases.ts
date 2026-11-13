@@ -20,12 +20,36 @@ export interface PublicFraudAdvisory {
     responseFeature: string;
   };
   publisher: string;
-  sourceUrl: string;
+  sourceUrl?: string | null;
+  sourceKind: "POLICE_GUIDANCE" | "GOVERNMENT_ADVISORY" | "PAYMENT_SAFETY_GUIDANCE" | "REPORTING_GUIDANCE";
+  sourceLinkLabel: string;
+  sourceAccessNote?: string;
   imageUrl: string;
   imageAlt: string;
   illustrationType: "digital-arrest" | "ipo-forgery" | "fake-gpay" | "reverse-qr" | "marketplace" | "soundbox" | "double-debit";
   accentColor: string;
 }
+
+/** Accept only absolute HTTPS source links; invalid links are shown as unavailable. */
+export const getSafeAdvisorySourceUrl = (sourceUrl?: string | null): string | null => {
+  if (!sourceUrl) return null;
+  try {
+    const parsed = new URL(sourceUrl);
+    if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password) return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+};
+
+export const getAdvisorySourceKindLabel = (sourceKind: PublicFraudAdvisory["sourceKind"]): string => {
+  switch (sourceKind) {
+    case "POLICE_GUIDANCE": return "POLICE GUIDANCE";
+    case "GOVERNMENT_ADVISORY": return "GOVERNMENT ADVISORY";
+    case "PAYMENT_SAFETY_GUIDANCE": return "PAYMENT SAFETY GUIDE";
+    case "REPORTING_GUIDANCE": return "REPORTING GUIDANCE";
+  }
+};
 
 export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
   {
@@ -63,6 +87,8 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
     },
     publisher: "Delhi Police Cyber Crime Unit",
     sourceUrl: "https://cyber.delhipolice.gov.in/OLX.html",
+    sourceKind: "POLICE_GUIDANCE",
+    sourceLinkLabel: "Read Delhi Police guidance",
     imageUrl: "/images/cases/delhi-upi-phone.jpg",
     imageAlt: "Illustration of a phone and payment screen; not evidence from a reported incident.",
     illustrationType: "fake-gpay",
@@ -102,6 +128,8 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
     },
     publisher: "Delhi Police Cyber Crime Unit",
     sourceUrl: "https://cyber.delhipolice.gov.in/Appkyc.html",
+    sourceKind: "POLICE_GUIDANCE",
+    sourceLinkLabel: "Read Delhi Police guidance",
     imageUrl: "/images/cases/mumbai-payment-app.jpg",
     imageAlt: "Illustration of a mobile payment screen; not evidence from a reported incident.",
     illustrationType: "marketplace",
@@ -109,18 +137,18 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
   },
   {
     id: "advisory-i4c-qr-tampering",
-    headline: "I4C advisory listing: QR-code tampering",
+    headline: "FBI IC3 advisory: Criminals tampering with QR codes to steal funds",
     shortHeadline: "QR-code tampering advisory",
-    sourceScope: "National I4C advisory index",
-    sourceDate: "April 26, 2022",
+    sourceScope: "FBI Internet Crime Complaint Center (IC3)",
+    sourceDate: "January 18, 2022",
     displayContext: "QR CODE SAFETY",
     scamCategory: "QR-code safety advisory",
     categoryCode: "QR_CODE_FRAUD",
     summary:
-      "The Indian Cyber Crime Coordination Centre's advisory index lists an advisory titled “Cybercriminals Tampering with QR Codes to defraud Citizens,” dated April 26, 2022. The index is a source listing, not a case record; it does not provide an incident count or loss figure on that page.",
+      "The FBI's Internet Crime Complaint Center warns that criminals may use QR codes to direct people to malicious sites, install malware, or redirect payments. This is a public safety advisory about a risk pattern, not an India-specific incident or loss estimate.",
     modusOperandi: [
-      "The I4C index flags QR-code tampering as a cybercrime topic for public awareness.",
-      "The linked index does not document a named victim, transaction, or case-specific amount.",
+      "The advisory describes QR codes that lead to malicious websites or malware downloads.",
+      "It also describes QR codes that redirect a payment to a criminal-controlled destination.",
     ],
     warningSigns: [
       "A QR code arrives unexpectedly or is attached to a payment or login instruction.",
@@ -128,7 +156,7 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
       "A QR scan opens a link or payment prompt that you did not intend to use.",
     ],
     preventionInsight:
-      "Check the destination and payee shown by the official app before continuing. Stop if the requested action differs from your intent.",
+      "Check the destination and payee shown by the official app before continuing. Stop if the requested action differs from your intent; these are general precautions, not a guarantee that a code is safe.",
     verisightRelevance: {
       forensicLayer: "QR decoding only when a code is readable",
       examination:
@@ -138,8 +166,11 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
       responseFeature:
         "The product can preserve a review summary for a human to use in a report draft; it does not block a code or file a complaint.",
     },
-    publisher: "Indian Cyber Crime Coordination Centre (I4C)",
-    sourceUrl: "https://cybercrime.gov.in/Webform/Advisory.aspx",
+    publisher: "FBI Internet Crime Complaint Center (IC3)",
+    sourceUrl: "https://www.ic3.gov/PSA/2022/PSA220118",
+    sourceKind: "GOVERNMENT_ADVISORY",
+    sourceLinkLabel: "Read the original IC3 advisory",
+    sourceAccessNote: "This FBI advisory is not India-specific and does not report a single named victim or case amount.",
     imageUrl: "/images/cases/bengaluru-qr-scan.jpg",
     imageAlt: "Illustration of a QR code being scanned; not evidence from a reported incident.",
     illustrationType: "reverse-qr",
@@ -147,27 +178,27 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
   },
   {
     id: "advisory-i4c-army-impersonation",
-    headline: "I4C advisory listing: Misuse of Army personnel details",
-    shortHeadline: "Impersonation and payment-screenshot warnings",
-    sourceScope: "National I4C advisory index",
-    sourceDate: "July 6, 2022",
+    headline: "West Bengal Cyber Crime Wing: Army-personnel impersonation warning",
+    shortHeadline: "Army-personnel impersonation warning",
+    sourceScope: "West Bengal Cyber Crime Wing advisory",
+    sourceDate: "June 24, 2024 (advisory index)",
     displayContext: "IMPERSONATION RISK",
     scamCategory: "Impersonation and payment safety",
     categoryCode: "IMPERSONATION",
     summary:
-      "The I4C advisory index lists a notice titled “Fraudsters using Army personnel details to perpetrate financial cyber frauds,” dated July 6, 2022. Delhi Police separately describes fake payment screenshots in marketplace interactions. These advisories describe risk patterns, not one verified incident or loss total.",
+      "West Bengal Cyber Crime Wing warns that fraudsters may use stolen or fake Army-personnel details to target people advertising rental properties. The advisory describes payment requests framed as money to receive, but it does not report one named victim or a case-specific loss amount.",
     modusOperandi: [
-      "The I4C index identifies misuse of Army personnel details as a financial-cyber-fraud topic.",
-      "Delhi Police guidance describes marketplace approaches that may include a fake payment screenshot and a QR-code request.",
-      "The advisory pages do not establish any particular person's identity or describe a single case total.",
+      "Fraudsters find rental listings and pose as Army personnel using stolen or false identity details.",
+      "They may request UPI information or send a request for money while claiming that the owner will receive a payment.",
+      "A victim who approves that request can send money instead of receiving it.",
     ],
     warningSigns: [
-      "A claimed identity or uniform is used to create trust or urgency.",
-      "The other person asks you to accept a screenshot instead of checking your own account.",
-      "You are asked to scan a code, enter a PIN, or send money to receive funds.",
+      "An unknown person claims to be military personnel while responding to a rental listing.",
+      "The person creates urgency or asks you to share payment details before you can verify their identity.",
+      "A payment request or OTP is described as a way to receive money.",
     ],
     preventionInsight:
-      "Independently verify the counterparty and confirm payment in your own account before releasing goods or sharing sensitive information.",
+      "Verify the counterparty through an independent channel. Review every payment request carefully; an OTP or UPI PIN authorizes an outgoing transaction, not receipt of funds.",
     verisightRelevance: {
       forensicLayer: "Heuristic visual review; no identity lookup",
       examination:
@@ -177,8 +208,10 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
       responseFeature:
         "VeriSight offers editable notes and report drafts only. It does not perform identity checks, investigation, or legal process.",
     },
-    publisher: "Indian Cyber Crime Coordination Centre (I4C)",
-    sourceUrl: "https://cybercrime.gov.in/Webform/Advisory.aspx",
+    publisher: "West Bengal Cyber Crime Wing",
+    sourceUrl: "https://cybercrimewing.wb.gov.in/FraudstersusingArmypersonneldetailstoperpetratefinancialcyberfrauds",
+    sourceKind: "GOVERNMENT_ADVISORY",
+    sourceLinkLabel: "Read the original police advisory",
     imageUrl: "/images/cases/bengaluru-digital-arrest.jpg",
     imageAlt: "Illustration of a suspicious mobile interaction; not evidence from a reported incident.",
     illustrationType: "digital-arrest",
@@ -186,18 +219,18 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
   },
   {
     id: "guide-i4c-upi-safety",
-    headline: "I4C safety manual: Verify the payee and protect your UPI PIN",
+    headline: "RBI advice: QR codes, UPI collect requests and digital fraud",
     shortHeadline: "UPI safety basics",
-    sourceScope: "National cyber-safety guidance",
-    sourceDate: "Date not confirmed in the cited excerpt",
+    sourceScope: "Reserve Bank of India public guidance",
+    sourceDate: "January 28, 2022",
     displayContext: "UPI SAFETY BASICS",
     scamCategory: "UPI transaction safety",
     categoryCode: "UPI_FRAUD",
     summary:
-      "The Government of India's cybercrime safety manual advises users to verify the payee or QR code before proceeding and states that a UPI PIN is not needed to receive money. This is general safety guidance, not a reported fraud case.",
+      "The Reserve Bank of India warns about unauthorized QR codes, fake UPI collect requests, and requests to enter a UPI PIN to receive money. Its safe-digital-banking guidance says receiving money does not require scanning a QR code or entering an MPIN. This is general safety guidance, not a reported fraud case.",
     modusOperandi: [
-      "The manual directs users to verify the payee or QR code before authorizing a transaction.",
-      "It cautions users not to share a UPI PIN and explains that a PIN is not required to receive payments.",
+      "The RBI warns users about unauthorized QR codes and fraudulent UPI collect requests.",
+      "Its guidance says receiving money does not require scanning a QR code or entering an MPIN.",
     ],
     warningSigns: [
       "A supposed incoming payment requires you to enter a UPI PIN.",
@@ -215,8 +248,10 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
       responseFeature:
         "The response tools prepare user-editable drafts and safety guidance; they do not reverse or freeze transactions.",
     },
-    publisher: "Indian Cyber Crime Coordination Centre (I4C)",
-    sourceUrl: "https://cybercrime.gov.in/pdf/Final_English_Manual_Basic.pdf",
+    publisher: "Reserve Bank of India (RBI)",
+    sourceUrl: "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=53185",
+    sourceKind: "PAYMENT_SAFETY_GUIDANCE",
+    sourceLinkLabel: "Read RBI public guidance",
     imageUrl: "/images/cases/hyderabad-qr-terminal.jpg",
     imageAlt: "Illustration of a QR code and payment terminal; not evidence from a reported incident.",
     illustrationType: "reverse-qr",
@@ -224,24 +259,24 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
   },
   {
     id: "guide-ncrp-reporting",
-    headline: "National Cyber Crime Portal: Reporting a financial cyber fraud",
+    headline: "I4C: National Cybercrime Reporting Portal and 1930 guidance",
     shortHeadline: "Where to report financial cyber fraud",
     sourceScope: "National reporting guidance",
-    sourceDate: "Date not confirmed in the cited document",
+    sourceDate: "I4C page updated March 11, 2026",
     displayContext: "REPORTING GUIDANCE",
     scamCategory: "Financial cyber-fraud reporting",
     categoryCode: "PAYMENT_FRAUD",
     summary:
-      "The National Cyber Crime Reporting Portal's citizen instructions tell victims to call 1930 or report online, and list transaction details and screenshots among information that may be needed. Police and financial institutions determine the action available; reporting does not guarantee recovery or a freeze.",
+      "I4C explains that its National Cybercrime Reporting Portal accepts reports for all types of cybercrime. Its overview says financial cyber fraud can be reported through the official portal or the 1930 helpline. Reporting does not guarantee that funds will be recovered or frozen.",
     modusOperandi: [
-      "The official instructions describe how a victim can report a financial cyber-fraud incident.",
-      "They request transaction and account information to help authorities and providers review the report.",
-      "Any case action or recovery depends on the relevant authorities and financial institutions.",
+      "I4C's overview describes the National Cybercrime Reporting Portal as a place to report cybercrime incidents.",
+      "For financial cyber fraud, I4C says the 1930 helpline supports quick reporting through the Citizen Financial Cyber Fraud Reporting and Management System.",
+      "The police and financial institutions determine what action is available in an individual complaint.",
     ],
     warningSigns: [
       "Someone offers guaranteed recovery or asks for an extra payment to recover funds.",
       "A person claiming to be support asks for your PIN, password, or OTP.",
-      "A reporting helper asks you to send sensitive information through an unofficial contact channel.",
+      "A reporting helper directs you to a non-government website instead of the official portal or helpline.",
     ],
     preventionInsight:
       "If money may have been lost, contact your bank or payment provider promptly and use the official 1930 helpline or cybercrime.gov.in. Keep transaction records and evidence.",
@@ -255,7 +290,9 @@ export const PUBLIC_FRAUD_ADVISORIES: PublicFraudAdvisory[] = [
         "The complaint builder creates an editable draft. The user must submit it through the official channel; VeriSight cannot promise a response or recovery.",
     },
     publisher: "National Cyber Crime Reporting Portal (I4C)",
-    sourceUrl: "https://cybercrime.gov.in/uploadmedia/instructions_citizenreportingcyberfrauds.pdf",
+    sourceUrl: "https://i4c.mha.gov.in/ncrp.aspx",
+    sourceKind: "REPORTING_GUIDANCE",
+    sourceLinkLabel: "Read I4C reporting guidance",
     imageUrl: "/images/cases/pune-trading-voucher.jpg",
     imageAlt: "Illustration of a reporting document and mobile device; not a real complaint or case exhibit.",
     illustrationType: "ipo-forgery",
