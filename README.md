@@ -4,13 +4,13 @@
 
 ## Product Demo & Presentation
 
-[![Watch VeriSight — Beyond the Screenshot](docs/media/verisight-demo-preview.jpg)](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Demo_Film.mp4)
+https://github.com/user-attachments/assets/bb453b57-c4d6-4878-8816-b4c030b287f6
 
-**[▶ Watch / download the demo film](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Demo_Film.mp4)** · **[Download the presentation (PowerPoint)](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Presentation.pptx)**
+**[Download the full-resolution demo film](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Demo_Film.mp4)** · **[Download the presentation (PowerPoint)](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Presentation.pptx)**
 
 A 108-second walkthrough of the actual forensic workbench, evidence views, internal review memo, and complaint-drafting workflow. The film uses synthetic demonstration receipts and real analyzer output. Screenshot analysis does not verify payment settlement.
 
-The video is an H.264 MP4 (1080p, approximately 71 MB); the slide deck is an editable `.pptx` (approximately 2.2 MB). Click the preview or links above to open or download the files.
+The video is an H.264 MP4 (1080p, approximately 71 MB); the slide deck is an editable `.pptx` (approximately 2.2 MB). Press play in the video above to watch directly in this README, or use the links to download the files.
 
 ## 🔴 Live Demo
 
