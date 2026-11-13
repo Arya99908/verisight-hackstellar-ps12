@@ -231,7 +231,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
           onMouseLeave={handleMouseLeave}
         >
           {/* Layered Cards Stage Container */}
-          <div className="relative w-full h-[540px] sm:h-[580px] flex items-center justify-center overflow-hidden">
+          <div className="relative w-full min-h-[540px] sm:min-h-[580px] flex items-center justify-center overflow-hidden">
             {/* ================= LEFT CARD (PEEKING PREVIOUS) ================= */}
             <div
               onClick={() => handlePrev()}
@@ -302,7 +302,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
             </div>
 
             {/* ================= ACTIVE CENTER CARD ================= */}
-            <div className="relative w-[320px] sm:w-[380px] rounded-3xl bg-white text-slate-900 shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_35px_rgba(16,185,129,0.16)] overflow-hidden border border-slate-200 transition-all duration-300 z-20 scale-100">
+            <div className="relative w-full max-w-[320px] sm:max-w-[380px] rounded-3xl bg-white text-slate-900 shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_35px_rgba(16,185,129,0.16)] overflow-hidden border border-slate-200 transition-all duration-300 z-20 scale-100">
               {/* Featured Top Editorial Image (~40% of card) */}
               <div className="relative h-48 sm:h-56 w-full bg-slate-900 overflow-hidden">
                 <img
@@ -482,7 +482,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
             <button
               type="button"
               onClick={handlePrev}
-              className="absolute left-2 sm:left-12 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white flex items-center justify-center hover:bg-slate-800 hover:scale-105 transition-all shadow-xl backdrop-blur-md"
+              className="absolute left-2 sm:left-12 top-1/2 -translate-y-1/2 z-30 hidden sm:flex h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white items-center justify-center hover:bg-slate-800 hover:scale-105 transition-all shadow-xl backdrop-blur-md"
               aria-label="Previous advisory"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -491,7 +491,26 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
             <button
               type="button"
               onClick={handleNext}
-              className="absolute right-2 sm:right-12 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white flex items-center justify-center hover:bg-slate-800 hover:scale-105 transition-all shadow-xl backdrop-blur-md"
+              className="absolute right-2 sm:right-12 top-1/2 -translate-y-1/2 z-30 hidden sm:flex h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white items-center justify-center hover:bg-slate-800 hover:scale-105 transition-all shadow-xl backdrop-blur-md"
+              aria-label="Next advisory"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="mt-3 flex items-center justify-center gap-4 sm:hidden" role="group" aria-label="Carousel navigation">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white flex items-center justify-center hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+              aria-label="Previous advisory"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="h-11 w-11 rounded-full border border-white/20 bg-slate-900/80 text-white flex items-center justify-center hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
               aria-label="Next advisory"
             >
               <ChevronRight className="h-5 w-5" />
