@@ -2,6 +2,16 @@
 
 > A prototype that computes visual review cues for screenshots. It is not a trained or calibrated authenticity classifier.
 
+## Product Demo & Presentation
+
+[![Watch VeriSight — Beyond the Screenshot](docs/media/verisight-demo-preview.jpg)](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Demo_Film.mp4)
+
+**[▶ Watch / download the demo film](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Demo_Film.mp4)** · **[Download the presentation (PowerPoint)](https://github.com/Arya99908/verisight-hackstellar-ps12/raw/refs/heads/main/docs/media/VeriSight_Presentation.pptx)**
+
+A 108-second walkthrough of the actual forensic workbench, evidence views, internal review memo, and complaint-drafting workflow. The film uses synthetic demonstration receipts and real analyzer output. Screenshot analysis does not verify payment settlement.
+
+The video is an H.264 MP4 (1080p, approximately 71 MB); the slide deck is an editable `.pptx` (approximately 2.2 MB). Click the preview or links above to open or download the files.
+
 ## 🔴 Live Demo
 
 **[https://verisight-ps12.vercel.app](https://verisight-ps12.vercel.app)**
