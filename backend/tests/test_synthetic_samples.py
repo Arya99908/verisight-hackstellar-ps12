@@ -29,6 +29,10 @@ def test_api_demo_samples_list():
     assert "sample_2" in sample_ids
     assert "user_receipt_1" in sample_ids
     assert "unverified" in next(s for s in samples if s["id"] == "user_receipt_1")["title"].lower()
+    assert all("Synthetic" in sample["tags"] for sample in samples if sample["id"].startswith("sample_"))
+    user_example = next(s for s in samples if s["id"] == "user_receipt_1")
+    assert "User-asserted authentic" in user_example["tags"]
+    assert "Synthetic" not in user_example["tags"]
 
 
 def test_sample_1_clean_synthetic_fixture():
@@ -45,7 +49,7 @@ def test_sample_1_clean_synthetic_fixture():
     assert not any(f.id == "f-l2-laser" for f in report.findings)
 
 
-def test_authentic_screenshot_transforms_do_not_escalate_to_manipulated():
+def test_clean_synthetic_fixture_transforms_do_not_escalate_to_corroborated():
     source = Image.open(SAMPLES_DIR / "sample_1_clean_synthetic_ui.png").convert("RGB")
     variants = []
     for quality in (95, 80):

@@ -48,6 +48,41 @@ interface ProductOverviewProps {
   demoSamples?: DemoSampleMeta[];
 }
 
+function getSampleSourceLabel(sample: Pick<DemoSampleMeta, "tags">): {
+  text: string;
+  className: string;
+} {
+  const tags = sample.tags.map((tag) => tag.toLowerCase());
+  if (tags.some((tag) => tag.includes("user-provided"))) {
+    return {
+      text: "USER-PROVIDED · UNVERIFIED",
+      className: "border-amber-800/50 bg-amber-950 text-amber-200",
+    };
+  }
+  if (tags.some((tag) => tag.includes("clean baseline"))) {
+    return {
+      text: "SYNTHETIC BASELINE",
+      className: "border-sky-800/50 bg-sky-950 text-sky-200",
+    };
+  }
+  if (tags.some((tag) => tag.includes("synthetic edit") || tag.includes("known edit"))) {
+    return {
+      text: "KNOWN-EDIT DEMO INPUT",
+      className: "border-amber-800/50 bg-amber-950 text-amber-200",
+    };
+  }
+  if (tags.some((tag) => tag.includes("synthetic"))) {
+    return {
+      text: "SYNTHETIC DEMO",
+      className: "border-sky-800/50 bg-sky-950 text-sky-200",
+    };
+  }
+  return {
+    text: "EXAMPLE · SOURCE UNVERIFIED",
+    className: "border-slate-700 bg-slate-900 text-slate-300",
+  };
+}
+
 export const ProductOverview: React.FC<ProductOverviewProps> = ({
   onNavigate,
   demoSamples = [],
@@ -119,7 +154,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             scenario: "A synthetic copy-move fixture for demonstrating image-review cues, not a real transaction record.",
             expected_verdict: "REVIEW_REQUIRED",
             target_score_range: "Variable heuristic points",
-            tags: ["Synthetic", "Copy-Move", "Demonstration"],
+            tags: ["Synthetic", "Known Edit", "Copy-Move", "Demonstration"],
           },
         ];
 
@@ -555,7 +590,7 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
 
             <div className="rounded-2xl border border-white/[0.08] bg-[#0A0F1E] p-6 relative">
               <span className="font-mono text-3xl font-extrabold text-teal-500/30 block mb-2">04</span>
-              <h3 className="text-base font-bold text-white">Formal Complaint & Summons</h3>
+              <h3 className="text-base font-bold text-white">Complaint & Evidence Drafts</h3>
               <p className="mt-2 text-xs text-slate-400 leading-relaxed font-sans">
                 Prepare complaint and evidence dossier drafts for review. VeriSight does not file reports, issue legal notices,
                 freeze accounts, or verify payment settlement.
@@ -644,27 +679,25 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
             </div>
           </div>
 
-          {/* Golden Demonstration Sample Grid */}
+        {/* Demonstration and User-Supplied Example Grid */}
           <div className="rounded-2xl border border-white/[0.08] bg-[#0A0E1A]/90 p-6">
             <div className="flex items-center justify-between border-b border-white/[0.06] pb-4 mb-5">
               <div>
                 <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-white">
-                  Golden Benchmark Samples (S1 – S5)
+                  Demo Scenarios & User-Supplied Example
                 </h3>
                 <span className="text-xs text-slate-400">
-                  Click any benchmark case to load it directly into the Forensic Workbench.
+                  Open an example in the Forensic Workbench. These source labels are not model findings or independent ground truth.
                 </span>
               </div>
               <span className="rounded bg-sky-950 px-2 py-1 font-mono text-[10px] text-sky-300 border border-sky-800">
-                Active Benchmark Set
+                Synthetic demos · user example
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {samples.map((s, idx) => {
-                const isManipulated =
-                  s.expected_verdict?.includes("MANIPULATED") ||
-                  s.expected_verdict?.includes("FORGERY");
+                const sourceLabel = getSampleSourceLabel(s);
                 return (
                   <button
                     key={s.id}
@@ -674,14 +707,8 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                     <div>
                       <div className="flex items-center justify-between text-[10px] font-mono mb-1">
                         <span className="text-sky-400 font-bold">S{idx + 1}</span>
-                        <span
-                          className={`rounded px-1.5 py-0.2 font-semibold ${
-                            isManipulated
-                              ? "bg-rose-950 text-rose-300 border border-rose-800/40"
-                              : "bg-emerald-950 text-emerald-300 border border-emerald-800/40"
-                          }`}
-                        >
-                          {isManipulated ? "TAMPERED" : "AUTHENTIC"}
+                        <span className={`rounded border px-1.5 py-0.2 font-semibold ${sourceLabel.className}`}>
+                          {sourceLabel.text}
                         </span>
                       </div>
                       <h4 className="text-xs font-semibold text-white group-hover:text-sky-300 transition-colors line-clamp-1">

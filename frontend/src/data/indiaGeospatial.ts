@@ -1,7 +1,6 @@
 /**
- * Authentic Survey of India / DataMeet Boundary & Geospatial Matrix
- * Generated via Albers Equal Area projection (central meridian 82.5° E, IST).
- * 100% geographically reliable and proportioned.
+ * Illustrative dotted map outline retained for the advisory overview visual.
+ * It is not an official boundary layer and does not plot verified incident locations.
  */
 
 export interface MapDot {

@@ -57,7 +57,7 @@ interface DatasetEval {
 const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   user_supplied_external: {
     id: "user_supplied_external",
-    name: "Archive: External Real-World WhatsApp Mobile Corpus",
+    name: "Archive-described WhatsApp sample set (N=23; unverified)",
     description:
       "The uploaded archive describes 23 mobile screenshots from PhonePe, Google Pay, and Paytm transferred over WhatsApp. This corpus and its labels are not independently verified in the current deployment.",
     sampleCount: 23,
@@ -83,7 +83,7 @@ const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   },
   held_out_benchmark: {
     id: "held_out_benchmark",
-    name: "Archive: Held-Out Strict Laboratory Benchmark",
+    name: "Archive-reported laboratory split (N=7; unverified)",
     description:
       "The uploaded archive describes seven native mobile captures and reports a held-out result. The accompanying evaluation document also describes a separate 27-image synthetic dataset; the source records have not been reconciled here.",
     sampleCount: 7,
@@ -150,283 +150,86 @@ const RADAR_AXES: RadarAxis[] = [
   { key: "legalNotice", label: "Response drafts", description: "Prototype: prepare editable incident-response drafts" },
 ];
 
-interface CompetitorScore {
+interface SchematicOverlay {
   id: string;
   name: string;
   color: string;
-  scores: Record<string, number>; // 0 to 100
+  scores: Record<string, number>;
   notes: string;
-  sourceUrl: string;
 }
 
-const COMPETITOR_SCORES: CompetitorScore[] = [
+const SCHEMATIC_OVERLAYS: SchematicOverlay[] = [
   {
-    id: "verisight",
-    name: "VeriSight Pro",
-    color: "#06b6d4", // Cyan
-    scores: {
-      ela: 95,
-      wavelet: 92,
-      clones: 94,
-      lasers: 98,
-      colorPatch: 90,
-      clockParadox: 96,
-      whatsappLaunder: 92,
-      upiDomain: 100,
-      mlFusion: 94,
-      legalNotice: 100,
-    },
-    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
-    sourceUrl: "https://github.com/verisight-forensics",
+    id: "outline_a",
+    name: "Illustrative outline A",
+    color: "#06b6d4",
+    scores: { ela: 95, wavelet: 92, clones: 94, lasers: 98, colorPatch: 90, clockParadox: 96, whatsappLaunder: 92, upiDomain: 100, mlFusion: 94, legalNotice: 100 },
+    notes: "Generated placeholder shape only; it is not a measurement of VeriSight or another product.",
   },
   {
-    id: "forensically",
-    name: "Forensically (Jonas Wagner)",
-    color: "#38bdf8", // Sky
-    scores: {
-      ela: 90,
-      wavelet: 60,
-      clones: 88,
-      lasers: 0,
-      colorPatch: 0,
-      clockParadox: 0,
-      whatsappLaunder: 15,
-      upiDomain: 0,
-      mlFusion: 0,
-      legalNotice: 0,
-    },
-    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
-    sourceUrl: "https://29a.ch/photo-forensics/",
+    id: "outline_b",
+    name: "Illustrative outline B",
+    color: "#38bdf8",
+    scores: { ela: 90, wavelet: 60, clones: 88, lasers: 0, colorPatch: 0, clockParadox: 0, whatsappLaunder: 15, upiDomain: 0, mlFusion: 0, legalNotice: 0 },
+    notes: "Generated placeholder shape only; it is not a measurement of VeriSight or another product.",
   },
   {
-    id: "fotoforensics",
-    name: "FotoForensics (Dr. Neal Krawetz)",
-    color: "#f59e0b", // Amber
-    scores: {
-      ela: 92,
-      wavelet: 0,
-      clones: 0,
-      lasers: 0,
-      colorPatch: 0,
-      clockParadox: 0,
-      whatsappLaunder: 10,
-      upiDomain: 0,
-      mlFusion: 0,
-      legalNotice: 0,
-    },
-    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
-    sourceUrl: "https://fotoforensics.com/",
+    id: "outline_c",
+    name: "Illustrative outline C",
+    color: "#f59e0b",
+    scores: { ela: 92, wavelet: 0, clones: 0, lasers: 0, colorPatch: 0, clockParadox: 0, whatsappLaunder: 10, upiDomain: 0, mlFusion: 0, legalNotice: 0 },
+    notes: "Generated placeholder shape only; it is not a measurement of VeriSight or another product.",
   },
   {
-    id: "fauxlens",
-    name: "FauxLens AI Detector",
-    color: "#c084fc", // Purple
-    scores: {
-      ela: 40,
-      wavelet: 0,
-      clones: 0,
-      lasers: 15,
-      colorPatch: 0,
-      clockParadox: 0,
-      whatsappLaunder: 25,
-      upiDomain: 0,
-      mlFusion: 70,
-      legalNotice: 0,
-    },
-    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
-    sourceUrl: "https://fauxlens.com/",
+    id: "outline_d",
+    name: "Illustrative outline D",
+    color: "#c084fc",
+    scores: { ela: 40, wavelet: 0, clones: 0, lasers: 15, colorPatch: 0, clockParadox: 0, whatsappLaunder: 25, upiDomain: 0, mlFusion: 70, legalNotice: 0 },
+    notes: "Generated placeholder shape only; it is not a measurement of VeriSight or another product.",
   },
   {
-    id: "navines",
-    name: "Navines Risk Checker",
-    color: "#f43f5e", // Rose
-    scores: {
-      ela: 0,
-      wavelet: 0,
-      clones: 0,
-      lasers: 0,
-      colorPatch: 0,
-      clockParadox: 10,
-      whatsappLaunder: 10,
-      upiDomain: 45,
-      mlFusion: 0,
-      legalNotice: 0,
-    },
-    notes: "Illustrative profile only. No product benchmark or comparative test was conducted.",
-    sourceUrl: "https://navines.com/",
+    id: "outline_e",
+    name: "Illustrative outline E",
+    color: "#f43f5e",
+    scores: { ela: 0, wavelet: 0, clones: 0, lasers: 0, colorPatch: 0, clockParadox: 10, whatsappLaunder: 10, upiDomain: 45, mlFusion: 0, legalNotice: 0 },
+    notes: "Generated placeholder shape only; it is not a measurement of VeriSight or another product.",
   },
 ];
 
-// ---------------------------------------------------------------------------
-// 3. FEATURE COVERAGE HEATMAP MATRIX
-// ---------------------------------------------------------------------------
+// This matrix describes the current deployment only. It does not compare vendors.
 interface HeatmapRow {
   capability: string;
   domain: "Signal" | "Geometry" | "Protocol" | "Payment" | "Legal";
-  verisight: "FULL" | "PARTIAL" | "UNSUPPORTED" | "UNVERIFIED";
-  forensically: "FULL" | "PARTIAL" | "UNSUPPORTED" | "UNVERIFIED";
-  fotoforensics: "FULL" | "PARTIAL" | "UNSUPPORTED" | "UNVERIFIED";
-  fauxlens: "FULL" | "PARTIAL" | "UNSUPPORTED" | "UNVERIFIED";
-  navines: "FULL" | "PARTIAL" | "UNSUPPORTED" | "UNVERIFIED";
+  status: "AVAILABLE" | "LIMITED" | "NOT_CONFIGURED";
   details: string;
-  sourceUrl: string;
+}
+
+function renderCapabilityStatus(status: HeatmapRow["status"]) {
+  const label = status === "AVAILABLE" ? "AVAILABLE" : status === "LIMITED" ? "LIMITED" : "NOT CONFIGURED";
+  const style = status === "AVAILABLE"
+    ? "bg-emerald-950/80 text-emerald-300 border-emerald-800/60"
+    : status === "LIMITED"
+      ? "bg-amber-950/80 text-amber-300 border-amber-800/60"
+      : "bg-slate-900 text-slate-300 border-white/[0.08]";
+  return <span className={`inline-flex items-center rounded border px-2 py-0.5 text-[9px] font-bold ${style}`}>{label}</span>;
 }
 
 const HEATMAP_DATA: HeatmapRow[] = [
-  {
-    capability: "Error Level Analysis (ELA Heatmap)",
-    domain: "Signal",
-    verisight: "FULL",
-    forensically: "FULL",
-    fotoforensics: "FULL",
-    fauxlens: "PARTIAL",
-    navines: "UNSUPPORTED",
-    details: "Normalized Q=95 resaving difference highlighting inconsistent JPEG block quantization.",
-    sourceUrl: "https://fotoforensics.com/tutorial.php?article=ela",
-  },
-  {
-    capability: "Daubechies Wavelet Noise Variance",
-    domain: "Signal",
-    verisight: "FULL",
-    forensically: "PARTIAL",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Decomposes luminance channel into db4 sub-bands to measure high-frequency sensor noise.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Daubechies_wavelet",
-  },
-  {
-    capability: "ORB Keypoint Copy-Move Clones",
-    domain: "Signal",
-    verisight: "FULL",
-    forensically: "FULL",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Matches duplicated background patches or cloned balance digits using parallel translation vectors.",
-    sourceUrl: "https://29a.ch/photo-forensics/#clone-detection",
-  },
-  {
-    capability: "Sub-Pixel Baseline Drift Lasers",
-    domain: "Geometry",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Fits linear regression lasers through character baselines to catch spliced ₹ amounts (Δy > 2.2px).",
-    sourceUrl: "https://github.com/verisight-forensics",
-  },
-  {
-    capability: "CIELAB Background Color Patch ΔE",
-    domain: "Geometry",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Perceptual color space delta measuring background patch splicing around transacted amounts.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Color_difference#CIELAB_ΔE*",
-  },
-  {
-    capability: "Status Bar Clock Paradox Detection",
-    domain: "Protocol",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Chronological cross-verification checking whether transaction timestamp succeeds the device clock.",
-    sourceUrl: "https://github.com/verisight-forensics",
-  },
-  {
-    capability: "WhatsApp Laundering Compensation",
-    domain: "Protocol",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Detects WhatsApp EXIF stripping and adapts spatial IoU synergy to prevent false alarms.",
-    sourceUrl: "https://github.com/verisight-forensics",
-  },
-  {
-    capability: "Beneficiary UPI VPA Handle Parsing",
-    domain: "Payment",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "PARTIAL",
-    details: "Parses NPCI handles (@ybl, @okaxis, @okhdfcbank) and maps clearing bank PSP provider.",
-    sourceUrl: "https://www.npci.org.in/what-we-do/upi/product-overview",
-  },
-  {
-    capability: "RBI 12-Digit UTR Compliance Validation",
-    domain: "Payment",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "PARTIAL",
-    details: "Validates 12-digit transaction sequence to intercept fake Android spoof-APK generators.",
-    sourceUrl: "https://rbi.org.in/",
-  },
-  {
-    capability: "Zero-Pixel Browser DOM Spoof Interception",
-    domain: "Payment",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "PARTIAL",
-    details: "Intercepts mathematically clean HTML/DOM modified screenshots via timestamp & UTR validation.",
-    sourceUrl: "https://github.com/verisight-forensics",
-  },
-  {
-    capability: "Multi-Signal Spatial IoU Synergy",
-    domain: "Signal",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Applies non-linear multiplier when Layer 1 compression and Layer 2 font lasers overlap (IoU > 0.40).",
-    sourceUrl: "https://github.com/verisight-forensics",
-  },
-  {
-    capability: "Section 91 Cr.P.C. Subpoena Notice Generator",
-    domain: "Legal",
-    verisight: "FULL",
-    forensically: "UNSUPPORTED",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Generates formatted statutory requisition notices for 1930 Cyber-Crime Helpline & bank nodal officers.",
-    sourceUrl: "https://cybercrime.gov.in/",
-  },
-  {
-    capability: "Pixel-Precise Evidence Localization",
-    domain: "Geometry",
-    verisight: "FULL",
-    forensically: "PARTIAL",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "UNSUPPORTED",
-    navines: "UNSUPPORTED",
-    details: "Delivers court-admissible bounding boxes pinpointing the exact coordinates of spliced elements.",
-    sourceUrl: "https://github.com/verisight-forensics",
-  },
-  {
-    capability: "C2PA Content Credentials Verification",
-    domain: "Protocol",
-    verisight: "FULL",
-    forensically: "FULL",
-    fotoforensics: "UNSUPPORTED",
-    fauxlens: "FULL",
-    navines: "UNSUPPORTED",
-    details: "Cryptographic provenance parsing for signed images adhering to Coalition for Content Provenance standards.",
-    sourceUrl: "https://c2pa.org/",
-  },
+  { capability: "SHA-256 file fingerprint", domain: "Signal", status: "AVAILABLE", details: "Computes a hash of the uploaded image bytes for report identification. A hash does not establish authenticity." },
+  { capability: "JPEG error-level review map", domain: "Signal", status: "LIMITED", details: "Shows a recompression difference for supported inputs. These patterns are affected by image history and are not proof of editing." },
+  { capability: "Wavelet/noise review cues", domain: "Signal", status: "LIMITED", details: "Computes generic high-frequency variation and candidate regions; it is not specific to tampering or AI origin." },
+  { capability: "Repeated-feature candidates", domain: "Signal", status: "LIMITED", details: "ORB matching can surface similar regions. Repeated app icons or interface elements can also match." },
+  { capability: "Text-like geometry", domain: "Geometry", status: "LIMITED", details: "Finds text-like components and layout cues. The deployed scan does not read visible words, amounts, names, or references with OCR." },
+  { capability: "Candidate region overlays", domain: "Geometry", status: "LIMITED", details: "Displays regions produced by configured heuristics. Boxes identify review candidates, not confirmed edited pixels or pixel-mask ground truth." },
+  { capability: "Image metadata inspection", domain: "Protocol", status: "AVAILABLE", details: "Reports metadata that remains in the uploaded file. Metadata can be changed or stripped and is not independently verified." },
+  { capability: "QR payload decoding", domain: "Payment", status: "LIMITED", details: "Displays text when a QR code can be decoded. It does not verify the recipient, destination, payment request, or settlement." },
+  { capability: "C2PA marker inspection", domain: "Protocol", status: "LIMITED", details: "Reports possible credential markers. The current deployment does not validate a manifest signature or bind it to the image." },
+  { capability: "AI generator metadata strings", domain: "Protocol", status: "LIMITED", details: "Checks selected readable metadata strings only. Metadata may be edited or removed; no AI-origin conclusion is produced." },
+  { capability: "Visible AI logo / watermark detection", domain: "Protocol", status: "NOT_CONFIGURED", details: "No dedicated visual logo, watermark, or SynthID detector is deployed." },
+  { capability: "OCR of payment fields", domain: "Payment", status: "NOT_CONFIGURED", details: "The deployed analyzer does not read visible amounts, payees, dates, or transaction references from screenshot pixels." },
+  { capability: "Trained authenticity classifier", domain: "Signal", status: "NOT_CONFIGURED", details: "No trained or calibrated authenticity classifier is deployed. No accuracy, calibration, or confidence claim is available." },
+  { capability: "Bank / PSP settlement verification", domain: "Payment", status: "NOT_CONFIGURED", details: "No authorized bank or payment-service transaction-status integration is configured. A screenshot cannot verify settlement." },
+  { capability: "Editable incident-report drafts", domain: "Legal", status: "AVAILABLE", details: "Prepares user-editable summaries and drafts. VeriSight does not submit reports, issue legal notices, or certify admissibility." },
 ];
 
 // ---------------------------------------------------------------------------
@@ -548,11 +351,11 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
 
   // 2. Radar Chart State
   const [activeCompetitors, setActiveCompetitors] = useState<Record<string, boolean>>({
-    verisight: true,
-    forensically: true,
-    fotoforensics: true,
-    fauxlens: false,
-    navines: false,
+    outline_a: true,
+    outline_b: true,
+    outline_c: true,
+    outline_d: false,
+    outline_e: false,
   });
 
   // 3. Heatmap Filter State
@@ -1079,8 +882,8 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     );
                   })}
 
-                  {/* Draw Competitor Polygons */}
-                  {COMPETITOR_SCORES.map((comp) => {
+                  {/* Draw arbitrary schematic outlines; not product profiles. */}
+                  {SCHEMATIC_OVERLAYS.map((comp) => {
                     if (!activeCompetitors[comp.id]) return null;
 
                     const pts = RADAR_AXES.map((axis, i) => {
@@ -1090,16 +893,16 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                       return `${r * Math.cos(angle)},${r * Math.sin(angle)}`;
                     }).join(" ");
 
-                    const isVerisight = comp.id === "verisight";
+                    const isPrimaryOutline = comp.id === "outline_a";
 
                     return (
                       <g key={`radar-poly-${comp.id}`}>
                         <polygon
                           points={pts}
                           fill={comp.color}
-                          fillOpacity={isVerisight ? "0.3" : "0.1"}
+                          fillOpacity={isPrimaryOutline ? "0.3" : "0.1"}
                           stroke={comp.color}
-                          strokeWidth={isVerisight ? "2.5" : "1.5"}
+                          strokeWidth={isPrimaryOutline ? "2.5" : "1.5"}
                           className="transition-all duration-500"
                         />
                         {/* Dot Vertices */}
@@ -1112,7 +915,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                               key={`dot-${comp.id}-${axis.key}`}
                               cx={r * Math.cos(angle)}
                               cy={r * Math.sin(angle)}
-                              r={isVerisight ? "3.5" : "2"}
+                              r={isPrimaryOutline ? "3.5" : "2"}
                               fill={comp.color}
                             />
                           );
@@ -1124,13 +927,13 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
               </div>
             </div>
 
-            {/* Right 5 Columns: Competitor Toggles & Strategic Analysis */}
+            {/* Schematic overlay controls */}
             <div className="lg:col-span-5 space-y-3">
               <span className="font-mono text-xs uppercase tracking-wider text-slate-400 block mb-2">
-                Toggle Illustrative Overlays
+                Toggle schematic placeholder outlines
               </span>
 
-              {COMPETITOR_SCORES.map((comp) => {
+              {SCHEMATIC_OVERLAYS.map((comp) => {
                 const isActive = activeCompetitors[comp.id];
                 return (
                   <div
@@ -1162,8 +965,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
               })}
 
               <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-3 mt-4 text-xs font-mono text-cyan-300">
-                <strong>Reading this diagram:</strong> The plotted shapes and profile notes are illustrative placeholders,
-                not comparative findings. Check each product directly for its current features.
+                <strong>Reading this diagram:</strong> The plotted shapes are arbitrary placeholders for demonstrating the interactive control. They do not represent any product or tested capability.
               </div>
             </div>
           </div>
@@ -1179,13 +981,13 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             <div>
               <div className="flex items-center gap-2 font-mono text-xs text-emerald-400 uppercase tracking-wider">
                 <Flame className="h-4 w-4" />
-                <span>Section 4: Feature Reference Matrix</span>
+                <span>Section 4: Current Deployment Capability Matrix</span>
               </div>
               <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl font-mono">
-                14-Point Capability Reference Matrix
+                What This Deployment Can and Cannot Do
               </h2>
               <p className="mt-1 text-xs text-slate-400">
-                Click a row to inspect a method note and reference link. Implementation and competitor coverage are not independently validated here.
+                Click a row for a plain-language description of the active implementation and its limits. This matrix describes the deployed prototype, not comparative performance.
               </p>
             </div>
 
@@ -1210,45 +1012,13 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             <table className="w-full text-left text-xs font-mono">
               <thead className="bg-[#0e1629] border-b border-white/10 text-slate-400 uppercase tracking-wider text-[10px]">
                 <tr>
-                  <th className="py-3 px-4">Forensic Capability</th>
-                  <th className="py-3 px-3 text-cyan-300 font-bold">VeriSight Pro</th>
-                  <th className="py-3 px-3">Forensically</th>
-                  <th className="py-3 px-3">FotoForensics</th>
-                  <th className="py-3 px-3">FauxLens</th>
-                  <th className="py-3 px-3">Navines</th>
+                  <th className="py-3 px-4">Capability</th>
+                  <th className="py-3 px-3 text-cyan-300 font-bold">Status in this deployment</th>
+                  <th className="py-3 px-4">What the status means</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.06]">
                 {filteredHeatmap.map((row, idx) => {
-                  const renderBadge = (status: "FULL" | "PARTIAL" | "UNSUPPORTED" | "UNVERIFIED") => {
-                    if (status === "FULL") {
-                      return (
-                        <span className="inline-flex items-center gap-1 rounded bg-emerald-950/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-800/60">
-                          <CheckCircle2 className="h-3 w-3" /> FULL
-                        </span>
-                      );
-                    }
-                    if (status === "PARTIAL") {
-                      return (
-                        <span className="inline-flex items-center gap-1 rounded bg-amber-950/80 px-2 py-0.5 text-[9px] font-bold text-amber-300 border border-amber-800/60">
-                          <AlertTriangle className="h-3 w-3" /> PARTIAL
-                        </span>
-                      );
-                    }
-                    if (status === "UNVERIFIED") {
-                      return (
-                        <span className="inline-flex items-center gap-1 rounded bg-slate-900 px-2 py-0.5 text-[9px] text-slate-300 border border-white/[0.08]">
-                          <Info className="h-3 w-3" /> UNVERIFIED
-                        </span>
-                      );
-                    }
-                    return (
-                      <span className="inline-flex items-center gap-1 rounded bg-slate-900 px-2 py-0.5 text-[9px] text-slate-500 border border-white/[0.05]">
-                        <XCircle className="h-3 w-3" /> NONE
-                      </span>
-                    );
-                  };
-
                   const isSelected = selectedHeatmapRow?.capability === row.capability;
 
                   return (
@@ -1268,12 +1038,9 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                         </div>
                       </td>
                       <td className="py-3 px-3 font-semibold text-cyan-300">
-                        {renderBadge("UNVERIFIED")}
+                        {renderCapabilityStatus(row.status)}
                       </td>
-                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
-                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
-                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
-                      <td className="py-3 px-3">{renderBadge("UNVERIFIED")}</td>
+                      <td className="max-w-2xl py-3 px-4 font-sans text-[11px] leading-relaxed text-slate-400">{row.details}</td>
                     </tr>
                   );
                 })}
@@ -1289,22 +1056,10 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
               className="mt-4 rounded-xl border border-cyan-500/30 bg-[#0D1527] p-5 shadow-2xl font-mono text-xs"
             >
               <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <span className="font-bold text-cyan-300 text-sm">
-                  {selectedHeatmapRow.capability}
-                </span>
-                <a
-                  href={selectedHeatmapRow.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-sky-400 hover:underline text-[11px]"
-                >
-                  <span>Reference link (not validation)</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+                <span className="font-bold text-cyan-300 text-sm">{selectedHeatmapRow.capability}</span>
+                {renderCapabilityStatus(selectedHeatmapRow.status)}
               </div>
-              <p className="mt-2 text-slate-300 font-sans text-xs leading-relaxed">
-                This is a conceptual method note only. Neither the prototype nor any compared product has been independently tested for this capability here.
-              </p>
+              <p className="mt-2 text-slate-300 font-sans text-xs leading-relaxed">{selectedHeatmapRow.details}</p>
             </motion.div>
           )}
         </div>

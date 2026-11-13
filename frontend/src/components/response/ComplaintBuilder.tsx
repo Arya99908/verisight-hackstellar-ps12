@@ -47,25 +47,25 @@ const AUTHORITIES = [
     id: "BANK_UPI_PSP",
     name: "Bank Grievance Redressal & UPI Service Provider",
     url: "https://www.npci.org.in",
-    tag: "Required within 72 hrs for Zero-Liability Protection",
+    tag: "Contact promptly about unauthorized transactions; ask about applicable protections",
   },
   {
     id: "RBI_CMS_OMBUDSMAN",
     name: "RBI Complaint Management System (CMS) — Banking Ombudsman",
     url: "https://cms.rbi.org.in",
-    tag: "Escalation after 30 days of unresolved bank dispute",
+    tag: "For unresolved eligible complaints; check current RBI CMS eligibility and timing",
   },
   {
     id: "POLICE_CYBER_CELL",
     name: "Local Cyber Crime Police Station",
     url: "https://cybercrime.gov.in",
-    tag: "Criminal investigation & evidence subpoena",
+    tag: "Police reporting and evidence preservation",
   },
   {
     id: "PLATFORM_ABUSE",
     name: "Platform Abuse & Grievance Officer (WhatsApp, Telegram, OLX)",
     url: "https://gac.gov.in",
-    tag: "Account takedown & profile preservation",
+    tag: "Appeals on eligible platform grievance decisions",
   },
 ];
 

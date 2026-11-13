@@ -91,7 +91,6 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
   const [interimTranscript, setInterimTranscript] = useState<string>("");
   const [finalTranscript, setFinalTranscript] = useState<string>("");
   const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
-  const [isServerTranscribing, setIsServerTranscribing] = useState<boolean>(false);
 
   // Transcript & Analysis States
   const [transcript, setTranscript] = useState("");
@@ -131,7 +130,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
     if (conversationLog.length === 0) {
       const initialAssistantMessage = attachedForensicContext
         ? `Forensic Workbench evidence linked for "${attachedForensicContext.filename}" (Verdict: ${attachedForensicContext.verdict}, SHA-256: ${attachedForensicContext.file_sha256.slice(0, 10)}...). Please speak or write: What transpired in this transaction? Did you initiate a transfer, or did someone present a falsified receipt?`
-        : "Welcome to VeriSight Incident Response & Guidance. You can speak naturally by pressing 'Start Recording' or type your statement directly. We will extract structured facts and prepare an official complaint.";
+        : "Welcome to VeriSight Incident Response & Guidance. You can speak naturally by pressing 'Start Recording' or type your statement directly. We will extract structured facts and prepare an editable complaint draft for your review.";
 
       setConversationLog([{ sender: "ASSISTANT", text: initialAssistantMessage }]);
     }
@@ -466,11 +465,6 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
     }
   };
 
-  // Keep the fallback visible without uploading audio to a nonexistent ASR model.
-  const handleServerTranscribeAudio = () => {
-    toast.error("Server transcription is not configured. Use browser speech recognition or type your statement.");
-  };
-
   // Run NLU on transcript
   const handleAnalyzeTranscript = async (textToAnalyze?: string) => {
     const text = textToAnalyze || transcript;
@@ -577,7 +571,7 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                   </span>
                 </div>
                 <span className="font-mono text-[10px] text-slate-400">
-                  Real-Time Web Speech API with Resilient Neural Audio Fallback
+                  Browser Speech Recognition · server transcription unavailable
                 </span>
               </div>
             </div>
@@ -779,12 +773,11 @@ export const VoiceReportingAssistant: React.FC<VoiceReportingAssistantProps> = (
                   )}
                 </button>
 
-                {/* Server-Side Fallback Button */}
+                {/* Server transcription is not configured in this deployment. */}
                 <button
                   type="button"
-                  onClick={handleServerTranscribeAudio}
-                  disabled={isServerTranscribing}
-                  className="flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-950/50 px-3.5 py-2 font-mono text-xs text-sky-200 hover:bg-sky-900/60 transition-all active:scale-[0.98] disabled:opacity-50"
+                  disabled
+                  className="flex cursor-not-allowed items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 font-mono text-xs text-slate-400 opacity-70"
                   title="Server transcription is not configured; use browser speech recognition or type"
                 >
                   <CloudUpload className="h-4 w-4 text-sky-400" />

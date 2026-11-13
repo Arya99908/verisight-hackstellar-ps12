@@ -210,7 +210,7 @@ async def get_demo_samples():
             expected_verdict="REVIEW_REQUIRED",
             target_score_range="Variable heuristic points",
             description="Synthetic fixture with an edited amount. The review score is a heuristic and does not prove the alteration was detected.",
-            tags=["Synthetic edit", "Review cue", "Baseline geometry"],
+            tags=["Synthetic", "Known Edit", "Review cue", "Baseline geometry"],
             url="/samples/sample_2_spliced_amount.jpg"
         ),
         DemoSampleMeta(
@@ -232,7 +232,7 @@ async def get_demo_samples():
             expected_verdict="REVIEW_REQUIRED",
             target_score_range="Variable heuristic points",
             description="Synthetic edited fixture re-encoded as JPEG. The source app cannot be identified from its file profile.",
-            tags=["Synthetic", "JPEG re-encode", "Source unknown"],
+            tags=["Synthetic", "Known Edit", "JPEG re-encode", "Source unknown"],
             url="/samples/sample_4_synthetic_jpeg_reencode.jpg"
         ),
         DemoSampleMeta(
@@ -243,7 +243,7 @@ async def get_demo_samples():
             expected_verdict="REVIEW_REQUIRED",
             target_score_range="Variable heuristic points",
             description="Synthetic cloned-region fixture. Copy-move matching is a review cue and can match repeated interface elements.",
-            tags=["Repeated regions", "ORB candidate matches", "Unlisted aspect ratio"],
+            tags=["Synthetic", "Known Edit", "Repeated regions", "ORB candidate matches", "Unlisted aspect ratio"],
             url="/samples/sample_5_cloned_chat_receipt.jpg"
         ),
         DemoSampleMeta(

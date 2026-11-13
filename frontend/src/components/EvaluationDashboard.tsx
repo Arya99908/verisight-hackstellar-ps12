@@ -39,6 +39,14 @@ type FixtureRun = {
   error?: string;
 };
 
+const isSyntheticRegressionFixture = (sample: DemoSampleMeta) =>
+  sample.tags.some((tag) => tag.toLowerCase().includes("synthetic"));
+
+const expectationLabel = (sample: DemoSampleMeta) =>
+  sample.expected_verdict === "USER_ASSERTED_AUTHENTIC"
+    ? "User-asserted authentic · unverified"
+    : verdictLabel(sample.expected_verdict);
+
 const MetricCard: React.FC<{
   label: string;
   value: string | number;
@@ -118,6 +126,7 @@ export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
   }, [refresh]);
 
   const executeFixture = useCallback(async (sample: DemoSampleMeta) => {
+    if (!isSyntheticRegressionFixture(sample)) return;
     setFixtureRuns((previous) => ({ ...previous, [sample.id]: { state: "RUNNING" } }));
     const startedAt = performance.now();
     try {
@@ -153,10 +162,11 @@ export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
   }, [executeFixture, isRunningAll, runningFixtureId]);
 
   const runAllFixtures = useCallback(async () => {
-    if (runningFixtureId || isRunningAll || samples.length === 0) return;
+    const regressionFixtures = samples.filter(isSyntheticRegressionFixture);
+    if (runningFixtureId || isRunningAll || regressionFixtures.length === 0) return;
     setFixtureRuns({});
     setIsRunningAll(true);
-    for (const sample of samples) {
+    for (const sample of regressionFixtures) {
       setRunningFixtureId(sample.id);
       await executeFixture(sample);
     }
@@ -330,24 +340,24 @@ export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
               </div>
               <h2 className="mt-1 text-lg font-semibold text-white">Run the bundled examples</h2>
               <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-slate-400">
-                Each run calls the live analysis API on one synthetic demo image and compares the returned review label with that fixture’s configured expectation. This is a software behavior check, not an accuracy benchmark.
+                Each run calls the live analysis API only on a bundled synthetic fixture and compares the returned review label with its configured software expectation. User-submitted examples are excluded because they are not independent ground truth. This is not an accuracy benchmark.
               </p>
             </div>
             <button
               type="button"
               onClick={() => void runAllFixtures()}
-              disabled={checkBusy || samples.length === 0}
+              disabled={checkBusy || !samples.some(isSyntheticRegressionFixture)}
               className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-sky-500/40 bg-sky-500/15 px-3.5 py-2 text-xs font-medium text-sky-200 transition hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isRunningAll ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Activity className="h-3.5 w-3.5" />}
-              {isRunningAll ? `Checking ${runningFixtureId ? runningFixtureId.replace("sample_", "sample ") : "fixtures"}…` : "Run all fixture checks"}
+              {isRunningAll ? `Checking ${runningFixtureId ? runningFixtureId.replace("sample_", "sample ") : "fixtures"}…` : "Run synthetic fixture checks"}
             </button>
           </div>
 
           {completedRuns.length > 0 && (
             <div role="status" className="border-b border-white/[0.08] bg-[#0E1A2C] px-4 py-3 text-xs text-slate-300 sm:px-5">
               {isRunningAll ? (
-                <span>Fixture checks running: {completedRuns.length} of {samples.length} completed.</span>
+                <span>Fixture checks running: {completedRuns.length} of {samples.filter(isSyntheticRegressionFixture).length} completed.</span>
               ) : (
                 <span>
                   {matchingRuns} of {completedRuns.length} completed run(s) matched configured fixture expectations. This result applies only to these synthetic examples, not real-world detection accuracy.
@@ -376,7 +386,7 @@ export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
                       ? "Run failed"
                       : run?.state === "RUNNING"
                         ? "Running…"
-                        : "Not run yet";
+                        : isSyntheticRegressionFixture(sample) ? "Not run yet" : "Not evaluated";
                 return (
                   <article key={sample.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div className="flex min-w-0 items-start gap-3">
@@ -387,8 +397,10 @@ export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
                         <h3 className="truncate text-sm font-medium text-slate-100">{sample.title}</h3>
                         <p className="mt-1 text-[11px] leading-relaxed text-slate-400">{sample.scenario}</p>
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px]">
-                          <span className="rounded border border-white/10 bg-black/20 px-2 py-0.5 text-slate-400">Synthetic fixture</span>
-                          <span className="text-slate-500">Configured expectation: <strong className="font-medium text-slate-300">{verdictLabel(sample.expected_verdict)}</strong></span>
+                          <span className={`rounded border px-2 py-0.5 ${isSyntheticRegressionFixture(sample) ? "border-white/10 bg-black/20 text-slate-400" : "border-amber-800/50 bg-amber-950/30 text-amber-200"}`}>
+                            {isSyntheticRegressionFixture(sample) ? "Synthetic regression fixture" : "User-provided · not ground truth"}
+                          </span>
+                          <span className="text-slate-500">Configured expectation: <strong className="font-medium text-slate-300">{expectationLabel(sample)}</strong></span>
                           {run?.observedLabel && <span className="text-slate-500">Observed: <strong className="font-medium text-slate-200">{run.observedLabel}</strong></span>}
                           {run?.heuristicPoints !== undefined && <span className="text-slate-500">{run.heuristicPoints.toFixed(1)} heuristic points</span>}
                           {run?.cueCount !== undefined && <span className="text-slate-500">{run.cueCount} review cues</span>}
@@ -407,7 +419,7 @@ export const EvaluationDashboard: React.FC<EvaluationDashboardProps> = ({
                       <button
                         type="button"
                         onClick={() => void runSingleFixture(sample)}
-                        disabled={checkBusy || samples.length === 0}
+                        disabled={checkBusy || !isSyntheticRegressionFixture(sample)}
                         className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[10px] text-slate-300 transition hover:bg-white/[0.08] disabled:opacity-50"
                       >
                         {isActive ? "Running…" : "Run check"}

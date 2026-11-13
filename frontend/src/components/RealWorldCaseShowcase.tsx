@@ -12,7 +12,7 @@ import {
   FileCheck2,
   Zap,
 } from "lucide-react";
-import { REAL_WORLD_CASES, RealWorldFraudCase } from "../data/realWorldCases";
+import { PUBLIC_FRAUD_ADVISORIES, PublicFraudAdvisory } from "../data/realWorldCases";
 import { DottedIndiaMap } from "./common/DottedIndiaMap";
 import { CaseInvestigationModal } from "./CaseInvestigationModal";
 
@@ -28,7 +28,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
   className = "",
 }) => {
   const [activeCaseIndex, setActiveCaseIndex] = useState<number>(0);
-  const [investigatingCase, setInvestigatingCase] = useState<RealWorldFraudCase | null>(null);
+  const [investigatingCase, setInvestigatingCase] = useState<PublicFraudAdvisory | null>(null);
 
   // Swipe & drag state
   const [dragStartX, setDragStartX] = useState<number | null>(null);
@@ -36,7 +36,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
   const isDraggingRef = useRef<boolean>(false);
   const carouselContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const cases = REAL_WORLD_CASES;
+  const cases = PUBLIC_FRAUD_ADVISORIES;
   const totalCases = cases.length;
 
   const handlePrev = useCallback(() => {
@@ -175,9 +175,9 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
 
             {/* Headline matching user's visual reference */}
             <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-white leading-[1.15] tracking-tight font-sans">
-              It happened to them.
+              Recognize the pattern.
               <br />
-              Learn to recognize it
+              Verify before you act
               <br />
               <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
                 before it happens to you.
@@ -186,19 +186,20 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
 
             {/* Introductory Narrative Prose */}
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans max-w-lg">
-              Explore selected UPI fraud patterns and case studies from public reporting. Review each linked publisher source before relying on a specific incident detail.
+              Explore official public guidance about payment screenshots, QR codes, impersonation, and reporting.
             </p>
             <p className="max-w-lg text-xs leading-relaxed text-amber-200/80">
-              Case cards summarize linked public reporting for awareness. Some source links are publisher topic pages rather than the individual article; verify the linked source before relying on a specific case detail. Illustrations are not original case evidence.
+              These cards summarize public advisories, not individual incident reports. The illustrations are examples only; no case-specific losses or incident locations are claimed.
             </p>
           </div>
 
-          {/* Authentic Dotted India Map */}
+          {/* Interactive advisory index over a decorative map; no incidents are geolocated. */}
           <div className="pt-2">
             <DottedIndiaMap
-              cases={cases}
-              activeCaseId={activeCase.id}
-              onSelectCase={handleSelectCaseById}
+              advisories={cases}
+              activeAdvisoryId={activeCase.id}
+              onSelectAdvisory={handleSelectCaseById}
+              onOpenAdvisory={setInvestigatingCase}
             />
           </div>
         </div>
@@ -233,13 +234,11 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
               </div>
               <div className="p-4 space-y-2 text-left">
                 <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
-                  <MapPin className="h-3 w-3 text-slate-400" />
-                  <span>
-                    {prevCase.city}, {prevCase.state}
-                  </span>
+                  <FileCheck2 className="h-3 w-3 text-slate-400" />
+                  <span>{prevCase.sourceScope}</span>
                 </div>
-                <div className="font-mono text-xl font-black text-[#dc2626]">
-                  {prevCase.reportedLoss}
+                <div className="font-mono text-sm font-black tracking-wide text-cyan-800">
+                  {prevCase.displayContext}
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
                   {prevCase.headline}
@@ -268,7 +267,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
 
                 {/* Tilted Red Rubber Stamp Badge */}
                 <div className="absolute top-4 right-4 z-10 transform -rotate-12 select-none pointer-events-none rounded border-2 border-red-500 bg-red-950/90 px-3 py-1 font-mono text-xs font-black tracking-widest text-red-400 shadow-xl backdrop-blur-md uppercase">
-                  REPORTED CASE
+                  PUBLIC ADVISORY
                 </div>
               </div>
 
@@ -277,21 +276,19 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                 {/* Location and Date */}
                 <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 font-sans">
                   <div className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-slate-700" />
-                    <span>
-                      {activeCase.city}, {activeCase.state}
-                    </span>
+                    <FileCheck2 className="h-3.5 w-3.5 text-slate-700" />
+                    <span>{activeCase.sourceScope}</span>
                   </div>
                   <span className="text-slate-300">|</span>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    <span>{activeCase.incidentMonthYear}</span>
+                    <span>{activeCase.sourceDate}</span>
                   </div>
                 </div>
 
-                {/* Huge Financial Loss Figure in Bold Red */}
-                <div className="font-mono text-3xl sm:text-4xl font-black text-[#dc2626] tracking-tight">
-                  {activeCase.reportedLoss}
+                {/* Advisory topic; no case-specific loss is claimed. */}
+                <div className="font-mono text-xl sm:text-2xl font-black text-cyan-800 tracking-tight">
+                  {activeCase.displayContext}
                 </div>
 
                 {/* Headline */}
@@ -308,7 +305,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                 <div className="rounded-xl border border-emerald-300 bg-[#ecfdf5] p-3">
                   <div className="text-[10px] font-bold tracking-wider text-emerald-800 uppercase flex items-center gap-1.5 font-mono">
                     <Lightbulb className="h-3.5 w-3.5 text-emerald-700" />
-                    <span>WHAT COULD HAVE HELPED PREVENT IT?</span>
+                  <span>SAFETY GUIDANCE</span>
                   </div>
                   <p className="mt-1 text-xs text-emerald-950 font-medium leading-relaxed font-sans">
                     {activeCase.preventionInsight}
@@ -331,7 +328,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                     }}
                     className="font-bold text-slate-900 hover:text-emerald-600 flex items-center gap-1 transition-colors"
                   >
-                    <span>Read Full Report</span>
+                    <span>Open Advisory Details</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -352,13 +349,11 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
               </div>
               <div className="p-4 space-y-2 text-left">
                 <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
-                  <MapPin className="h-3 w-3 text-slate-400" />
-                  <span>
-                    {nextCase.city}, {nextCase.state}
-                  </span>
+                  <FileCheck2 className="h-3 w-3 text-slate-400" />
+                  <span>{nextCase.sourceScope}</span>
                 </div>
-                <div className="font-mono text-xl font-black text-[#dc2626]">
-                  {nextCase.reportedLoss}
+                <div className="font-mono text-sm font-black tracking-wide text-cyan-800">
+                  {nextCase.displayContext}
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
                   {nextCase.headline}
@@ -407,7 +402,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
                       ? "w-8 bg-emerald-400"
                       : "w-2 bg-slate-700 hover:bg-slate-500"
                   }`}
-                  aria-label={`Go to case ${i + 1}: ${c.city}`}
+                  aria-label={`Go to advisory ${i + 1}: ${c.shortHeadline || c.headline}`}
                 />
               ))}
             </div>
@@ -426,7 +421,7 @@ export const RealWorldCaseShowcase: React.FC<RealWorldCaseShowcaseProps> = ({
         {/* Left Indicator Label */}
         <div className="flex items-center gap-2 text-sm sm:text-base font-bold text-white shrink-0 self-start lg:self-center">
           <span className="h-5 w-1 bg-cyan-400 rounded-full" />
-          <span>How Verisight helps in such cases:</span>
+          <span>How VeriSight supports a careful review:</span>
         </div>
 
         {/* 4 Forensic Pillars */}

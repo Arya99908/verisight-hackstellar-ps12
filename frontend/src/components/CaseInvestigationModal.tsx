@@ -15,10 +15,10 @@ import {
   Building2,
   ShieldAlert,
 } from "lucide-react";
-import { RealWorldFraudCase } from "../data/realWorldCases";
+import { PublicFraudAdvisory } from "../data/realWorldCases";
 
 interface CaseInvestigationModalProps {
-  caseItem: RealWorldFraudCase | null;
+  caseItem: PublicFraudAdvisory | null;
   isOpen: boolean;
   onClose: () => void;
   onNavigateWorkbench?: () => void;
@@ -55,18 +55,18 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
         <div className="flex items-center justify-between border-b border-white/[0.08] bg-[#070B16] px-6 py-4 shrink-0">
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
             <span className="rounded bg-rose-950 px-2 py-0.5 text-rose-300 font-bold border border-rose-800/40">
-              REPORTED CASE
+              PUBLIC ADVISORY
             </span>
             <div className="flex items-center gap-1 text-slate-400">
               <MapPin className="h-3.5 w-3.5 text-sky-400" />
               <span>
-                {caseItem.city}, {caseItem.state}
+                {caseItem.sourceScope}
               </span>
             </div>
             <span className="text-slate-600">•</span>
             <div className="flex items-center gap-1 text-slate-400">
               <Calendar className="h-3.5 w-3.5 text-slate-500" />
-              <span>{caseItem.incidentMonthYear}</span>
+              <span>{caseItem.sourceDate}</span>
             </div>
           </div>
 
@@ -74,7 +74,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
             type="button"
             onClick={onClose}
             className="rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
-            title="Close Dossier"
+            title="Close Advisory"
           >
             <X className="h-5 w-5" />
           </button>
@@ -92,12 +92,12 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1F] via-transparent to-transparent opacity-80" />
               <div className="absolute top-3 right-3 transform -rotate-6 rounded border-2 border-red-500 bg-red-950/90 px-2.5 py-0.5 font-mono text-[10px] font-black tracking-widest text-red-400 shadow-xl uppercase">
-                REPORTED CASE
+                PUBLIC ADVISORY
               </div>
             </div>
           )}
 
-          {/* Headline & Loss Figure */}
+          {/* Headline and advisory topic */}
           <div className="space-y-3">
             <span className="font-mono text-xs font-semibold text-sky-400 uppercase tracking-wider">
               {caseItem.scamCategory}
@@ -109,17 +109,17 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-white/[0.06]">
               <div>
                 <span className="block font-mono text-[10px] text-slate-400 uppercase">
-                  DOCUMENTED FINANCIAL LOSS
+                  ADVISORY TOPIC · NO CASE-SPECIFIC LOSS CLAIMED
                 </span>
                 <span className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono tracking-tight">
-                  {caseItem.reportedLoss}
+                  {caseItem.displayContext}
                 </span>
               </div>
 
               {/* Publisher & Source Link */}
               <div className="text-right">
                 <span className="block font-mono text-[10px] text-slate-400 uppercase">
-                  VERIFIED SOURCE ATTRIBUTION
+                  SOURCE
                 </span>
                 <a
                   href={caseItem.sourceUrl}
@@ -131,7 +131,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>
                 <span className="block text-[10px] text-slate-500 font-mono">
-                  Published: {caseItem.sourceDate}
+                  Source date: {caseItem.sourceDate}
                 </span>
               </div>
             </div>
@@ -140,7 +140,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
           {/* Incident Narrative Summary */}
           <div className="rounded-xl border border-white/[0.08] bg-[#070B16] p-4 space-y-2">
             <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-300">
-              Documented Incident Overview
+              Summary of the Public Guidance
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               {caseItem.summary}
@@ -151,7 +151,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
           <div className="space-y-3">
             <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-amber-400" />
-              <span>Alleged Modus Operandi</span>
+              <span>Pattern Described by the Source</span>
             </h3>
             <div className="space-y-2">
               {caseItem.modusOperandi.map((step, idx) => (
@@ -189,7 +189,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-2">
               <div className="flex items-center gap-2 font-mono text-xs font-bold text-emerald-300 uppercase">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span>What Could Have Prevented It</span>
+                <span>Safety Guidance</span>
               </div>
               <p className="text-xs text-emerald-200/90 leading-relaxed">
                 {caseItem.preventionInsight}
@@ -201,13 +201,13 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
           <div className="rounded-xl border border-sky-500/30 bg-gradient-to-br from-sky-950/40 via-[#070D1B] to-[#0A1224] p-5 space-y-3">
             <div className="flex items-center gap-2 font-mono text-xs font-bold text-sky-300 uppercase">
               <Sparkles className="h-4 w-4 text-sky-400" />
-              <span>How VeriSight Relates to This Case</span>
+              <span>What VeriSight Can and Cannot Do</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="rounded-lg border border-white/[0.06] bg-[#060911] p-3 space-y-1">
                 <span className="font-mono text-[10px] text-sky-400 uppercase font-semibold">
-                  Relevant Forensic Layer
+                  Relevant Prototype Area
                 </span>
                 <p className="text-slate-200 font-medium">
                   {caseItem.verisightRelevance.forensicLayer}
@@ -216,7 +216,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
 
               <div className="rounded-lg border border-white/[0.06] bg-[#060911] p-3 space-y-1">
                 <span className="font-mono text-[10px] text-cyan-400 uppercase font-semibold">
-                  Examination Findings
+                  Current Analyzer Limit
                 </span>
                 <p className="text-slate-300">
                   {caseItem.verisightRelevance.examination}
@@ -225,7 +225,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
 
               <div className="rounded-lg border border-white/[0.06] bg-[#060911] p-3 space-y-1">
                 <span className="font-mono text-[10px] text-amber-400 uppercase font-semibold">
-                  Investigator Guidance
+                  User Check
                 </span>
                 <p className="text-slate-300">
                   {caseItem.verisightRelevance.userGuidance}
@@ -234,7 +234,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
 
               <div className="rounded-lg border border-white/[0.06] bg-[#060911] p-3 space-y-1">
                 <span className="font-mono text-[10px] text-emerald-400 uppercase font-semibold">
-                  Statutory Response Feature
+                  Response Drafting
                 </span>
                 <p className="text-slate-300">
                   {caseItem.verisightRelevance.responseFeature}
@@ -252,7 +252,7 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 font-mono text-xs text-slate-400 hover:text-white transition-colors"
           >
-            <span>Read Original Publisher Article</span>
+            <span>Open Original Source Page</span>
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
 
