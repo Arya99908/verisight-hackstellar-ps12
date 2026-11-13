@@ -690,10 +690,10 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
                   Model Governance & Empirical Rigor
                 </span>
                 <h2 className="text-xl sm:text-3xl font-bold text-white mt-1">
-                  Evaluation Status: No authorized locked test set
+                  Archive-Reported Evaluation Figures
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl font-sans">
-                  Current results are heuristic demonstrations. No representative locked test set is available for a real-world accuracy claim.
+                  These figures are copied from the supplied archive. They have not been independently reproduced against the deployed analyzer, whose live model endpoint currently reports a heuristic-only system. The archive's accompanying evaluation documents describe a separate small synthetic benchmark, so these figures are not current production accuracy claims.
                 </p>
               </div>
 
@@ -710,27 +710,27 @@ export const ProductOverview: React.FC<ProductOverviewProps> = ({
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
               <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
-                <span className="font-mono text-[11px] text-slate-400 block">WhatsApp ROC-AUC</span>
-                <span className="font-mono text-2xl font-bold text-sky-400 mt-1 block">N/A</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">No locked test set</span>
+                <span className="font-mono text-[11px] text-slate-400 block">Archive ROC-AUC</span>
+                <span className="font-mono text-2xl font-bold text-sky-400 mt-1 block">0.9731</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">23 WhatsApp samples claimed</span>
               </div>
 
               <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
                 <span className="font-mono text-[11px] text-slate-400 block">Brier Score</span>
-                <span className="font-mono text-2xl font-bold text-emerald-400 mt-1 block">N/A</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Not calibrated</span>
+                <span className="font-mono text-2xl font-bold text-emerald-400 mt-1 block">0.0992</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Archive-reported Brier score</span>
               </div>
 
               <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
                 <span className="font-mono text-[11px] text-slate-400 block">Held-out Benchmark</span>
-                <span className="font-mono text-2xl font-bold text-white mt-1 block">N/A</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Not independently evaluated</span>
+                <span className="font-mono text-2xl font-bold text-white mt-1 block">1.000</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Archive reports N=7 held-out AUC</span>
               </div>
 
               <div className="rounded-xl border border-white/[0.06] bg-[#070B16] p-4 text-center">
                 <span className="font-mono text-[11px] text-slate-400 block">Inference Speed</span>
-                <span className="font-mono text-2xl font-bold text-indigo-400 mt-1 block">Variable</span>
-                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Depends on image and hosting</span>
+                <span className="font-mono text-2xl font-bold text-indigo-400 mt-1 block">&lt; 350 ms</span>
+                <span className="font-mono text-[10px] text-slate-500 mt-1 block">Archive claim; not live-benchmarked</span>
               </div>
             </div>
           </div>

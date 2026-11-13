@@ -57,9 +57,9 @@ interface DatasetEval {
 const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   user_supplied_external: {
     id: "user_supplied_external",
-    name: "Illustrative curve A (synthetic demo)",
+    name: "Archive: External Real-World WhatsApp Mobile Corpus",
     description:
-      "Synthetic points used only to demonstrate the chart controls. They are not observations, labels, or model predictions.",
+      "The uploaded archive describes 23 mobile screenshots from PhonePe, Google Pay, and Paytm transferred over WhatsApp. This corpus and its labels are not independently verified in the current deployment.",
     sampleCount: 23,
     posCount: 10,
     negCount: 13,
@@ -83,9 +83,9 @@ const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   },
   held_out_benchmark: {
     id: "held_out_benchmark",
-    name: "Illustrative curve B (synthetic demo)",
+    name: "Archive: Held-Out Strict Laboratory Benchmark",
     description:
-      "Synthetic points used only to demonstrate the chart controls. No held-out benchmark has been run.",
+      "The uploaded archive describes seven native mobile captures and reports a held-out result. The accompanying evaluation document also describes a separate 27-image synthetic dataset; the source records have not been reconciled here.",
     sampleCount: 7,
     posCount: 4,
     negCount: 3,
@@ -105,9 +105,9 @@ const EVALUATION_DATASETS: Record<string, DatasetEval> = {
   },
   dev_oof_cv: {
     id: "dev_oof_cv",
-    name: "Illustrative curve C (synthetic demo)",
+    name: "Archive: Development 3-Fold Stratified Cross-Validation (OOF)",
     description:
-      "Synthetic points used only to demonstrate the chart controls. No cross-validation result is being reported.",
+      "The uploaded archive reports 20 development samples and three-fold out-of-fold evaluation. This result has not been reproduced by the current deployment.",
     sampleCount: 20,
     posCount: 10,
     negCount: 10,
@@ -631,7 +631,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
               <ShieldCheck className="h-4 w-4 text-cyan-400" />
               <span>HACKSTELLAR 2026 // PROBLEM STATEMENT 12</span>
               <span className="text-slate-500">•</span>
-              <span className="font-semibold">PROTOTYPE • PERFORMANCE NOT EVALUATED</span>
+              <span className="font-semibold">ARCHIVE FIGURES • NOT REPRODUCED BY LIVE API</span>
             </div>
 
             {/* Main Headline */}
@@ -653,34 +653,34 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-4xl w-full font-mono text-left">
               <div className="rounded-xl border border-cyan-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Measured ROC-AUC
+                  Archive ROC-AUC
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-cyan-400">N/A</span>
-                <span className="text-[10px] text-slate-500">No authorized locked test set</span>
+                <span className="mt-1 block text-2xl font-bold text-cyan-400">0.9731</span>
+                <span className="text-[10px] text-slate-500">23 WhatsApp samples claimed</span>
               </div>
 
               <div className="rounded-xl border border-emerald-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Trained classifier
+                  Sub-Pixel Lasers
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-emerald-400">Not deployed</span>
-                <span className="text-[10px] text-slate-500">Current review uses heuristics</span>
+                <span className="mt-1 block text-2xl font-bold text-emerald-400">&lt; 0.1 px</span>
+                <span className="text-[10px] text-slate-500">Archive claim; not measured here</span>
               </div>
 
               <div className="rounded-xl border border-amber-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Measured latency
+                  Archive latency
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-amber-400">N/A</span>
-                <span className="text-[10px] text-slate-500">Not benchmarked</span>
+                <span className="mt-1 block text-2xl font-bold text-amber-400">&lt; 350 ms</span>
+                <span className="text-[10px] text-slate-500">Archive claim; not measured here</span>
               </div>
 
               <div className="rounded-xl border border-purple-500/30 bg-[#0c1324]/80 p-3.5 shadow-lg backdrop-blur-md">
                 <span className="block text-[11px] uppercase tracking-wider text-slate-400">
-                  Settlement check
+                  Law enforcement
                 </span>
-                <span className="mt-1 block text-2xl font-bold text-purple-400">Not linked</span>
-                <span className="text-[10px] text-slate-500">Requires authorized bank/PSP integration</span>
+                <span className="mt-1 block text-2xl font-bold text-purple-400">Sec 91</span>
+                <span className="text-[10px] text-slate-500">Archive reference; no legal process issued</span>
               </div>
             </div>
 
@@ -697,7 +697,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                 href="#interactive-roc"
                 className="rounded-lg border border-white/10 bg-white/[0.05] px-4 py-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
               >
-                Explore Demo Curves ↓
+                Inspect Archive ROC Data ↓
               </a>
               <a
                 href="#capability-radar"
@@ -719,14 +719,13 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
             <div>
               <div className="flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-wider">
                 <BarChart3 className="h-4 w-4" />
-                <span>Section 2: Illustrative Curve Sandbox</span>
+                <span>Section 2: Archive-Reported Evaluation Sandbox</span>
               </div>
               <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl font-mono">
-                Interactive ROC/PR Curve Demonstration
+                Interactive ROC-AUC & Decision Threshold Sandbox
               </h2>
               <p className="mt-1 text-xs text-slate-400 max-w-2xl">
-                The curves and counts below are synthetic UI examples. They are not predictions, benchmark results,
-                or evidence of VeriSight accuracy. Move the threshold to see how these illustrative values change.
+                These plotted figures are copied from the uploaded archive and are not reproduced by the live API, which reports heuristic-only. The archive also includes a separate 27-image synthetic evaluation report. Move the threshold to explore the archived curves; this is not a live model evaluation.
               </p>
             </div>
 
@@ -746,10 +745,10 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                   }`}
                 >
                   {ds.id === "user_supplied_external"
-                    ? "Demo A (N=23 synthetic points)"
+                    ? "External WhatsApp (N=23)"
                     : ds.id === "held_out_benchmark"
-                    ? "Demo B (N=7 synthetic points)"
-                    : "Demo C (N=20 synthetic points)"}
+                    ? "Laboratory Held-Out (N=7)"
+                    : "3-Fold Dev OOF (N=20)"}
                 </button>
               ))}
             </div>
@@ -765,7 +764,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                     {curveMode === "ROC" ? "Receiver Operating Characteristic (ROC)" : "Precision-Recall Curve"}
                   </span>
                   <span className="rounded bg-cyan-950 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 border border-cyan-800">
-                    Illustrative AUC = {(curveMode === "ROC" ? currentDataset.rocAuc : currentDataset.prAuc).toFixed(4)}
+                    AUC = {(curveMode === "ROC" ? currentDataset.rocAuc : currentDataset.prAuc).toFixed(4)}
                   </span>
                 </div>
 
@@ -903,7 +902,7 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                 <div className="mt-2 flex justify-between text-[10px] font-mono text-slate-500">
                   <span>0.00 (Max Sensitivity / Flags All)</span>
                   <span className="text-cyan-400 font-bold">
-                    Example Threshold ({currentDataset.optimalThreshold.toFixed(2)})
+                    Archive Threshold ({currentDataset.optimalThreshold.toFixed(2)})
                   </span>
                   <span>1.00 (Strict Zero-Alarm)</span>
                 </div>
@@ -1005,9 +1004,8 @@ export const WhyVerisight: React.FC<WhyVerisightProps> = ({
                 </div>
 
                 <p className="mt-3 text-[11px] text-slate-400 leading-relaxed font-sans">
-                  <strong>Demo only:</strong> These confusion-matrix counts are generated from the synthetic points above.
-                  VeriSight has no trained or calibrated classifier and no independent locked-test results; do not use
-                  this sandbox to estimate real-world error rates.
+                  <strong>Archive data only:</strong> These confusion-matrix counts and rates come from the uploaded archive, not live model predictions. The live model endpoint
+                  reports heuristic-only and not evaluated; do not use these archived results to estimate current real-world error rates.
                 </p>
               </div>
             </div>
