@@ -30,13 +30,12 @@ This supplied walkthrough is separate from the full-resolution demo film above. 
 
 | Endpoint | URL |
 |---|---|
-| Product Overview | https://verisight-ps12.vercel.app/ |
-| Forensic Workbench | https://verisight-ps12.vercel.app/workbench |
-| Response & Guidance | https://verisight-ps12.vercel.app/response |
-| Evaluation & Research | https://verisight-ps12.vercel.app/evaluation |
+| Product Overview and app entry point | https://verisight-ps12.vercel.app/ |
 | Health Check | https://verisight-ps12.vercel.app/api/health |
 | API Docs (Swagger) | https://verisight-ps12.vercel.app/docs |
 | Demo Samples | https://verisight-ps12.vercel.app/api/demo-samples |
+
+Open the Forensic Workbench, Evaluation & Research, and Response & Guidance areas through the website's in-app navigation after loading the Product Overview.
 
 ---
 
